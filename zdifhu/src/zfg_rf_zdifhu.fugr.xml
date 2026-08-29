@@ -149,10 +149,10 @@
     <item>
      <HEADER>
       <PROGRAM>SAPLZFG_RF_ZDIFHU</PROGRAM>
-      <SCREEN>9000</SCREEN>
-      <LANGUAGE>E</LANGUAGE>
-      <DESCRIPT>ZDIFHU HU input</DESCRIPT>
-      <TYPE>S</TYPE>
+       <SCREEN>9000</SCREEN>
+       <LANGUAGE>E</LANGUAGE>
+       <DESCRIPT>ZDIFHU HU input</DESCRIPT>
+       <TYPE>I</TYPE>
       <NEXTSCREEN>9000</NEXTSCREEN>
       <LINES>007</LINES>
       <COLUMNS>040</COLUMNS>
@@ -191,17 +191,28 @@
        <FROM_DICT>X</FROM_DICT>
        <UP_LOWER>X</UP_LOWER>
        <INPUT_FLD>X</INPUT_FLD>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-      </RPY_DYFATC>
-      </FIELDS>
-     </item>
-     <item>
-     <HEADER>
-      <PROGRAM>SAPLZFG_RF_ZDIFHU</PROGRAM>
-      <SCREEN>9001</SCREEN>
-      <LANGUAGE>E</LANGUAGE>
-      <DESCRIPT>ZDIFHU item list</DESCRIPT>
-      <TYPE>S</TYPE>
+        <OUTPUT_FLD>X</OUTPUT_FLD>
+       </RPY_DYFATC>
+        <RPY_DYFATC>
+         <CONT_TYPE>SCREEN</CONT_TYPE>
+         <CONT_NAME>SCREEN</CONT_NAME>
+         <TYPE>OKCODE</TYPE>
+         <TEXT>____________________</TEXT>
+         <LENGTH>020</LENGTH>
+         <VISLENGTH>020</VISLENGTH>
+         <HEIGHT>001</HEIGHT>
+         <FORMAT>CHAR</FORMAT>
+         <INPUT_FLD>X</INPUT_FLD>
+        </RPY_DYFATC>
+       </FIELDS>
+      </item>
+      <item>
+      <HEADER>
+       <PROGRAM>SAPLZFG_RF_ZDIFHU</PROGRAM>
+       <SCREEN>9001</SCREEN>
+       <LANGUAGE>E</LANGUAGE>
+       <DESCRIPT>ZDIFHU item list</DESCRIPT>
+       <TYPE>I</TYPE>
       <NEXTSCREEN>9001</NEXTSCREEN>
       <LINES>007</LINES>
       <COLUMNS>040</COLUMNS>
@@ -211,13 +222,17 @@
        <TYPE>SCREEN</TYPE>
        <NAME>SCREEN</NAME>
       </RPY_DYCATT>
-       <RPY_DYCATT>
-        <TYPE>LOOP</TYPE>
-        <NAME>LP_ITEMS</NAME>
-        <LINE>003</LINE>
-        <COLUMN>001</COLUMN>
-        <LENGTH>039</LENGTH>
+        <RPY_DYCATT>
+         <TYPE>LOOP</TYPE>
+         <NAME>LP_ITEMS</NAME>
+         <ELEMENT_OF>SCREEN</ELEMENT_OF>
+         <LINE>003</LINE>
+         <COLUMN>001</COLUMN>
+         <LENGTH>039</LENGTH>
          <HEIGHT>005</HEIGHT>
+         <LOOP_TYPE>FIX</LOOP_TYPE>
+         <LOOP_BLOCK>001</LOOP_BLOCK>
+         <LOOP_DISP>005</LOOP_DISP>
         </RPY_DYCATT>
      </CONTAINERS>
      <FIELDS>
@@ -283,8 +298,8 @@
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MATNR</NAME>
-       <LINE>001</LINE>
+        <NAME>ZSDIFHU_ITEM-MATNR</NAME>
+        <LINE>003</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>010</LENGTH>
        <VISLENGTH>010</VISLENGTH>
@@ -299,8 +314,8 @@
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MAKTX</NAME>
-       <LINE>001</LINE>
+        <NAME>ZSDIFHU_ITEM-MAKTX</NAME>
+        <LINE>003</LINE>
        <COLUMN>012</COLUMN>
        <LENGTH>010</LENGTH>
        <VISLENGTH>010</VISLENGTH>
@@ -315,8 +330,8 @@
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-QUAN</NAME>
-       <LINE>001</LINE>
+        <NAME>ZSDIFHU_ITEM-QUAN</NAME>
+        <LINE>003</LINE>
        <COLUMN>023</COLUMN>
        <LENGTH>007</LENGTH>
        <VISLENGTH>007</VISLENGTH>
@@ -331,8 +346,8 @@
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MEINS</NAME>
-       <LINE>001</LINE>
+        <NAME>ZSDIFHU_ITEM-MEINS</NAME>
+        <LINE>003</LINE>
        <COLUMN>031</COLUMN>
        <LENGTH>003</LENGTH>
        <VISLENGTH>003</VISLENGTH>
@@ -347,21 +362,32 @@
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-DIFF_QUAN</NAME>
-       <LINE>001</LINE>
+        <NAME>ZSDIFHU_ITEM-DIFF_QUAN</NAME>
+        <LINE>003</LINE>
        <COLUMN>035</COLUMN>
        <LENGTH>005</LENGTH>
        <VISLENGTH>005</VISLENGTH>
        <HEIGHT>001</HEIGHT>
-       <FORMAT>QUAN</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <INPUT_FLD>X</INPUT_FLD>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      </FIELDS>
-     </item>
-    </DYNPROS>
+        <FORMAT>QUAN</FORMAT>
+        <FROM_DICT>X</FROM_DICT>
+        <INPUT_FLD>X</INPUT_FLD>
+        <OUTPUT_FLD>X</OUTPUT_FLD>
+        <REQU_ENTRY>N</REQU_ENTRY>
+       </RPY_DYFATC>
+        <RPY_DYFATC>
+         <CONT_TYPE>SCREEN</CONT_TYPE>
+         <CONT_NAME>SCREEN</CONT_NAME>
+         <TYPE>OKCODE</TYPE>
+         <TEXT>____________________</TEXT>
+         <LENGTH>020</LENGTH>
+         <VISLENGTH>020</VISLENGTH>
+         <HEIGHT>001</HEIGHT>
+         <FORMAT>CHAR</FORMAT>
+         <INPUT_FLD>X</INPUT_FLD>
+        </RPY_DYFATC>
+       </FIELDS>
+      </item>
+     </DYNPROS>
   </asx:values>
  </asx:abap>
 </abapGit>
