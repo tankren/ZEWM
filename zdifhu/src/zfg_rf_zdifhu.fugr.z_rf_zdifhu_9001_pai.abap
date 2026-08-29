@@ -8,10 +8,11 @@ FUNCTION z_rf_zdifhu_9001_pai.
 *"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
 *"----------------------------------------------------------------------
 
-  DATA: ls_item  TYPE zsdifhu_item,
-        lv_tabix TYPE sy-tabix,
-        lv_diff  TYPE /scwm/de_quantity,
-        ls_quan  TYPE /scwm/s_quan.
+  DATA: ls_item    TYPE zsdifhu_item,
+        lv_tabix   TYPE sy-tabix,
+        lv_diff    TYPE /scwm/de_quantity,
+        ls_quan    TYPE /scwm/s_quan,
+        go_packing TYPE REF TO /scwm/cl_wm_packing.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
 
@@ -51,7 +52,8 @@ FUNCTION z_rf_zdifhu_9001_pai.
       ls_quan-unit = ls_item-meins.
 
 *     3. 过账（异常码三件套按客户系统配置）
-      CALL METHOD /scwm/cl_wm_packing=>post_difference
+      CREATE OBJECT go_packing.
+      CALL METHOD go_packing->post_difference
         EXPORTING
           iv_guid_hu    = ls_item-guid_hu
           iv_guid_stock = ls_item-guid_stock
@@ -68,7 +70,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
       ENDIF.
 
 *     4. 落库：save 不带 commit，外层显式 COMMIT
-      CALL METHOD /scwm/cl_wm_packing=>save
+      CALL METHOD go_packing->save
         EXPORTING
           iv_commit = space
           iv_wait   = space
