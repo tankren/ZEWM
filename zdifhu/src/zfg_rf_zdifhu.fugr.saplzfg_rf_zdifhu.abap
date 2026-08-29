@@ -1,8 +1,8 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE /SCWM/IRF_SSCR.                   " RF Framework subscreen modules
   INCLUDE LZFG_RF_ZDIFHUTOP.               " Global Declarations
+  INCLUDE /SCWM/IRF_SSCR.                   " RF Framework subscreen modules
   INCLUDE LZFG_RF_ZDIFHUUXX.               " Function Modules
 
 *******************************************************************
