@@ -24,7 +24,7 @@ python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); prin
 3. **UTF-8 BOM**：abapGit 序列化器输出的 XML 带 BOM；手写文件不带 BOM 也能正常 import（BOM 只影响 git diff 显示"M"），本计划**不强制 BOM**。若要求与 abapGit 字节级一致，可在目标系统首次 pull 后以其输出为准。
 4. **非 git 仓库**：不执行 git commit。如需版本管理，执行者可自行 `git init`。
 5. **⚠️ 系统校准点**（import 后在 SAP 系统核对，见各任务备注）：
-   - 数据元素 `/SCWM/DE_HUIDENT` `/SCWM/DE_QUAN` `/SCWM/DE_MEINS` `/SCWM/DE_GUID_HU` `/SCWM/DE_GUID_STOCK` 存在性（SE11）
+   - 数据元素 `/SCWM/DE_HUIDENT` `/SCWM/DE_QUANTITY` `/SCWM/DE_BASE_UOM` `/SCWM/GUID_HU` `/LIME/GUID_STOCK` 存在性（SE11）
    - `/SCWM/CL_RF_BLL_SRVC=>GET_FCODE` / `SET_FCODE` 静态签名（SE24）
    - 异常码组合 `DIFD`+`PPT`+`16`（SPRO，spec §5.2）
    - 屏幕 9001 的 step-loop XML 若 import 报错 → 按 README "Plan B" 用 SE51 手建
@@ -131,11 +131,11 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
 |---|---|---|---|
 | 0001 | MATNR | MATNR | 物料号 |
 | 0002 | MAKTX | MAKTX | 物料描述 |
-| 0003 | QUAN | /SCWM/DE_QUAN | 当前系统数量 |
-| 0004 | MEINS | /SCWM/DE_MEINS | 单位 |
-| 0005 | DIFF_QUAN | /SCWM/DE_QUAN | 实盘数量（用户输入列） |
-| 0006 | GUID_STOCK | /SCWM/DE_GUID_STOCK | 库存 GUID（过账定位） |
-| 0007 | GUID_HU | /SCWM/DE_GUID_HU | HU GUID（过账定位） |
+| 0003 | QUAN | /SCWM/DE_QUANTITY | 当前系统数量 |
+| 0004 | MEINS | /SCWM/DE_BASE_UOM | 单位 |
+| 0005 | DIFF_QUAN | /SCWM/DE_QUANTITY | 实盘数量（用户输入列） |
+| 0006 | GUID_STOCK | /LIME/GUID_STOCK | 库存 GUID（过账定位） |
+| 0007 | GUID_HU | /SCWM/GUID_HU | HU GUID（过账定位） |
 
 ⚠️ 若某 `/SCWM/DE_*` 数据元素在目标系统不存在（SE11 核对），把该字段改为内建类型：QUAN→`DATATYPE=QUAN LENG=000013 DECIMALS=000003`、MEINS→`DATATYPE=UNIT LENG=000003`、GUID→`DATATYPE=CHAR LENG=000032`，并加 `<MASK>` 同 DATATYPE 值、`COMPTYPE=D`、去掉 ROLLNAME。
 
@@ -174,7 +174,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <TABNAME>ZSDIFHU_ITEM</TABNAME>
      <FIELDNAME>QUAN</FIELDNAME>
      <POSITION>0003</POSITION>
-     <ROLLNAME>/SCWM/DE_QUAN</ROLLNAME>
+     <ROLLNAME>/SCWM/DE_QUANTITY</ROLLNAME>
      <ADMINFIELD>0</ADMINFIELD>
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
@@ -182,7 +182,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <TABNAME>ZSDIFHU_ITEM</TABNAME>
      <FIELDNAME>MEINS</FIELDNAME>
      <POSITION>0004</POSITION>
-     <ROLLNAME>/SCWM/DE_MEINS</ROLLNAME>
+     <ROLLNAME>/SCWM/DE_BASE_UOM</ROLLNAME>
      <ADMINFIELD>0</ADMINFIELD>
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
@@ -190,7 +190,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <TABNAME>ZSDIFHU_ITEM</TABNAME>
      <FIELDNAME>DIFF_QUAN</FIELDNAME>
      <POSITION>0005</POSITION>
-     <ROLLNAME>/SCWM/DE_QUAN</ROLLNAME>
+     <ROLLNAME>/SCWM/DE_QUANTITY</ROLLNAME>
      <ADMINFIELD>0</ADMINFIELD>
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
@@ -198,7 +198,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <TABNAME>ZSDIFHU_ITEM</TABNAME>
      <FIELDNAME>GUID_STOCK</FIELDNAME>
      <POSITION>0006</POSITION>
-     <ROLLNAME>/SCWM/DE_GUID_STOCK</ROLLNAME>
+     <ROLLNAME>/LIME/GUID_STOCK</ROLLNAME>
      <ADMINFIELD>0</ADMINFIELD>
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
@@ -206,7 +206,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <TABNAME>ZSDIFHU_ITEM</TABNAME>
      <FIELDNAME>GUID_HU</FIELDNAME>
      <POSITION>0007</POSITION>
-     <ROLLNAME>/SCWM/DE_GUID_HU</ROLLNAME>
+     <ROLLNAME>/SCWM/GUID_HU</ROLLNAME>
      <ADMINFIELD>0</ADMINFIELD>
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
@@ -528,7 +528,7 @@ DATA: ok_code   TYPE sy-ucomm,
 *----------------------------------------------------------------------*
 FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
                            iv_huident    TYPE /scwm/de_huident
-                           iv_guid_stock TYPE /scwm/de_guid_stock
+                           iv_guid_stock TYPE /lime/guid_stock
                   CHANGING cs_item       TYPE zsdifhu_item.
 
   DATA: lt_huident TYPE /scwm/tt_huident,
@@ -801,7 +801,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
 
   DATA: ls_item  TYPE zsdifhu_item,
         lv_tabix TYPE sy-tabix,
-        lv_diff  TYPE /scwm/de_quan,
+        lv_diff  TYPE /scwm/de_quantity,
         ls_quan  TYPE /scwm/s_quan,
         lv_fcode TYPE /scwm/de_fcode,
         lv_max   TYPE i.
@@ -1247,8 +1247,8 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 1. abapGit → New Offline（或 New Online 推送到内部 Git）→ 导入本仓库 zip
 2. 包：`ZZDIFHU`（不存在则让 abapGit 创建）
 3. Pull → 激活全部对象
-4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_QUAN`、`/SCWM/DE_MEINS`、
-   `/SCWM/DE_GUID_HU`、`/SCWM/DE_GUID_STOCK` 存在；若 `ZSDIFHU*` 激活报错，
+4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_QUANTITY`、`/SCWM/DE_BASE_UOM`、
+   `/SCWM/GUID_HU`、`/LIME/GUID_STOCK` 存在；若 `ZSDIFHU*` 激活报错，
    按 `src/*.tabl.xml` 头部注释改用内建类型
 
 ## 2. Customizing（SPRO → EWM → Mobile Data Entry，按顺序）

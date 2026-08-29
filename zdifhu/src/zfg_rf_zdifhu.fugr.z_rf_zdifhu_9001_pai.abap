@@ -10,7 +10,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
 
   DATA: ls_item  TYPE zsdifhu_item,
         lv_tabix TYPE sy-tabix,
-        lv_diff  TYPE /scwm/de_quan,
+        lv_diff  TYPE /scwm/de_quantity,
         ls_quan  TYPE /scwm/s_quan.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).

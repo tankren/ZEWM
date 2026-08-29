@@ -9,8 +9,8 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 1. abapGit → New Offline（或 New Online 推送到内部 Git）→ 导入本仓库 zip
 2. 包：`ZEWM`（abapGit 创建 repo 时填的 Package）
 3. Pull → 激活全部对象
-4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_QUAN`、`/SCWM/DE_MEINS`、
-   `/SCWM/DE_GUID_HU`、`/SCWM/DE_GUID_STOCK` 存在；若某个不存在导致 `ZSDIFHU*`
+4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_QUANTITY`、`/SCWM/DE_BASE_UOM`、
+   `/SCWM/GUID_HU`、`/LIME/GUID_STOCK` 存在；若某个不存在导致 `ZSDIFHU*`
    激活报错，SE11 把对应字段从数据元素引用改为内建类型：
    HUIDENT→CHAR 20；QUAN/DIFF_QUAN→QUAN 长 13 小数 3；MEINS→UNIT 3；GUID_*→CHAR 32
 

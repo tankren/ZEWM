@@ -9,7 +9,7 @@ TABLES: zsdifhu_scr,
 *----------------------------------------------------------------------*
 FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
                            iv_huident    TYPE /scwm/de_huident
-                           iv_guid_stock TYPE /scwm/de_guid_stock
+                           iv_guid_stock TYPE /lime/guid_stock
                   CHANGING cs_item       TYPE zsdifhu_item.
 
   DATA: lt_huident TYPE /scwm/tt_huident,
