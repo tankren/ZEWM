@@ -47,8 +47,8 @@ FUNCTION z_rf_zdifhu_9000_pai.
           et_huhdr     = lt_huhdr
           et_huitm     = lt_huitm
         EXCEPTIONS
-          hu_not_found   = 1
-          internal_error = 2
+          wrong_input    = 1
+          not_possible   = 2
           OTHERS         = 3.
       IF sy-subrc <> 0 OR lt_huhdr IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
