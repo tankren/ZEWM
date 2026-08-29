@@ -1,14 +1,13 @@
 FUNCTION z_rf_zdifhu_9001_pbo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
-*"  IMPORTING
-*"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
 *"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
 *"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
 *"----------------------------------------------------------------------
 
-  /scwm/cl_tm=>set_lgnum( iv_lgnum ).
+  DATA(lv_lgnum) = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  /scwm/cl_tm=>set_lgnum( lv_lgnum ).
 
 * 注册结构 + 表 data container（框架按名传数据到屏幕 step-loop）
   /scwm/cl_rf_bll_srvc=>init_screen_param( ).

@@ -11,13 +11,7 @@
     <item>
      <FUNCNAME>Z_RF_ZDIFHU_9000_PBO</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9000 PBO</SHORT_TEXT>
-     <IMPORT>
-      <RSIMP>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <TYP>/SCWM/LGNUM</TYP>
-      </RSIMP>
-     </IMPORT>
-     <CHANGING>
+      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <TYP>ZSDIFHU_SCR</TYP>
@@ -27,11 +21,7 @@
        <TYP>ZSDIFHU_ITEM_TT</TYP>
       </RSCHA>
      </CHANGING>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <KIND>P</KIND>
-      </RSFDO>
+      <DOCUMENTATION>
       <RSFDO>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <KIND>P</KIND>
@@ -45,13 +35,7 @@
     <item>
      <FUNCNAME>Z_RF_ZDIFHU_9000_PAI</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9000 PAI</SHORT_TEXT>
-     <IMPORT>
-      <RSIMP>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <TYP>/SCWM/LGNUM</TYP>
-      </RSIMP>
-     </IMPORT>
-     <CHANGING>
+      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <TYP>ZSDIFHU_SCR</TYP>
@@ -61,11 +45,7 @@
        <TYP>ZSDIFHU_ITEM_TT</TYP>
       </RSCHA>
      </CHANGING>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <KIND>P</KIND>
-      </RSFDO>
+      <DOCUMENTATION>
       <RSFDO>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <KIND>P</KIND>
@@ -79,13 +59,7 @@
     <item>
      <FUNCNAME>Z_RF_ZDIFHU_9001_PBO</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9001 PBO</SHORT_TEXT>
-     <IMPORT>
-      <RSIMP>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <TYP>/SCWM/LGNUM</TYP>
-      </RSIMP>
-     </IMPORT>
-     <CHANGING>
+      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <TYP>ZSDIFHU_SCR</TYP>
@@ -95,11 +69,7 @@
        <TYP>ZSDIFHU_ITEM_TT</TYP>
       </RSCHA>
      </CHANGING>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <KIND>P</KIND>
-      </RSFDO>
+      <DOCUMENTATION>
       <RSFDO>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <KIND>P</KIND>
@@ -113,13 +83,7 @@
     <item>
      <FUNCNAME>Z_RF_ZDIFHU_9001_PAI</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9001 PAI</SHORT_TEXT>
-     <IMPORT>
-      <RSIMP>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <TYP>/SCWM/LGNUM</TYP>
-      </RSIMP>
-     </IMPORT>
-     <CHANGING>
+      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <TYP>ZSDIFHU_SCR</TYP>
@@ -129,11 +93,7 @@
        <TYP>ZSDIFHU_ITEM_TT</TYP>
       </RSCHA>
      </CHANGING>
-     <DOCUMENTATION>
-      <RSFDO>
-       <PARAMETER>IV_LGNUM</PARAMETER>
-       <KIND>P</KIND>
-      </RSFDO>
+      <DOCUMENTATION>
       <RSFDO>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
        <KIND>P</KIND>

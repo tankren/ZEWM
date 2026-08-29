@@ -1,8 +1,6 @@
 FUNCTION z_rf_zdifhu_9000_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
-*"  IMPORTING
-*"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
 *"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
 *"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
@@ -15,9 +13,11 @@ FUNCTION z_rf_zdifhu_9000_pai.
         lt_huitm      TYPE /scwm/tt_huitm_int,
         ls_huitm      TYPE /scwm/s_huitm_int,
         ls_mat_global TYPE /scwm/s_material_global,
+        lv_lgnum      TYPE /scwm/lgnum,
         ls_item       TYPE zsdifhu_item.
 
-  /scwm/cl_tm=>set_lgnum( iv_lgnum ).
+  lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  /scwm/cl_tm=>set_lgnum( lv_lgnum ).
 
   CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
     WHEN 'BACK'.
@@ -42,7 +42,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
       CALL FUNCTION '/SCWM/HU_READ_MULT'
         EXPORTING
           it_huident   = lt_huident
-          iv_lgnum     = iv_lgnum
+          iv_lgnum     = lv_lgnum
         IMPORTING
           et_huhdr     = lt_huhdr
           et_huitm     = lt_huitm

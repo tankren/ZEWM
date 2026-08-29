@@ -1,8 +1,6 @@
 FUNCTION z_rf_zdifhu_9001_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
-*"  IMPORTING
-*"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
 *"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
 *"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
@@ -12,9 +10,11 @@ FUNCTION z_rf_zdifhu_9001_pai.
         lv_tabix   TYPE sy-tabix,
         lv_diff    TYPE /scwm/de_quantity,
         ls_quan    TYPE /scwm/s_quan,
+        lv_lgnum   TYPE /scwm/lgnum,
         go_packing TYPE REF TO /scwm/cl_wm_packing.
 
-  /scwm/cl_tm=>set_lgnum( iv_lgnum ).
+  lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  /scwm/cl_tm=>set_lgnum( lv_lgnum ).
 
 * 用户输入的实盘数量已由 loop_input 模块自动回写到 CT（无需手动同步）
 
@@ -86,7 +86,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
       /scwm/cl_tm=>cleanup( ).
 
 *     5. 刷新该行数量，清实盘与扫描框，回本屏重显
-      PERFORM refresh_item USING    iv_lgnum
+      PERFORM refresh_item USING    lv_lgnum
                                     cs_zdifhu_s_scr-huident
                                     ls_item-guid_stock
                            CHANGING ls_item.
