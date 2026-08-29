@@ -14,7 +14,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
         ls_huhdr      TYPE /scwm/s_huhdr_int,
         lt_huitm      TYPE /scwm/tt_huitm_int,
         ls_huitm      TYPE /scwm/s_huitm_int,
-        ls_mat_global TYPE /scwm/s_mat_global,
+        ls_mat_global TYPE /scwm/s_material_global,
         ls_item       TYPE zsdifhu_item.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
@@ -63,17 +63,16 @@ FUNCTION z_rf_zdifhu_9000_pai.
         CLEAR ls_item.
 
 *       MATID → MATNR
-        CALL FUNCTION '/SCWM/MATERIAL_READ_SINGLE'
-          EXPORTING
-            iv_matid      = ls_huitm-matid
-            iv_langu      = sy-langu
-          IMPORTING
-            es_mat_global = ls_mat_global
-          EXCEPTIONS
-            OTHERS        = 1.
-        IF sy-subrc <> 0.
-          CONTINUE.
-        ENDIF.
+        TRY.
+            CALL FUNCTION '/SCWM/MATERIAL_READ_SINGLE'
+              EXPORTING
+                iv_matid      = ls_huitm-matid
+                iv_langu      = sy-langu
+              IMPORTING
+                es_mat_global = ls_mat_global.
+          CATCH /scwm/cx_md.
+            CONTINUE.
+        ENDTRY.
 
         ls_item-matnr      = ls_mat_global-matnr.
         ls_item-quan       = ls_huitm-quan.
