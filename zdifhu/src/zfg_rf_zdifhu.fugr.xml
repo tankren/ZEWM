@@ -211,14 +211,17 @@
        <TYPE>SCREEN</TYPE>
        <NAME>SCREEN</NAME>
       </RPY_DYCATT>
-      <RPY_DYCATT>
+       <RPY_DYCATT>
         <TYPE>LOOP</TYPE>
         <NAME>LP_ITEMS</NAME>
         <LINE>003</LINE>
-       <COLUMN>001</COLUMN>
-       <LENGTH>039</LENGTH>
-       <HEIGHT>005</HEIGHT>
-      </RPY_DYCATT>
+        <COLUMN>001</COLUMN>
+        <LENGTH>039</LENGTH>
+        <HEIGHT>005</HEIGHT>
+        <LOOP_TYPE>FIX</LOOP_TYPE>
+         <LOOP_BLOCK>001</LOOP_BLOCK>
+         <LOOP_DISP>005</LOOP_DISP>
+       </RPY_DYCATT>
      </CONTAINERS>
      <FIELDS>
       <RPY_DYFATC>
