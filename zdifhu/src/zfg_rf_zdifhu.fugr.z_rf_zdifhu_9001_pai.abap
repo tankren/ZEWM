@@ -11,29 +11,13 @@ FUNCTION z_rf_zdifhu_9001_pai.
   DATA: ls_item  TYPE zsdifhu_item,
         lv_tabix TYPE sy-tabix,
         lv_diff  TYPE /scwm/de_quan,
-        ls_quan  TYPE /scwm/s_quan,
-        lv_fcode TYPE /scwm/de_fcode,
-        lv_max   TYPE i.
+        ls_quan  TYPE /scwm/s_quan.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
 
-* 屏幕内表 → App.Param（回写用户输入的实盘数量）
-  ct_zdifhu_t_items[] = gt_zdifhu_items[].
+* 用户输入的实盘数量已由 loop_input 模块自动回写到 CT（无需手动同步）
 
-  lv_fcode = /scwm/cl_rf_bll_srvc=>get_fcode( ).
-
-  CASE lv_fcode.
-    WHEN 'DOWN'.
-*     翻页（5 行可见）
-      lv_max = lines( ct_zdifhu_t_items ) - 4.
-      IF lv_max < 1.
-        lv_max = 1.
-      ENDIF.
-      gv_cursor = gv_cursor + 5.
-      IF gv_cursor > lv_max.
-        gv_cursor = lv_max.
-      ENDIF.
-
+  CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
     WHEN 'BACK'.
 *     无操作：step flow BACK → ZDIF1 自动处理
 
@@ -66,7 +50,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
       ls_quan-quan = lv_diff.
       ls_quan-unit = ls_item-meins.
 
-*     3. 过账（签名已确认；异常码三件套按客户系统配置）
+*     3. 过账（异常码三件套按客户系统配置）
       CALL METHOD /scwm/cl_wm_packing=>post_difference
         EXPORTING
           iv_guid_hu    = ls_item-guid_hu

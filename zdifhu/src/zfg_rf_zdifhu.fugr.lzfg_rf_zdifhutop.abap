@@ -4,13 +4,6 @@ FUNCTION-POOL zfg_rf_zdifhu.             "MESSAGE-ID ..
 TABLES: zsdifhu_scr,
         zsdifhu_item.
 
-* 列表内表（屏幕 step-loop 数据源；PBO 时由 App.Param ZDIFHU_T_ITEMS 同步）
-DATA: gt_zdifhu_items TYPE zsdifhu_item_tt.
-
-* OK 码与 step-loop 翻页游标
-DATA: ok_code   TYPE sy-ucomm,
-      gv_cursor TYPE i VALUE 1.
-
 *----------------------------------------------------------------------*
 * 重读 HU，按 GUID_STOCK 刷新单行的当前数量（过账后调用）
 *----------------------------------------------------------------------*
@@ -41,10 +34,10 @@ FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
     RETURN.
   ENDIF.
 
-  READ TABLE lt_huitm ASSIGNING <ls_huitm> WITH KEY guid_stock = iv_guid_stock.
-  IF sy-subrc = 0.
+  LOOP AT lt_huitm ASSIGNING <ls_huitm> WHERE guid_stock = iv_guid_stock.
     cs_item-quan  = <ls_huitm>-quan.
     cs_item-meins = <ls_huitm>-meins.
-  ENDIF.
+    EXIT.
+  ENDLOOP.
 
 ENDFORM.

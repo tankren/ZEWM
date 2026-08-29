@@ -1,7 +1,12 @@
 PROCESS BEFORE OUTPUT.
-  LOOP AT gt_zdifhu_items INTO zsdifhu_item CURSOR gv_cursor.
+  MODULE status_sscr_loop.
+  LOOP.
+    MODULE loop_output.
   ENDLOOP.
+  MODULE loop_scrolling_set.
 *
 PROCESS AFTER INPUT.
-  LOOP AT gt_zdifhu_items INTO zsdifhu_item.
+  LOOP.
+    MODULE loop_input.
   ENDLOOP.
+  MODULE user_command_sscr.

@@ -10,15 +10,14 @@ FUNCTION z_rf_zdifhu_9001_pbo.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
 
-* RF 列表三件套（必需）
+* 注册结构 + 表 data container（框架按名传数据到屏幕 step-loop）
   /scwm/cl_rf_bll_srvc=>init_screen_param( ).
-  /scwm/cl_rf_bll_srvc=>set_screen_param( 'ZDIFHU_T_ITEMS' ).
+  /scwm/cl_rf_bll_srvc=>set_screen_param( 'CS_ZDIFHU_S_SCR' ).
+  /scwm/cl_rf_bll_srvc=>set_screen_param( 'CT_ZDIFHU_T_ITEMS' ).
   /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'ZSDIFHU_ITEM_TT' ).
-
-* App.Param → 屏幕内表（step-loop 数据源）
-  gt_zdifhu_items[] = ct_zdifhu_t_items[].
+  /scwm/cl_rf_bll_srvc=>set_line( 1 ).
 
 * 光标回扫描框
-  SET CURSOR FIELD 'ZSDIFHU_SCR-MATNR_SCAN'.
+  /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_SCR-MATNR_SCAN' ).
 
 ENDFUNCTION.

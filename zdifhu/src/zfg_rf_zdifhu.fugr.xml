@@ -154,7 +154,7 @@
       <DESCRIPT>ZDIFHU HU input</DESCRIPT>
       <TYPE>S</TYPE>
       <NEXTSCREEN>9000</NEXTSCREEN>
-      <LINES>008</LINES>
+      <LINES>007</LINES>
       <COLUMNS>040</COLUMNS>
      </HEADER>
      <CONTAINERS>
@@ -218,7 +218,7 @@
       <DESCRIPT>ZDIFHU item list</DESCRIPT>
       <TYPE>S</TYPE>
       <NEXTSCREEN>9001</NEXTSCREEN>
-      <LINES>008</LINES>
+      <LINES>007</LINES>
       <COLUMNS>040</COLUMNS>
      </HEADER>
      <CONTAINERS>
@@ -227,9 +227,9 @@
        <NAME>SCREEN</NAME>
       </RPY_DYCATT>
       <RPY_DYCATT>
-       <TYPE>LOOP</TYPE>
-       <NAME>LP_ITEMS</NAME>
-       <LINE>004</LINE>
+        <TYPE>LOOP</TYPE>
+        <NAME>LP_ITEMS</NAME>
+        <LINE>003</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>039</LENGTH>
        <HEIGHT>005</HEIGHT>

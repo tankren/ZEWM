@@ -10,4 +10,8 @@ FUNCTION z_rf_zdifhu_9000_pbo.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
 
+* 注册结构 data container（屏幕字段载体，框架按名传入）
+  /scwm/cl_rf_bll_srvc=>init_screen_param( ).
+  /scwm/cl_rf_bll_srvc=>set_screen_param( 'CS_ZDIFHU_S_SCR' ).
+
 ENDFUNCTION.

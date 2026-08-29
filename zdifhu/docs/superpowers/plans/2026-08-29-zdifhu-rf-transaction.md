@@ -553,11 +553,11 @@ FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
     RETURN.
   ENDIF.
 
-  READ TABLE lt_huitm ASSIGNING <ls_huitm> WITH KEY guid_stock = iv_guid_stock.
-  IF sy-subrc = 0.
+  LOOP AT lt_huitm ASSIGNING <ls_huitm> WHERE guid_stock = iv_guid_stock.
     cs_item-quan  = <ls_huitm>-quan.
     cs_item-meins = <ls_huitm>-meins.
-  ENDIF.
+    EXIT.
+  ENDLOOP.
 
 ENDFORM.
 ```
