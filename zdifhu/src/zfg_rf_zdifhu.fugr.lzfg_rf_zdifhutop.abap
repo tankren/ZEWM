@@ -14,9 +14,9 @@ FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
 
   DATA: lt_huident TYPE /scwm/tt_huident,
         ls_huident TYPE /scwm/s_huident,
-        lt_huitm   TYPE /scwm/tt_huitm.
+        lt_huitm   TYPE /scwm/tt_huitm_int.
 
-  FIELD-SYMBOLS: <ls_huitm> TYPE /scwm/s_huitm.
+  FIELD-SYMBOLS: <ls_huitm> TYPE /scwm/s_huitm_int.
 
   ls_huident-huident = iv_huident.
   APPEND ls_huident TO lt_huident.
@@ -28,8 +28,9 @@ FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
     IMPORTING
       et_huitm     = lt_huitm
     EXCEPTIONS
-      not_possible = 1
-      OTHERS       = 2.
+      hu_not_found   = 1
+      internal_error = 2
+      OTHERS         = 3.
   IF sy-subrc <> 0.
     RETURN.
   ENDIF.

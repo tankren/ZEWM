@@ -10,10 +10,10 @@ FUNCTION z_rf_zdifhu_9000_pai.
 
   DATA: lt_huident    TYPE /scwm/tt_huident,
         ls_huident    TYPE /scwm/s_huident,
-        lt_huhdr      TYPE /scwm/tt_huhdr,
-        ls_huhdr      TYPE /scwm/s_huhdr,
-        lt_huitm      TYPE /scwm/tt_huitm,
-        ls_huitm      TYPE /scwm/s_huitm,
+        lt_huhdr      TYPE /scwm/tt_huhdr_int,
+        ls_huhdr      TYPE /scwm/s_huhdr_int,
+        lt_huitm      TYPE /scwm/tt_huitm_int,
+        ls_huitm      TYPE /scwm/s_huitm_int,
         ls_mat_global TYPE /scwm/s_mat_global,
         ls_item       TYPE zsdifhu_item.
 
@@ -47,8 +47,9 @@ FUNCTION z_rf_zdifhu_9000_pai.
           et_huhdr     = lt_huhdr
           et_huitm     = lt_huitm
         EXCEPTIONS
-          not_possible = 1
-          OTHERS       = 2.
+          hu_not_found   = 1
+          internal_error = 2
+          OTHERS         = 3.
       IF sy-subrc <> 0 OR lt_huhdr IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e001(00) WITH 'HU not found'(002).
