@@ -13,8 +13,8 @@ FUNCTION z_rf_zdifhu_9001_pbo.
   /scwm/cl_rf_bll_srvc=>init_screen_param( ).
   /scwm/cl_rf_bll_srvc=>set_screen_param( 'CS_ZDIFHU_S_SCR' ).
   /scwm/cl_rf_bll_srvc=>set_screen_param( 'CT_ZDIFHU_T_ITEMS' ).
-  /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'ZSDIFHU_ITEM_TT' ).
-  /scwm/cl_rf_bll_srvc=>set_line( 1 ).
+  /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'CT_ZDIFHU_T_ITEMS' ).
+  /scwm/cl_rf_bll_srvc=>set_line( '1' ).
 
 * 光标回扫描框
   /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_SCR-MATNR_SCAN' ).
