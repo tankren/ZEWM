@@ -31,8 +31,11 @@ FUNCTION z_rf_zdifhu_9002_pai.
         MESSAGE e001(00) WITH 'Please enter counted quantity'(010).
       ENDIF.
 
-*     2. 差异计算（实盘 − 当前）
-      lv_diff = cs_zdifhu_prod-quan_count - cs_zdifhu_prod-quan.
+*     2. 差异计算（当前 − 实盘）
+*        post_difference 的 is_quan 符号约定：正数 → 'O' 发货（库存减少），
+*        负数 → 'I' 收货（库存增加）。故此处用「当前 − 实盘」：
+*        盘亏（实盘 < 当前）得正数 → 库存减少；盘盈（实盘 > 当前）得负数 → 库存增加。
+      lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
       IF lv_diff = 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e001(00) WITH 'Counted quantity equals current quantity'(011).
