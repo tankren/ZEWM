@@ -6,7 +6,7 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
 2. **屏幕 2（9001）**：显示该 HU 内所有物料（**序号 + 物料号 / 描述 / 数量 + 单位**，
    每个物料占三行）；顶部有**序号输入框**，输入序号 → ENTER
 3. **屏幕 3（9002）**：显示选中物料的物料号/描述/当前数量/单位 + **实盘数量输入框**，
-   输入实盘数量 → ENTER 立即过账差异（实盘 − 当前），随后回到列表并刷新数量
+   输入实盘数量 → ENTER 立即过账差异（**差异 = 当前 − 实盘**，符号约定见 §4），随后回到列表并刷新数量
    （序号自动清空）
 
 过账 API：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`（实例方法）。
@@ -138,7 +138,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 - [ ] 屏幕 3 输入与当前相同的数量 → 报错 "Counted quantity equals current quantity"，不过账
 - [ ] 屏幕 3 按 BACK → 回列表；屏幕 2 按 BACK → 回屏幕 1；屏幕 1 按 BACK → 结束事务回菜单
   （屏幕 2 的 BACK 只有在 step flow 的 `ZDIF3/ENTER` 行填 `SSTEP=ZDIF3 + PRMOD=0` 时才正确）
-- [ ] 差异 = 实盘 − 当前；过账后 `/SCWM/MON` 库存正确
+- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
 - [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
 
 > **过账符号约定（实现细节，改代码时别弄反）**：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`
