@@ -15,9 +15,9 @@ FUNCTION z_rf_zdifhu_9001_pai.
 
   CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
     WHEN 'BACK'.
-*     结束事务（CMPTRS：框架按默认导航退出）
-      /scwm/cl_rf_bll_srvc=>set_prmod( '1' ).
-      /scwm/cl_rf_bll_srvc=>set_fcode( /scwm/cl_rf_bll_srvc=>c_fcode_compl_ltrans ).
+*     回上一屏（HU 输入屏 9000）：交给框架调用栈的 BACK 弹栈处理
+*     （step flow 里 ZDIF2/BACK → SSTEP=ZDIF1 已配好；事务退出由第一屏 9000 的 BACK 负责）
+      CLEAR cs_zdifhu_s_scr-selno.
 
     WHEN OTHERS.
 *     ENTER：按序号选中物料行 → 跳明细屏

@@ -21,6 +21,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
     WHEN 'BACK'.
 *     取消返回列表（导航由 step flow 处理：ZDIF3/BACK → SSTEP=ZDIF2 + FCODE_BCKG=INIT）
       CLEAR cs_zdifhu_prod-quan_count.
+      CLEAR cs_zdifhu_s_scr-selno.
 
     WHEN OTHERS.
 *     ENTER：实盘数量校验 + 差异过账
@@ -90,8 +91,13 @@ FUNCTION z_rf_zdifhu_9002_pai.
         MODIFY ct_zdifhu_t_items FROM ls_item INDEX lv_tabix.
       ENDIF.
 
-*     6. 清实盘，回列表重显（导航由 step flow 处理：ZDIF3/ENTER → SSTEP=ZDIF2 + FCODE_BCKG=INIT）
+*     6. 清实盘 + 清列表屏序号，然后回列表屏
+*        UPDBCK = 返回上一步并同步框架内部调用栈；
+*        若用普通跳步行返回，回列表后按 BACK 会又弹回本明细屏（栈里还留着 ZDIF3）
       CLEAR cs_zdifhu_prod-quan_count.
+      CLEAR cs_zdifhu_s_scr-selno.
+      /scwm/cl_rf_bll_srvc=>set_prmod( '1' ).
+      /scwm/cl_rf_bll_srvc=>set_fcode( 'UPDBCK' ).
   ENDCASE.
 
 ENDFUNCTION.
