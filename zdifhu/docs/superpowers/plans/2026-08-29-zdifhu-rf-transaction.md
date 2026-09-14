@@ -2,9 +2,12 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 交付 abapGit 风格源码包，实现 EWM RF 逻辑事务 `ZDIFHU`（HU 盘点差异过账，2 屏流程）。
+**Goal:** 交付 abapGit 风格源码包，实现 EWM RF 逻辑事务 `ZDIFHU`（HU 盘点差异过账，**3 屏流程**）。
 
-**Architecture:** 包 `ZZDIFHU` + 函数组 `ZFG_RF_ZDIFHU`（屏幕 9000/9001 + 4 个 PBO/PAI FM）+ 3 个 DDIC 对象（结构 `ZSDIFHU_SCR`、`ZSDIFHU_ITEM`、表类型 `ZSDIFHU_ITEM_TT`）。RF 框架通过 Application Parameter（`ZDIFHU_S_SCR` / `ZDIFHU_T_ITEMS`）按名匹配 FM 的 CHANGING 参数传数据；差异过账用 `/SCWM/CL_WM_PACKING=>POST_DIFFERENCE` + `SAVE` + `COMMIT WORK AND WAIT`。
+**Architecture:** 包 `ZEWM` + 函数组 `ZFG_RF_ZDIFHU`（屏幕 9000/9001/9002 + **6 个** PBO/PAI FM）+ 4 个 DDIC 对象（结构 `ZSDIFHU_SCR`、`ZSDIFHU_ITEM`、`ZSDIFHU_PROD` + 表类型 `ZSDIFHU_ITEM_TT`）。RF 框架通过 Application Parameter（`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`）按名匹配 FM 的 CHANGING 参数传数据；差异过账用 `/SCWM/CL_WM_PACKING=>POST_DIFFERENCE`（**实例方法**：`CREATE OBJECT` + `->`）+ `SAVE` + `COMMIT WORK AND WAIT`。
+
+> ⚠️ **本文档是历史实施计划**：Task 1–11 的代码块记录的是**初版两屏设计**（跑通后被多轮修订）。
+> 最终实现以 **README**、本文档 §2 Customizing / §3 Plan B，以及文末「执行后修订 1/2/3」为准。
 
 **Tech Stack:** SAP S/4HANA embedded EWM（ABAP 7.50+）、abapGit 文件格式。
 
@@ -1255,9 +1258,15 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 
 > **执行后修订（2026-09-14）**：屏幕 2 按用户要求改为「列表屏 → 明细屏」两步（照搬标准
 > `/SCWM/RF_XDIFHU` 模式）：列表屏 9001 加序号列 + 序号输入框；新增 step `ZDIF3` +
-> 屏幕 9002（实盘数量录入 + 过账）。下表为跑通的最终 step flow；**跨步骤跳转行必须
-> `PRMOD=1` + `FCODE_BCKG=INIT`**（原表把跨步骤行写成 PRMOD=2 且无 FCODE_BCKG，是屏幕 2
-> `GETWA_NOT_ASSIGNED` dump 的根因）。`DOWN` 行已删除（翻页用框架 PGUP/PGDN）。
+> 屏幕 9002（实盘数量录入 + 过账）。下表为跑通的最终 step flow。
+>
+> - **规则 A（跳步）**：**跨步骤跳转行必须 `PRMOD=1` + `FCODE_BCKG=INIT`**（原表把跨步骤行
+>   写成 PRMOD=2 且无 FCODE_BCKG，是屏幕 2 `GETWA_NOT_ASSIGNED` dump 的根因）。
+> - **规则 B（过账后返回）**：`ZDIF3/ENTER` 行**不换步**（`SSTEP=ZDIF3`、`PRMOD=0`），返回由
+>   `9002_PAI` 结尾的 `set_prmod('1') + set_fcode('UPDBCK')` 完成（`UPDBCK` = 回上一步 +
+>   同步内部调用栈 + 刷新目标步 PBO）。若该行自己换步，调用栈残留 ZDIF3 → 在列表屏按 BACK
+>   会被弹回明细屏。`BACK` 本身由框架弹内部调用栈处理（不读 step flow 行的 SSTEP）。
+> - `DOWN` 行已删除（翻页用框架 PGUP/PGDN）。
 
 1. **Define Application Parameters**（视图 `/SCWM/RF_CUSTOM`，SM30）：
    - APPLIC=`01`(WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
@@ -1275,7 +1284,7 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
    | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
    | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
    | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
-   | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
    | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
 
 4. **Define Function Code Profile**：含 INIT / ENTER / BACK（翻页 PGUP/PGDN 为框架预定义）
@@ -1287,7 +1296,7 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
 8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
    确认 `DIFD` + 业务上下文 `PPT` + 执行步骤 `16` 存在；不存在则维护或改代码
-   （`z_rf_zdifhu_9001_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
+   （`z_rf_zdifhu_9002_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
 
 ## 3. Plan B：屏幕 9001 / 9002 手工重建（仅当 import 屏幕报错时）
 
@@ -1296,10 +1305,16 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 
 1. SE51 → 程序 `SAPLZFG_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，7 行 × 40 列
 2. 布局（列表屏）：
-   - 行 1：文本 `No.` + `ZSDIFHU_SCR-SELNO`（可输入，NUMC 3）；文本 `HU:` + `ZSDIFHU_SCR-HUIDENT`（只显）
-   - 行 2 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 2 行**（LOOP_BLOCK=2、重复 3 次、共 6 行）：
-     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`（只显）、`ZSDIFHU_ITEM-MATNR`（只显）
-     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`、`ZSDIFHU_ITEM-QUAN`、`ZSDIFHU_ITEM-MEINS`（均只显）
+   - 行 1：文本 `No.`(c1) + `ZSDIFHU_SCR-SELNO`(c6，可输入，NUMC 3)
+   - 行 2：文本 `HU:`(c1) + `ZSDIFHU_SCR-HUIDENT`(c6，只显)
+   - 行 3 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 3 行**（LOOP_BLOCK=3、重复 1 次、
+     HEIGHT=3，一屏 1 个物料）：
+     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`(c1)、`ZSDIFHU_ITEM-MATNR`(c5)（均只显）
+     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`(c1，长 30)
+     - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`(c1，长 13)、`ZSDIFHU_ITEM-MEINS`(c15)
+   - 只读字段属性用 `OUTPUT_FLD + OUTPUTONLY`；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
+     且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；多行行块必须满足
+     `HEIGHT = LOOP_BLOCK × LOOP_DISP`
 3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：`ZSDIFHU_PROD-MATNR` / `-MAKTX` / `-QUAN` / `-MEINS`
    均只显，`ZSDIFHU_PROD-QUAN_COUNT` 可输入（实盘数量）
 4. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
@@ -1332,7 +1347,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 - [ ] 屏幕 3 输入与当前相同数量 → 报错 "Counted quantity equals current quantity"，不过账
 - [ ] 屏幕 3 BACK → 回列表；屏幕 2 BACK → 回屏幕 1；屏幕 1 BACK → 结束事务回菜单
 - [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
-- [ ] 差异 = 实盘 − 当前；过账后 `/SCWM/MON` 库存正确
+- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
 
 ## 5. 对象清单
 
@@ -1371,8 +1386,17 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 ## 执行后修订 2（2026-09-14：屏幕 2 改「列表 → 明细」两步 + dump 根因）
 
 1. **[Critical] 屏幕 2 误过账**：原 9001_PAI 只要 ENTER 且扫到物料就立即 `post_difference`（数量栏输不进 → diff 为 0 → 按 −当前数量过账，库存被清）。修复：改为**序号驱动**——列表屏只选行，过账移到新增的明细屏 9002。
-2. **[Bug] 数量栏无法输入 / 显示不全**：列表改为**每物料两行**（行 1 序号+物料号，行 2 描述+数量+单位），输入移到明细屏。
+2. **[Bug] 数量栏无法输入 / 显示不全**：列表改为**每物料三行块**（行 1 序号+物料号，行 2 描述，行 3 数量+单位），输入移到明细屏。
 3. **[Critical] `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行）根因**：step flow 跨步骤跳转行写了 `PRMOD=2` 且 `FCODE_BCKG` 为空 → 目标步 PBO 模块从不执行 → 表 data container 未注册 → `READ TABLE <gt_scr>` dump。修复：跨步骤行一律 `PRMOD=1` + `FCODE_BCKG=INIT`（见上文修订后的 step flow 表）。
 4. **新增对象**：结构 `ZSDIFHU_PROD`、屏幕 9002、FM `Z_RF_ZDIFHU_9002_PBO/_PAI`、App.Parameter `CS_ZDIFHU_PROD`；`ZSDIFHU_SCR` 加 `SELNO`（/SCWM/DE_RF_SEQNO），`ZSDIFHU_ITEM` 加 `SEQNO` 并删 `DIFF_QUAN`。
 5. **其他**：`set_scr_tabname` 传 **CHANGING 参数名**（不是表类型名）；`set_line` 传字符 `'1'`；4 个 FM 去掉 `IMPORTING iv_lgnum`（框架不传字段参数），改用 `/scwm/cl_rf_bll_srvc=>get_lgnum( )`。
 6. **待验证**：`fugr.xml` 的 RSCHA 缺 `<REFERENCE>X</REFERENCE>`（CHANGING 传值 vs 标准传引用），过账测试若出现「PAI 改了值但屏幕/表没更新」再修。
+
+## 执行后修订 3（2026-09-15：BACK 导航 / 输入属性 / 差异符号 —— 均已系统实测通过）
+
+1. **[Critical] 列表屏按 BACK 被弹回明细屏**：明细屏 `ZDIF3/ENTER` 行若自己换步（`SSTEP=ZDIF2` + `PRMOD=1`），框架走普通导航、内部调用栈仍残留 ZDIF3 → 在列表屏按 BACK 会弹回明细屏。修复：`ZDIF3/ENTER` 行改为 **`SSTEP=ZDIF3` + `PRMOD=0`**（对齐标准 `/SCWM/RF_XDIFHU` 的 `XDDIPR ENTER`），返回由 `9002_PAI` 结尾的 `set_prmod('1') + set_fcode('UPDBCK')` 完成（`UPDBCK` = 回上一步 + 同步调用栈 + 刷新目标步 PBO）。**框架的 `BACK` 是弹内部调用栈，不读 step flow 行的 SSTEP。**
+2. **[Critical] 输入框输不进去**：`ZSDIFHU_PROD-QUAN_COUNT` 的 dynpro 属性多了 `<REQU_ENTRY>N</REQU_ENTRY>`。标准 RF 的输入字段从不带 REQU_ENTRY（对照 `/SCWM/RF_INQUIRY_PM`：`INPUT_FLD=X` 36 个、`REQU_ENTRY=N` 356 个，**交集 0**）。修复：删该元素 + 在 PBO 里显式 `set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' )` / `set_screlm_input_on( 'ZSDIFHU_SCR-SELNO' )`。
+3. **[Critical] 差异符号反了**（实测 96 → 输入 48 → 变 144）：`post_difference` 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**（内部按正负选 `wmegc_lime_post_outbound` / `wmegc_lime_post_inbound`）。修复：`lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.`（盘亏为正 → 减库存）。
+4. **[Bug] 过账后返回列表时序号没清空**：`9002_PAI` 过账成功分支加 `CLEAR cs_zdifhu_prod-quan_count.` + `CLEAR cs_zdifhu_s_scr-selno.`。
+5. **[配置] 漏配数据容器 → ENTER 直接 dump**：`/SCWM/TPARAM_CAT` 缺 `CS_ZDIFHU_PROD → ZSDIFHU_PROD` 时，框架拼参数表失败 → `CALL_FUNCTION_PARM_MISSING`（FM 体根本没执行）。三行必须齐：`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`。
+6. **遗留**：早期误过账（库存 96→144）已落库，需人工做更正凭证。
