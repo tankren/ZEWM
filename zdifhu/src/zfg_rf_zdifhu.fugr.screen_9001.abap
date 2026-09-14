@@ -4,6 +4,7 @@ PROCESS BEFORE OUTPUT.
     MODULE loop_output.
   ENDLOOP.
   MODULE loop_scrolling_set.
+  MODULE set_display_only.
 *
 PROCESS AFTER INPUT.
   LOOP.

@@ -6,6 +6,20 @@ TABLES: zsdifhu_scr,
         zsdifhu_prod.
 
 *----------------------------------------------------------------------*
+* 屏幕字段只读显示：保留输入框外观（灰底框），但禁止编辑
+* 只作用于本项目的 ZSDIFHU* 字段，两个真正的输入框保持可编辑
+*----------------------------------------------------------------------*
+MODULE set_display_only OUTPUT.
+  LOOP AT SCREEN.
+    CHECK screen-name CP 'ZSDIFHU*'.
+    CHECK screen-name <> 'ZSDIFHU_SCR-SELNO'.
+    CHECK screen-name <> 'ZSDIFHU_PROD-QUAN_COUNT'.
+    screen-input = 0.
+    MODIFY SCREEN.
+  ENDLOOP.
+ENDMODULE.
+
+*----------------------------------------------------------------------*
 * 重读 HU，按 GUID_STOCK 刷新单行的当前数量（过账后调用）
 *----------------------------------------------------------------------*
 FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
