@@ -114,10 +114,12 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 
 **屏幕 9002（明细）**：子屏幕，7 行 × 40 列
 
-- 行 1：文本 `Material:` + `ZSDIFHU_PROD-MATNR`（只显）
-- 行 2：文本 `Descript.:` + `ZSDIFHU_PROD-MAKTX`（只显）
-- 行 3：文本 `Current` + `ZSDIFHU_PROD-QUAN`（只显）+ `ZSDIFHU_PROD-MEINS`（只显）
-- 行 4：文本 `Counted` + `ZSDIFHU_PROD-QUAN_COUNT`（**可输入**）
+- 行 1：`ZSDIFHU_PROD-MATNR`（只显，无标签）
+- 行 2：`ZSDIFHU_PROD-MAKTX`（只显，无标签）
+- 行 3：`ZSDIFHU_PROD-QUAN`（只显）+ `ZSDIFHU_PROD-MEINS`（只显）
+- 行 4：文本 `Actual Qty`（屏上唯一保留的标签）
+- 行 5：`ZSDIFHU_PROD-QUAN_COUNT`（**可输入**）+ `ZSDIFHU_PROD-MEINS`（只显）
+  （同一个 `MEINS` 字段在屏上出现两次——SAP 标准 RF 屏幕本来就允许：标准程序 23 个屏幕里 20 个都重复用了字段名）
 - Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9002.abap` 相同）：
 
   ```abap

@@ -125,10 +125,13 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 
 **Screen 9002 (detail)**: subscreen, 7 lines × 40 columns
 
-- Line 1: text `Material:` + `ZSDIFHU_PROD-MATNR` (display only)
-- Line 2: text `Descript.:` + `ZSDIFHU_PROD-MAKTX` (display only)
-- Line 3: text `Current` + `ZSDIFHU_PROD-QUAN` (display only) + `ZSDIFHU_PROD-MEINS` (display only)
-- Line 4: text `Counted` + `ZSDIFHU_PROD-QUAN_COUNT` (**input**)
+- Line 1: `ZSDIFHU_PROD-MATNR` (display only, no label)
+- Line 2: `ZSDIFHU_PROD-MAKTX` (display only, no label)
+- Line 3: `ZSDIFHU_PROD-QUAN` (display only) + `ZSDIFHU_PROD-MEINS` (display only)
+- Line 4: text `Actual Qty` (the only label kept on the screen)
+- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (**input**) + `ZSDIFHU_PROD-MEINS` (display only)
+  (the same `MEINS` field appears twice on the screen — SAP's own RF screens do this: 20 of the 23
+  screens in the standard program reuse field names)
 - Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9002.abap`):
 
   ```abap

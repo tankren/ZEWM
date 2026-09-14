@@ -254,10 +254,11 @@ WHEN OTHERS.                              " ENTER
                                  （一屏 1 个物料块，每物料 3 行；PGUP/PGDN 翻页）
 
 ┌─ 屏幕 9002（明细 + 实盘录入）──────────────┐
-│ Material:  MAT001                          │
-│ Descript.: Material description            │
-│ Current    96 PC                           │
-│ Counted    [__________]  ← 唯一可输入框    │
+│ MAT001                                     │
+│ Material description                       │
+│ 96 PC                                      │
+│ Actual Qty                                 │
+│ [__________] PC   ← 唯一可输入框           │
 └────────────────────────────────────────────┘
 ```
 
