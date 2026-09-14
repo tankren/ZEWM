@@ -1,37 +1,44 @@
-# ZDIFHU — EWM RF HU 差异过账
+# ZDIFHU — EWM RF HU Difference Posting
 
-RF 逻辑事务 `ZDIFHU`，三步三屏：
+**English** | [中文](README.zh.md)
 
-1. **屏幕 1（9000）**：输/扫 HU 号 → ENTER
-2. **屏幕 2（9001）**：显示该 HU 内所有物料（**序号 + 物料号 / 描述 / 数量 + 单位**，
-   每个物料占三行）；顶部有**序号输入框**，输入序号 → ENTER
-3. **屏幕 3（9002）**：显示选中物料的物料号/描述/当前数量/单位 + **实盘数量输入框**，
-   输入实盘数量 → ENTER 立即过账差异（**差异 = 当前 − 实盘**，符号约定见 §4），随后回到列表并刷新数量
-   （序号自动清空）
+RF logical transaction `ZDIFHU`, three steps / three screens:
 
-过账 API：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`（实例方法）。
+1. **Screen 1 (9000)**: enter or scan the HU number → ENTER
+2. **Screen 2 (9001)**: lists every material inside that HU (**sequence no. + material no. / description /
+   quantity + unit**, three lines per material). A **sequence number input field** sits at the top:
+   type the number → ENTER
+3. **Screen 3 (9002)**: shows the selected material (material no. / description / current quantity / unit)
+   plus a **counted quantity input field**. Type the counted quantity → ENTER posts the difference
+   immediately (**difference = current − counted**, sign convention see §4), then returns to the list and
+   refreshes the quantity (the sequence number is cleared automatically)
 
-## 1. 安装（abapGit）
+Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
 
-1. abapGit → New Offline（或 New Online 推送到内部 Git）→ 导入本仓库 zip
-2. 包：`ZEWM`（abapGit 创建 repo 时填的 Package）
-3. Pull → 激活全部对象（先 DDIC：`ZSDIFHU_SCR` → `ZSDIFHU_ITEM` → `ZSDIFHU_ITEM_TT`
-   → `ZSDIFHU_PROD`，再函数组 `ZFG_RF_ZDIFHU` 整体激活）
-4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_RF_SEQNO`、`/SCWM/DE_QUANTITY`、
-   `/SCWM/DE_BASE_UOM`、`/SCWM/GUID_HU`、`/LIME/GUID_STOCK` 存在；若某个不存在导致
-   `ZSDIFHU*` 激活报错，SE11 把对应字段从数据元素引用改为内建类型：
-   HUIDENT→CHAR 20；SEQNO→NUMC 3；QUAN/QUAN_COUNT→QUAN 长 13 小数 3；
-   MEINS→UNIT 3；GUID_*→CHAR 32
+## 1. Installation (abapGit)
 
-## 2. Customizing（SPRO → EWM → Mobile Data Entry → RF Framework，按顺序）
+1. abapGit → New Offline (or New Online to push to an internal Git) → import the zip of this repository
+2. Package: `ZEWM` (the Package you enter when creating the abapGit repo)
+3. Pull → activate all objects (DDIC first: `ZSDIFHU_SCR` → `ZSDIFHU_ITEM` → `ZSDIFHU_ITEM_TT`
+   → `ZSDIFHU_PROD`, then activate the function group `ZFG_RF_ZDIFHU` as a whole)
+4. After activation, verify in SE11 that `/SCWM/DE_HUIDENT`, `/SCWM/DE_RF_SEQNO`, `/SCWM/DE_QUANTITY`,
+   `/SCWM/DE_BASE_UOM`, `/SCWM/GUID_HU`, `/LIME/GUID_STOCK` exist. If one of them is missing and
+   `ZSDIFHU*` fails to activate, change the affected field in SE11 from the data element reference to a
+   built-in type:
+   HUIDENT→CHAR 20; SEQNO→NUMC 3; QUAN/QUAN_COUNT→QUAN, length 13, 3 decimals;
+   MEINS→UNIT 3; GUID_*→CHAR 32
 
-1. **Define Application Parameters**（`/SCWM/TPARAM_CAT`，视图 `/SCWM/RF_CUSTOM`，SM30）：
-   - APPLIC=`01`（WME） / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
-   - APPLIC=`01`（WME） / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
-   - APPLIC=`01`（WME） / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
-   （PARAM_NAME 必须与 FM 的 CHANGING 参数名**完全一致**，带 CS_/CT_ 前缀）
-2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`
-3. **Define Step Flow**（`/SCWM/TSTEP_FLOW`）：
+## 2. Customizing (SPRO → EWM → Mobile Data Entry → RF Framework, in this order)
+
+1. **Define Application Parameters** (`/SCWM/TPARAM_CAT`, view `/SCWM/RF_CUSTOM`, SM30):
+   - APPLIC=`01` (WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
+   - APPLIC=`01` (WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
+   - APPLIC=`01` (WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+
+   (PARAM_NAME must match the CHANGING parameter names of the function modules **exactly**, including the
+   CS_/CT_ prefix)
+2. **Define Steps in Logical Transaction**: `ZDIFHU` → `ZDIF1`, `ZDIF2`, `ZDIF3`
+3. **Define Step Flow** (`/SCWM/TSTEP_FLOW`):
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
    |---|---|---|---|---|---|---|
@@ -45,55 +52,61 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
    | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
 
-   > **规则 A —— 跳步（踩过的坑）**：**凡是「A 步 → B 步」的跳转行，必须 `PRMOD=1` 且
-   > `FCODE_BCKG` 填目标步 PBO 的触发码（这里是 `INIT`）**；`PRMOD=2` 只能用于
-   > **同一步骤重显示**（如 INIT → 本步 PBO）。填错会让目标步的 PBO 模块根本不被调用
-   > → 表数据容器没注册 → 屏幕 2 报 `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行
-   > `READ TABLE <gt_scr>`）。
+   > **Rule A — step changes (a pit we fell into)**: every row that jumps from step A to step B must use
+   > `PRMOD=1` with `FCODE_BCKG` set to the PBO trigger code of the target step (`INIT` here). `PRMOD=2`
+   > is only for **re-displaying the same step** (e.g. INIT → that step's PBO). Get it wrong and the target
+   > step's PBO module is never called → its table data container is never registered → screen 2 raises a
+   > `GETWA_NOT_ASSIGNED` dump (`LRF_SSCRO02` line 50, `READ TABLE <gt_scr>`).
    >
-   > **规则 B —— 过账后返回（踩过的坑）**：明细屏（ZDIF3）的 `ENTER` 行**不能换步**
-   > （`SSTEP` 填**本步 ZDIF3**、`PRMOD=0`），返回由 `9002_PAI` 结尾的
-   > `set_prmod('1') + set_fcode('UPDBCK')` 完成 —— 框架的 `UPDBCK` = **回上一步 +
-   > 同步内部调用栈 + 刷新目标步 PBO**。若这一行自己换步（`SSTEP=ZDIF2, PRMOD=1`），
-   > 框架只做普通导航、调用栈里仍留着 ZDIF3，之后在列表屏按 `BACK` 会被弹回明细屏。
+   > **Rule B — returning after posting (a pit we fell into)**: the `ENTER` row of the detail screen
+   > (ZDIF3) must **not change the step** (`SSTEP` = **ZDIF3 itself**, `PRMOD=0`); the return is performed
+   > by `set_prmod('1') + set_fcode('UPDBCK')` at the end of `9002_PAI` — the framework's `UPDBCK` means
+   > **go back one step + synchronise the internal call stack + refresh the target step's PBO**. If that
+   > row changes the step itself (`SSTEP=ZDIF2, PRMOD=1`), the framework performs a plain navigation,
+   > ZDIF3 stays on the call stack, and pressing `BACK` on the list screen later bounces you back to the
+   > detail screen.
    >
-   > **关于 `BACK`**：框架的 `BACK` 是**弹内部调用栈**（`ZDIF2/BACK` 这类行的 `SSTEP`
-   > 实际被忽略）。保留这些行只是为了 `BACK` 也能触发对应屏幕的 PAI（清输入框等）。
-   > 「回上一屏」永远靠 `UPDBCK` / 弹栈，不靠 step flow 行。
-   - ZDIF1/BACK 行：9000_PAI 内部 `set_fcode(c_fcode_compl_ltrans)` 结束事务
-     （默认导航表 `/SCWM/TTRNS_NAV`）——**事务退出只在第一屏做**
-   - 翻页（列表超一屏）由框架预定义 fcode **PGUP/PGDN** 自动处理，**不需**自定义 DOWN 行
-4. **Define Function Code Profile**：含 INIT / ENTER / BACK
-   （翻页 PGUP/PGDN 是框架预定义 fcode，通过模板 pushbutton 自动可用）
-5. **Map Logical Transaction Step to Subscreen**：
+   > **About `BACK`**: the framework's `BACK` **pops the internal call stack** (the `SSTEP` of rows such as
+   > `ZDIF2/BACK` is effectively ignored). Those rows are kept only so that `BACK` also triggers the PAI of
+   > the corresponding screen (clearing input fields, etc.). Going back always relies on `UPDBCK` / the
+   > stack pop, never on a step flow row.
+   - ZDIF1/BACK row: `9000_PAI` calls `set_fcode(c_fcode_compl_ltrans)` internally to end the transaction
+     (default navigation table `/SCWM/TTRNS_NAV`) — **the transaction is exited from the first screen only**
+   - Paging (when the list exceeds one screen) is handled automatically by the framework's predefined
+     fcodes **PGUP/PGDN**; **no** custom DOWN row is needed
+4. **Define Function Code Profile**: include INIT / ENTER / BACK
+   (PGUP/PGDN are framework-predefined fcodes, available automatically through the template pushbuttons)
+5. **Map Logical Transaction Step to Subscreen**:
    - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
    - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
    - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
-6. **Presentation / Personalization Profile**：复用现有 `**` 或按需新建
-7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
-8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
-   确认 `DIFD` + 业务上下文 `PPT` + 执行步骤 `16` 存在；不存在则维护或改代码
-   （`z_rf_zdifhu_9002_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
+6. **Presentation / Personalization Profile**: reuse the existing `**` or create new ones as needed
+7. **RF Menu Manager**: attach the transaction to a menu (while testing you can call it directly from the
+   RF Test Environment)
+8. **Exception Codes** (SPRO → EWM → Cross-Process Settings → Exception Codes): confirm that `DIFD` +
+   business context `PPT` + execution step `16` exist; if not, maintain them or change the code (the three
+   constants `iv_exccode` / `iv_buscon` / `iv_exec_step` in `z_rf_zdifhu_9002_pai.abap`)
 
-## 3. Plan B：屏幕 9001 / 9002 手工重建（仅当 import 屏幕报错时）
+## 3. Plan B: rebuilding screens 9001 / 9002 manually (only if the screen import fails)
 
-abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
-删除 fugr.xml 中对应屏幕的 `<item>` 重新 import，然后 SE51 手建：
+If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compatibility), delete the
+`<item>` of the affected screen from `fugr.xml`, import again, then rebuild the screen in SE51:
 
-**屏幕 9001（列表）**：子屏幕，7 行 × 40 列
+**Screen 9001 (list)**: subscreen, 7 lines × 40 columns
 
-- 行 1：文本 `No.`（列 1）+ `ZSDIFHU_SCR-SELNO`（列 6，**可输入**，NUMC 3）
-- 行 2：文本 `HU:`（列 1）+ `ZSDIFHU_SCR-HUIDENT`（列 6，只显）
-- 行 3 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 3 行**（`LOOP_BLOCK=3`、
-  `LOOP_DISP=1`、`HEIGHT=3`；一个物料占 3 行，一屏显示 1 个完整物料）：
-  - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`（列 1，只显）、`ZSDIFHU_ITEM-MATNR`（列 5，只显）
-  - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`（列 1，只显，长度 30）
-  - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`（列 1，只显，长度 13）、`ZSDIFHU_ITEM-MEINS`（列 15，只显）
-- 只读字段用 `OUTPUT_FLD=X + OUTPUTONLY=X`；**可输入字段只用 `INPUT_FLD=X + OUTPUT_FLD=X`，
-  绝不能带 `REQU_ENTRY`**（见 §5 第 8 条）
-- 多行行块必须满足 **`HEIGHT = LOOP_BLOCK × LOOP_DISP`**（标准程序全部如此，
-  如 `/SCWM/RF_INQUIRY_PM` 屏 0204：`LOOP_BLOCK=4 × LOOP_DISP=2 = HEIGHT=8`）
-- Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` 相同）：
+- Line 1: text `No.` (col 1) + `ZSDIFHU_SCR-SELNO` (col 6, **input**, NUMC 3)
+- Line 2: text `HU:` (col 1) + `ZSDIFHU_SCR-HUIDENT` (col 6, display only)
+- From line 3: select the 5 DDIC fields as a Step Loop, **3 lines per block** (`LOOP_BLOCK=3`,
+  `LOOP_DISP=1`, `HEIGHT=3`; one material takes 3 lines, so one complete material fits on the screen):
+  - block line 1: `ZSDIFHU_ITEM-SEQNO` (col 1, display only), `ZSDIFHU_ITEM-MATNR` (col 5, display only)
+  - block line 2: `ZSDIFHU_ITEM-MAKTX` (col 1, display only, length 30)
+  - block line 3: `ZSDIFHU_ITEM-QUAN` (col 1, display only, length 13), `ZSDIFHU_ITEM-MEINS`
+    (col 15, display only)
+- Read-only fields use `OUTPUT_FLD=X + OUTPUTONLY=X`; **input fields use only `INPUT_FLD=X + OUTPUT_FLD=X`
+  and must never carry `REQU_ENTRY`** (see §5 item 8)
+- A multi-line block must satisfy **`HEIGHT = LOOP_BLOCK × LOOP_DISP`** (all standard screens do, e.g.
+  `/SCWM/RF_INQUIRY_PM` screen 0204: `LOOP_BLOCK=4 × LOOP_DISP=2 = HEIGHT=8`)
+- Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9001.abap`):
 
   ```abap
   PROCESS BEFORE OUTPUT.
@@ -110,13 +123,13 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
     MODULE user_command_sscr.
   ```
 
-**屏幕 9002（明细）**：子屏幕，7 行 × 40 列
+**Screen 9002 (detail)**: subscreen, 7 lines × 40 columns
 
-- 行 1：文本 `Material:` + `ZSDIFHU_PROD-MATNR`（只显）
-- 行 2：文本 `Descript.:` + `ZSDIFHU_PROD-MAKTX`（只显）
-- 行 3：文本 `Current` + `ZSDIFHU_PROD-QUAN`（只显）+ `ZSDIFHU_PROD-MEINS`（只显）
-- 行 4：文本 `Counted` + `ZSDIFHU_PROD-QUAN_COUNT`（**可输入**）
-- Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9002.abap` 相同）：
+- Line 1: text `Material:` + `ZSDIFHU_PROD-MATNR` (display only)
+- Line 2: text `Descript.:` + `ZSDIFHU_PROD-MAKTX` (display only)
+- Line 3: text `Current` + `ZSDIFHU_PROD-QUAN` (display only) + `ZSDIFHU_PROD-MEINS` (display only)
+- Line 4: text `Counted` + `ZSDIFHU_PROD-QUAN_COUNT` (**input**)
+- Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9002.abap`):
 
   ```abap
   PROCESS BEFORE OUTPUT.
@@ -126,76 +139,88 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
     MODULE USER_COMMAND_SSCR.
   ```
 
-激活。
+Activate.
 
-## 4. 验收清单
+## 4. Acceptance checklist
 
-- [ ] `/SCWM/RFUI`（或 RF Test Environment）调用 `ZDIFHU`，屏幕 1 显示 HU 输入框
-- [ ] 输入存在的 HU → ENTER → 屏幕 2 显示物料列表（**序号 + 物料号/描述分行 + 数量 + 单位**）
-- [ ] 屏幕 2 输入不存在的序号 → 报错 "Item does not exist"（防呆生效）
-- [ ] 输入存在的序号 → ENTER → 屏幕 3 显示该物料（物料号/描述/当前数量/单位）
-- [ ] 屏幕 3 输入实盘数量 → ENTER → 过账成功，回到列表（当前数量已刷新、序号已清空）
-- [ ] 屏幕 3 输入与当前相同的数量 → 报错 "Counted quantity equals current quantity"，不过账
-- [ ] 屏幕 3 按 BACK → 回列表；屏幕 2 按 BACK → 回屏幕 1；屏幕 1 按 BACK → 结束事务回菜单
-  （屏幕 2 的 BACK 只有在 step flow 的 `ZDIF3/ENTER` 行填 `SSTEP=ZDIF3 + PRMOD=0` 时才正确）
-- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
-- [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
+- [ ] Call `ZDIFHU` from `/SCWM/RFUI` (or the RF Test Environment); screen 1 shows the HU input field
+- [ ] Enter an existing HU → ENTER → screen 2 shows the material list
+      (**sequence no. + material no. / description on separate lines + quantity + unit**)
+- [ ] On screen 2, enter a non-existing sequence number → error "Item does not exist" (validation works)
+- [ ] Enter an existing sequence number → ENTER → screen 3 shows that material
+      (material no. / description / current quantity / unit)
+- [ ] On screen 3, enter the counted quantity → ENTER → posting succeeds and returns to the list
+      (quantity refreshed, sequence number cleared)
+- [ ] On screen 3, enter the same quantity as the current one → error
+      "Counted quantity equals current quantity", nothing is posted
+- [ ] Screen 3 BACK → back to the list; screen 2 BACK → back to screen 1; screen 1 BACK → leave the
+      transaction and return to the menu
+      (screen 2's BACK works only when the `ZDIF3/ENTER` row in the step flow uses
+      `SSTEP=ZDIF3 + PRMOD=0`)
+- [ ] Difference = current − counted (shortage positive → stock decreases, surplus negative → stock
+      increases); verify the stock afterwards in `/SCWM/MON`
+- [ ] More than 3 materials in the list → paging (PGUP/PGDN) works
 
-> **过账符号约定（实现细节，改代码时别弄反）**：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`
-> 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**
-> （内部按正负取 `wmegc_lime_post_outbound` / `wmegc_lime_post_inbound`）。
-> 因此 `9002_PAI` 传的是 **`当前数量 − 实盘数量`**：盘亏（实盘 < 当前）为正 → 减库存；
-> 盘盈（实盘 > 当前）为负 → 加库存。
+> **Posting sign convention (implementation detail — do not get it backwards when changing code)**: in
+> `/SCWM/CL_WM_PACKING->POST_DIFFERENCE`, `is_quan-quan` **positive = goods issue (stock decreases),
+> negative = goods receipt (stock increases)** (internally it picks `wmegc_lime_post_outbound` /
+> `wmegc_lime_post_inbound` from the sign). `9002_PAI` therefore passes
+> **`current quantity − counted quantity`**: a shortage (counted < current) is positive → stock decreases;
+> a surplus (counted > current) is negative → stock increases.
 
-## 5. 故障排查（Pull 后跑不起来/报错，按顺序查）
+## 5. Troubleshooting (after Pull, if it will not run / throws errors — check in this order)
 
-1. **屏幕 2 列表空白 / `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行 `<gt_scr>` 未分配）**：
-   **查 `/SCWM/TSTEP_FLOW` 的跨步骤跳转行是否 `PRMOD=1` + `FCODE_BCKG=INIT`**。
-   若某步的 PBO 模块从未被执行（可查 ST22 dump 里 `ST_SCR_PARAM` 只有上一步注册的值），
-   就是这里填错——`PRMOD=2` 表示「同步骤重显示」，不会触发目标步的 PBO。
+1. **Screen 2 list empty / `GETWA_NOT_ASSIGNED` dump (`LRF_SSCRO02` line 50, `<gt_scr>` not assigned)**:
+   check whether the cross-step jump rows in `/SCWM/TSTEP_FLOW` use `PRMOD=1` + `FCODE_BCKG=INIT`.
+   If a step's PBO module never runs (in ST22 you can see `ST_SCR_PARAM` holding only the values
+   registered by the previous step), this is the culprit — `PRMOD=2` means "re-display the same step"
+   and does not trigger the target step's PBO.
 
-2. **激活报语法错误**（`... is not a key field` 或 `method ... not found`）：
-   SE24 查 `/SCWM/CL_RF_BLL_SRVC`，确认 `GET_FCODE` / `SET_FCODE` / `SET_PRMOD` /
-   `SET_LINE` / `SET_FIELD` / `SET_SCR_TABNAME` / `INIT_SCREEN_PARAM` / `SET_SCREEN_PARAM`
-   均为静态方法、签名匹配；不符则按系统内标准 `/SCWM/RF_*` FM 校准写法。
+2. **Activation reports a syntax error** (`... is not a key field` or `method ... not found`):
+   check `/SCWM/CL_RF_BLL_SRVC` in SE24 and confirm that `GET_FCODE` / `SET_FCODE` / `SET_PRMOD` /
+   `SET_LINE` / `SET_FIELD` / `SET_SCR_TABNAME` / `INIT_SCREEN_PARAM` / `SET_SCREEN_PARAM` are all static
+   methods with matching signatures; if not, align the code with the standard `/SCWM/RF_*` function
+   modules in your system.
 
-3. **运行时 dump**（DYNPRO/RF 调用链 short dump）：标准 RF 框架会捕获 E 型消息
-   显示在屏底，不应 dump；若异常 dump，把 FM 里的 `MESSAGE e001(00) WITH '...'`
-   改为标准 RF 消息类 `MESSAGE eXXX(zmsg)`。
+3. **Runtime dump** (short dump in the DYNPRO/RF call chain): the standard RF framework catches E-type
+   messages and shows them at the bottom of the screen, so it should not dump. If it does, replace the
+   `MESSAGE e001(00) WITH '...'` in the FM with a standard RF message class `MESSAGE eXXX(zmsg)`.
 
-4. **import 屏幕报 `RPY_DYNPRO_INSERT`**：走上文 §3 Plan B。
+4. **Import reports `RPY_DYNPRO_INSERT`**: follow §3 Plan B.
 
-5. **激活报数据元素不存在**：走 §1 第 4 步改内建类型。
+5. **Activation reports a missing data element**: follow §1 step 4 and switch to built-in types.
 
-6. **过账报异常码错**：走 §2 第 8 步确认 `DIFD/PPT/16`。
+6. **Posting reports a wrong exception code**: confirm `DIFD/PPT/16` as described in §2 step 8.
 
-7. **列表空白 / 数据传不进**：核对 §2 第 1 步 PARAM_NAME 是否与 FM CHANGING 参数名
-   完全一致（`CS_ZDIFHU_S_SCR` / `CS_ZDIFHU_PROD` / `CT_ZDIFHU_T_ITEMS`）。
+7. **List empty / data does not reach the screen**: verify that the PARAM_NAMEs in §2 step 1 match the FM
+   CHANGING parameter names exactly (`CS_ZDIFHU_S_SCR` / `CS_ZDIFHU_PROD` / `CT_ZDIFHU_T_ITEMS`).
 
-8. **输入框输不进去（数量框 / 序号框）**：查该屏幕字段的 XML 里是否带了
-   `<REQU_ENTRY>N</REQU_ENTRY>` —— **标准 RF 的输入字段从不带 `REQU_ENTRY`**
-   （对照 `/SCWM/RF_INQUIRY_PM`：`INPUT_FLD=X` 的字段 36 个、`REQU_ENTRY=N` 的字段
-   356 个，**两者交集为 0**）。带 `REQU_ENTRY=N` 会让字段在 RF 里变成不可输入。
-   修复：删掉该 `<REQU_ENTRY>` 元素，并在该屏 PBO 里显式打开输入属性
-   （`/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' )`，
-   见 `z_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`）。
+8. **An input field cannot be typed into (quantity box / sequence box)**: check whether that screen field
+   carries `<REQU_ENTRY>N</REQU_ENTRY>` in the XML — **standard RF input fields never carry `REQU_ENTRY`**
+   (compare `/SCWM/RF_INQUIRY_PM`: 36 fields with `INPUT_FLD=X`, 356 fields with `REQU_ENTRY=N`,
+   **intersection = 0**). With `REQU_ENTRY=N` the field becomes non-enterable in RF.
+   Fix: remove the `<REQU_ENTRY>` element and switch the input attribute on explicitly in that screen's PBO
+   (`/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' )`, see
+   `z_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`).
 
-9. **按 ENTER 直接 dump `CALL_FUNCTION_PARM_MISSING`（`CX_SY_DYN_CALL_PARAM_MISSING`，
-   提示缺 `CS_ZDIFHU_PROD` 之类的参数）**：不是代码问题，是 `/SCWM/TPARAM_CAT`
-   （视图 `/SCWM/RF_CUSTOM`）**少了对应的数据容器行** → 框架拼不出参数表、在调 FM 之前
-   就报错（FM 函数体根本没执行）。核对 §2 第 1 步的 3 行是否都在。
+9. **Pressing ENTER dumps immediately with `CALL_FUNCTION_PARM_MISSING` (`CX_SY_DYN_CALL_PARAM_MISSING`,
+   complaining about a missing parameter such as `CS_ZDIFHU_PROD`)**: this is not a code problem —
+   `/SCWM/TPARAM_CAT` (view `/SCWM/RF_CUSTOM`) is **missing the corresponding data container row**, so the
+   framework cannot build the parameter table and fails before calling the FM (the FM body never executes).
+   Verify that all three rows from §2 step 1 exist.
 
-10. **在列表屏按 BACK 又回到明细屏**：`/SCWM/TSTEP_FLOW` 里 `ZDIF3/ENTER` 行填成了
-    `SSTEP=ZDIF2 + PRMOD=1`。改成 **`SSTEP=ZDIF3 + PRMOD=0`**（见 §2 第 3 步规则 B）。
+10. **Pressing BACK on the list screen returns to the detail screen**: the `ZDIF3/ENTER` row in
+    `/SCWM/TSTEP_FLOW` is set to `SSTEP=ZDIF2 + PRMOD=1`. Change it to **`SSTEP=ZDIF3 + PRMOD=0`**
+    (see §2 step 3, rule B).
 
-## 6. 对象清单
+## 6. Object list
 
-| 对象 | 名称 | 说明 |
+| Object | Name | Description |
 |---|---|---|
-| 包 | ZEWM | |
-| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
-| 结构 | ZSDIFHU_SCR | 屏幕单值（HUIDENT + SELNO 序号输入） |
-| 结构 | ZSDIFHU_ITEM | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
-| 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + GUID_*） |
-| 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
-| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
+| Package | ZEWM | |
+| Function Group | ZFG_RF_ZDIFHU | Screens 9000/9001/9002 + 6 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
+| Structure | ZSDIFHU_SCR | Screen single values (HUIDENT + SELNO sequence input) |
+| Structure | ZSDIFHU_ITEM | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |
+| Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + GUID_*) |
+| Table type | ZSDIFHU_ITEM_TT | List internal table |
+| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | Global data containers (Customizing) |
