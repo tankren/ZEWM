@@ -14,6 +14,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
         ls_huitm      TYPE /scwm/s_huitm_int,
         ls_mat_global TYPE /scwm/s_material_global,
         lv_lgnum      TYPE /scwm/lgnum,
+        lv_seqno      TYPE /scwm/de_rf_seqno,
         ls_item       TYPE zsdifhu_item.
 
   lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
@@ -59,8 +60,13 @@ FUNCTION z_rf_zdifhu_9000_pai.
 
 *     只取 HU 直接项目（不支持嵌套包装）
       CLEAR ct_zdifhu_t_items.
+      CLEAR lv_seqno.
       LOOP AT lt_huitm INTO ls_huitm WHERE guid_parent = ls_huhdr-guid_hu.
         CLEAR ls_item.
+
+*       序号（列表首列，从 1 递增）
+        lv_seqno      = lv_seqno + 1.
+        ls_item-seqno = lv_seqno.
 
 *       MATID → MATNR
         TRY.

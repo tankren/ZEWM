@@ -1253,74 +1253,98 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 
 ## 2. Customizing（SPRO → EWM → Mobile Data Entry，按顺序）
 
+> **执行后修订（2026-09-14）**：屏幕 2 按用户要求改为「列表屏 → 明细屏」两步（照搬标准
+> `/SCWM/RF_XDIFHU` 模式）：列表屏 9001 加序号列 + 序号输入框；新增 step `ZDIF3` +
+> 屏幕 9002（实盘数量录入 + 过账）。下表为跑通的最终 step flow；**跨步骤跳转行必须
+> `PRMOD=1` + `FCODE_BCKG=INIT`**（原表把跨步骤行写成 PRMOD=2 且无 FCODE_BCKG，是屏幕 2
+> `GETWA_NOT_ASSIGNED` dump 的根因）。`DOWN` 行已删除（翻页用框架 PGUP/PGDN）。
+
 1. **Define Application Parameters**（视图 `/SCWM/RF_CUSTOM`，SM30）：
-   - APPLIC=`WME` / `ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
-   - APPLIC=`WME` / `ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
-2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`
+   - APPLIC=`01`(WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
+   - APPLIC=`01`(WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
+   - APPLIC=`01`(WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`
 3. **Define Step Flow**（`/SCWM/TSTEP_FLOW`）：
 
-   | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD |
-   |---|---|---|---|---|---|
-   | ZDIFHU | ZDIF1 | INIT | Z_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 |
-   | ZDIFHU | ZDIF1 | ENTER | Z_RF_ZDIFHU_9000_PAI | ZDIF2 | 2 |
-   | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 |
-   | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF2 | 2 |
-   | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 2 |
-   | ZDIFHU | ZDIF2 | DOWN | Z_RF_ZDIFHU_9001_PAI | ZDIF2 | 2 |
+   | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
+   |---|---|---|---|---|---|---|
+   | ZDIFHU | ZDIF1 | INIT | Z_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF1 | ENTER | Z_RF_ZDIFHU_9000_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF1 | BACK | Z_RF_ZDIFHU_9000_PAI | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
+   | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
+   | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
 
-4. **Define Function Code Profile**：含 INIT / ENTER / BACK / DOWN（下箭头绑 DOWN）
+4. **Define Function Code Profile**：含 INIT / ENTER / BACK（翻页 PGUP/PGDN 为框架预定义）
 5. **Map Logical Transaction Step to Subscreen**：
    - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
    - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
+   - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
 6. **Presentation / Personalization Profile**：复用现有 `**` 或按需新建
 7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
 8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
    确认 `DIFD` + 业务上下文 `PPT` + 执行步骤 `16` 存在；不存在则维护或改代码
    （`z_rf_zdifhu_9001_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
 
-## 3. Plan B：屏幕 9001 手工重建（仅当 import 屏幕报错时）
+## 3. Plan B：屏幕 9001 / 9002 手工重建（仅当 import 屏幕报错时）
 
 abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
-删除 fugr.xml 中屏幕 9001 的 `<item>` 重新 import，然后 SE51 手建：
+删除 fugr.xml 中对应屏幕的 `<item>` 重新 import，然后 SE51 手建：
 
-1. SE51 → 程序 `SAPLZFG_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，8 行 × 40 列
-2. 布局：
-   - 行 1：文本 `Scan:` + 输入框 `ZSDIFHU_SCR-MATNR_SCAN`（从 DDIC 拖入，可输入）
-   - 行 2：文本 `HU:` + `ZSDIFHU_SCR-HUIDENT`（只显）
-   - 行 4 起：框选 5 个 DDIC 字段（`ZSDIFHU_ITEM-MATNR/MAKTX/QUAN/MEINS/DIFF_QUAN`），
-     Edit → Grouping → Step Loop → Define，重复 5 行；前 4 列设只显，`DIFF_QUAN` 可输入
-3. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` 相同）：
+1. SE51 → 程序 `SAPLZFG_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，7 行 × 40 列
+2. 布局（列表屏）：
+   - 行 1：文本 `No.` + `ZSDIFHU_SCR-SELNO`（可输入，NUMC 3）；文本 `HU:` + `ZSDIFHU_SCR-HUIDENT`（只显）
+   - 行 2 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 2 行**（LOOP_BLOCK=2、重复 3 次、共 6 行）：
+     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`（只显）、`ZSDIFHU_ITEM-MATNR`（只显）
+     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`、`ZSDIFHU_ITEM-QUAN`、`ZSDIFHU_ITEM-MEINS`（均只显）
+3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：`ZSDIFHU_PROD-MATNR` / `-MAKTX` / `-QUAN` / `-MEINS`
+   均只显，`ZSDIFHU_PROD-QUAN_COUNT` 可输入（实盘数量）
+4. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
 
    ```abap
+   * 屏幕 9001（列表）
    PROCESS BEFORE OUTPUT.
-     LOOP AT gt_zdifhu_items INTO zsdifhu_item CURSOR gv_cursor.
+     MODULE status_sscr_loop.
+     LOOP.
+       MODULE loop_output.
      ENDLOOP.
+     MODULE loop_scrolling_set.
    *
    PROCESS AFTER INPUT.
-     LOOP AT gt_zdifhu_items INTO zsdifhu_item.
+     LOOP.
+       MODULE loop_input.
      ENDLOOP.
+     MODULE user_command_sscr.
    ```
 
-4. 激活
+5. 激活
 
 ## 4. 验收清单
 
 - [ ] `/SCWM/RFUI`（或 RF Test Environment）调用 `ZDIFHU`，屏幕 1 显示 HU 输入框
-- [ ] 输入存在的 HU → ENTER → 屏幕 2 显示物料列表（物料号/描述/数量/单位正确）
-- [ ] 屏幕 2 扫不存在物料 → 报错 "Material not in this HU"（防呆生效）
-- [ ] 扫存在物料 → 输入实盘数量 → ENTER → 过账成功，当前数量刷新
-- [ ] 列表超 5 行 → 下箭头翻页
+- [ ] 输入存在的 HU → ENTER → 屏幕 2 显示物料列表（**序号 + 物料号/描述分行 + 数量 + 单位**）
+- [ ] 屏幕 2 输入不存在的序号 → 报错 "Item does not exist"（防呆生效）
+- [ ] 输入存在的序号 → ENTER → 屏幕 3 显示该物料（物料号/描述/当前数量/单位）
+- [ ] 屏幕 3 输入实盘数量 → ENTER → 过账成功，回列表且当前数量已刷新
+- [ ] 屏幕 3 输入与当前相同数量 → 报错 "Counted quantity equals current quantity"，不过账
+- [ ] 屏幕 3 BACK → 回列表；屏幕 2 BACK → 回屏幕 1；屏幕 1 BACK → 结束事务回菜单
+- [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
 - [ ] 差异 = 实盘 − 当前；过账后 `/SCWM/MON` 库存正确
 
 ## 5. 对象清单
 
 | 对象 | 名称 | 说明 |
 |---|---|---|
-| 包 | ZZDIFHU | |
-| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001 + 4 FM |
-| 结构 | ZSDIFHU_SCR / ZSDIFHU_ITEM | 屏幕单值 / 列表行 |
+| 包 | ZEWM | |
+| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
+| 结构 | ZSDIFHU_SCR | 屏幕单值（HUIDENT + SELNO 序号输入） |
+| 结构 | ZSDIFHU_ITEM | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
+| 结构 | ZSDIFHU_PROD | 明细屏（含 QUAN_COUNT 实盘数量） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
-| App. Parameter | ZDIFHU_S_SCR / ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
+| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
 ````
 
 - [ ] **Step 2: 全量验证**
@@ -1343,3 +1367,12 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 
 1. **[Critical] step-loop 数据路径**：原稿 TOP 用 `DATA gs_zdifhu_item` 而屏幕字段名为 `ZSDIFHU_ITEM-*`（dynpro 按名绑定全局，二者不匹配 → 列表空白 + PAI 输入不回写 → 零差异守卫失效会误过账全量负差异）。修复：TOP 改 `TABLES: zsdifhu_scr, zsdifhu_item`（删 `gs_zdifhu_item`），screen_9001 两处 LOOP 改 `INTO zsdifhu_item`（PAI 带 INTO 才有行回写），README Plan B 同步。本文档 Task 4/10/11 代码块已更新为修复后版本。
 2. **[Important] `gv_cursor` 跨 HU 不重置**：换 HU 后旧游标可能使屏幕 2 空白。修复：9000_PAI 成功路径加 `gv_cursor = 1.`（Task 6 代码块已更新）。
+
+## 执行后修订 2（2026-09-14：屏幕 2 改「列表 → 明细」两步 + dump 根因）
+
+1. **[Critical] 屏幕 2 误过账**：原 9001_PAI 只要 ENTER 且扫到物料就立即 `post_difference`（数量栏输不进 → diff 为 0 → 按 −当前数量过账，库存被清）。修复：改为**序号驱动**——列表屏只选行，过账移到新增的明细屏 9002。
+2. **[Bug] 数量栏无法输入 / 显示不全**：列表改为**每物料两行**（行 1 序号+物料号，行 2 描述+数量+单位），输入移到明细屏。
+3. **[Critical] `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行）根因**：step flow 跨步骤跳转行写了 `PRMOD=2` 且 `FCODE_BCKG` 为空 → 目标步 PBO 模块从不执行 → 表 data container 未注册 → `READ TABLE <gt_scr>` dump。修复：跨步骤行一律 `PRMOD=1` + `FCODE_BCKG=INIT`（见上文修订后的 step flow 表）。
+4. **新增对象**：结构 `ZSDIFHU_PROD`、屏幕 9002、FM `Z_RF_ZDIFHU_9002_PBO/_PAI`、App.Parameter `CS_ZDIFHU_PROD`；`ZSDIFHU_SCR` 加 `SELNO`（/SCWM/DE_RF_SEQNO），`ZSDIFHU_ITEM` 加 `SEQNO` 并删 `DIFF_QUAN`。
+5. **其他**：`set_scr_tabname` 传 **CHANGING 参数名**（不是表类型名）；`set_line` 传字符 `'1'`；4 个 FM 去掉 `IMPORTING iv_lgnum`（框架不传字段参数），改用 `/scwm/cl_rf_bll_srvc=>get_lgnum( )`。
+6. **待验证**：`fugr.xml` 的 RSCHA 缺 `<REFERENCE>X</REFERENCE>`（CHANGING 传值 vs 标准传引用），过账测试若出现「PAI 改了值但屏幕/表没更新」再修。

@@ -1,8 +1,9 @@
 FUNCTION-POOL zfg_rf_zdifhu.             "MESSAGE-ID ..
 
-* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZSDIFHU_SCR-* / ZSDIFHU_ITEM-*）
+* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZSDIFHU_SCR-* / ZSDIFHU_ITEM-* / ZSDIFHU_PROD-*）
 TABLES: zsdifhu_scr,
-        zsdifhu_item.
+        zsdifhu_item,
+        zsdifhu_prod.
 
 *----------------------------------------------------------------------*
 * 重读 HU，按 GUID_STOCK 刷新单行的当前数量（过账后调用）

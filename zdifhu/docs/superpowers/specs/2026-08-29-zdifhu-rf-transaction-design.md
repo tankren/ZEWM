@@ -36,13 +36,23 @@
 
 ### Step Flow（/SCWM/TSTEP_FLOW）
 
+> **执行后修订（2026-09-14）**：下表是实际跑通的最终配置。
+> 关键规则：**凡「A 步 → B 步」的跳转行必须 `PRMOD=1` 且 `FCODE_BCKG` 填目标步 PBO 的
+> 触发码（INIT）**；`PRMOD=2` 只用于同一步骤重显示。原设计把跨步骤行写成 `PRMOD=2`
+> 且无 `FCODE_BCKG`，导致目标步 PBO 模块从不执行 → 表数据容器未注册 → 屏幕 2
+> `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行）。原 `ZDIF2/DOWN` 行已删除
+> （翻页由框架预定义 fcode PGUP/PGDN 自动处理）。
+
 ```
-ZDIFHU / ZDIF1 / INIT  → Z_RF_ZDIFHU_9000_PBO  → ZDIF1  (PRMOD 2 前台)
-ZDIFHU / ZDIF1 / ENTER → Z_RF_ZDIFHU_9000_PAI  → ZDIF2  (PRMOD 2 前台)
-ZDIFHU / ZDIF2 / INIT  → Z_RF_ZDIFHU_9001_PBO  → ZDIF2  (PRMOD 2 前台)
-ZDIFHU / ZDIF2 / ENTER → Z_RF_ZDIFHU_9001_PAI  → ZDIF2  (PRMOD 2 前台，过账后回列表)
-ZDIFHU / ZDIF2 / BACK  → Z_RF_ZDIFHU_9001_PAI  → ZDIF1  (PRMOD 2 前台)
-ZDIFHU / ZDIF2 / DOWN  → Z_RF_ZDIFHU_9001_PAI  → ZDIF2  (翻页)
+ZDIFHU / ZDIF1 / INIT  → Z_RF_ZDIFHU_9000_PBO  → ZDIF1  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF1 / ENTER → Z_RF_ZDIFHU_9000_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF1 / BACK  → Z_RF_ZDIFHU_9000_PAI  → ZDIF1  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF2 / INIT  → Z_RF_ZDIFHU_9001_PBO  → ZDIF2  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF2 / ENTER → Z_RF_ZDIFHU_9001_PAI  → ZDIF3  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF2 / BACK  → Z_RF_ZDIFHU_9001_PAI  → ZDIF1  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF3 / INIT  → Z_RF_ZDIFHU_9002_PBO  → ZDIF3  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF3 / ENTER → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF3 / BACK  → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
 ```
 
 ### Customizing（SPRO → EWM → Mobile Data Entry → RF Framework）
@@ -53,12 +63,13 @@ ZDIFHU / ZDIF2 / DOWN  → Z_RF_ZDIFHU_9001_PAI  → ZDIF2  (翻页)
    - APPLIC=`WME`，`ZDIFHU_T_ITEMS` → Parameter Type `ZSDIFHU_ITEM_TT`
    - 这两个参数是跨步骤/跨 PBO-PAI 的全局数据容器，**必须同时作为 CHANGING 参数写进
      4 个 FM 的接口**（框架按参数名匹配传入），且先于 step/flow 配置
-2. Define Steps in Logical Transaction：`ZDIFHU` → steps `ZDIF1`、`ZDIF2`
+2. Define Steps in Logical Transaction：`ZDIFHU` → steps `ZDIF1`、`ZDIF2`、`ZDIF3`
 3. Define Step Flow：上表条目
-4. Define Function Code Profile：INIT / ENTER / BACK / DOWN（翻页）
+4. Define Function Code Profile：INIT / ENTER / BACK（翻页 PGUP/PGDN 为框架预定义）
 5. Map Logical Transaction Step to Subscreen：
    - `ZDIFHU/ZDIF1` → `SAPLZFG_RF_ZDIFHU 9000`
    - `ZDIFHU/ZDIF2` → `SAPLZFG_RF_ZDIFHU 9001`
+   - `ZDIFHU/ZDIF3` → `SAPLZFG_RF_ZDIFHU 9002`
 6. Presentation / Personalization Profile 分配（复用现有 `**`，或按需要新建）
 7. RF Menu Manager：菜单挂载（可选，测试期可直接用 RF Test Environment 调用）
 8. Define Exception Codes（SPRO → EWM → Cross-Process Settings → Exception Codes）：
