@@ -129,9 +129,10 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 - Line 2: `ZSDIFHU_PROD-MAKTX` (display only, no label)
 - Line 3: `ZSDIFHU_PROD-QUAN` (display only) + `ZSDIFHU_PROD-MEINS` (display only)
 - Line 4: text `Actual Qty` (the only label kept on the screen)
-- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (**input**) + `ZSDIFHU_PROD-MEINS` (display only)
-  (the same `MEINS` field appears twice on the screen — SAP's own RF screens do this: 20 of the 23
-  screens in the standard program reuse field names)
+- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (**input**) + `ZSDIFHU_PROD-MEINS_DSP` (display only)
+  (`MEINS_DSP` is a second unit field kept in the structure for display only — a dynpro screen may not
+  contain two fields with the same name. The duplicate names you see in SAP's own RF screens are always
+  "TEXT label + TEMPLATE field" pairs, never two TEMPLATE fields.)
 - Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9002.abap`):
 
   ```abap
@@ -224,6 +225,6 @@ Activate.
 | Function Group | ZFG_RF_ZDIFHU | Screens 9000/9001/9002 + 6 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
 | Structure | ZSDIFHU_SCR | Screen single values (HUIDENT + SELNO sequence input) |
 | Structure | ZSDIFHU_ITEM | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |
-| Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + GUID_*) |
+| Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
 | Table type | ZSDIFHU_ITEM_TT | List internal table |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | Global data containers (Customizing) |

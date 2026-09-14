@@ -1315,8 +1315,10 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
    - 只读字段属性用 `OUTPUT_FLD + OUTPUTONLY`；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
      且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；多行行块必须满足
      `HEIGHT = LOOP_BLOCK × LOOP_DISP`
-3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：`ZSDIFHU_PROD-MATNR` / `-MAKTX` / `-QUAN` / `-MEINS`
-   均只显，`ZSDIFHU_PROD-QUAN_COUNT` 可输入（实盘数量）
+ 3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：行1 `-MATNR` / 行2 `-MAKTX` / 行3 `-QUAN` + `-MEINS`
+    均只显（无标签）；行4 文本 `Actual Qty`；行5 `-QUAN_COUNT` 可输入（实盘数量）+ `-MEINS_DSP`（只显单位）。
+    注意：`-MEINS_DSP` 是结构里专供显示的第二个单位字段——同一个 dynpro 屏幕**不允许两个同名字段**
+    （标准 RF 里的同名都是「TEXT 标签字段 + TEMPLATE 字段」的组合）
 4. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
 
    ```abap

@@ -22,6 +22,7 @@ FUNCTION z_rf_zdifhu_9002_pbo.
     cs_zdifhu_prod-maktx      = ls_item-maktx.
     cs_zdifhu_prod-quan       = ls_item-quan.
     cs_zdifhu_prod-meins      = ls_item-meins.
+    cs_zdifhu_prod-meins_dsp  = ls_item-meins.
     cs_zdifhu_prod-guid_stock = ls_item-guid_stock.
     cs_zdifhu_prod-guid_hu    = ls_item-guid_hu.
   ENDIF.

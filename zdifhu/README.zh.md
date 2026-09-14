@@ -118,8 +118,9 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 - 行 2：`ZSDIFHU_PROD-MAKTX`（只显，无标签）
 - 行 3：`ZSDIFHU_PROD-QUAN`（只显）+ `ZSDIFHU_PROD-MEINS`（只显）
 - 行 4：文本 `Actual Qty`（屏上唯一保留的标签）
-- 行 5：`ZSDIFHU_PROD-QUAN_COUNT`（**可输入**）+ `ZSDIFHU_PROD-MEINS`（只显）
-  （同一个 `MEINS` 字段在屏上出现两次——SAP 标准 RF 屏幕本来就允许：标准程序 23 个屏幕里 20 个都重复用了字段名）
+- 行 5：`ZSDIFHU_PROD-QUAN_COUNT`（**可输入**）+ `ZSDIFHU_PROD-MEINS_DSP`（只显）
+  （`MEINS_DSP` 是结构里专供显示的第二个单位字段——同一个 dynpro 屏幕**不允许两个同名字段**；
+  标准 RF 屏幕里看到的同名都是「TEXT 标签字段 + TEMPLATE 字段」的组合，从来不是两个 TEMPLATE）
 - Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9002.abap` 相同）：
 
   ```abap
@@ -200,6 +201,6 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
 | 结构 | ZSDIFHU_SCR | 屏幕单值（HUIDENT + SELNO 序号输入） |
 | 结构 | ZSDIFHU_ITEM | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
-| 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + GUID_*） |
+| 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + MEINS_DSP + GUID_*） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
