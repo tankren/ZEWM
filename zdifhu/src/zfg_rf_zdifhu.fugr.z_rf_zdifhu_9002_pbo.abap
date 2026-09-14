@@ -30,6 +30,9 @@ FUNCTION z_rf_zdifhu_9002_pbo.
   /scwm/cl_rf_bll_srvc=>init_screen_param( ).
   /scwm/cl_rf_bll_srvc=>set_screen_param( 'CS_ZDIFHU_PROD' ).
 
+* 实盘数量框：显式打开输入属性（框架默认可能关闭）
+  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' ).
+
 * 光标定位到实盘数量输入框
   /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_PROD-QUAN_COUNT' ).
 

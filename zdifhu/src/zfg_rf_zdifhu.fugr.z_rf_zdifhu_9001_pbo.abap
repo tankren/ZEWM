@@ -16,6 +16,9 @@ FUNCTION z_rf_zdifhu_9001_pbo.
   /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'CT_ZDIFHU_T_ITEMS' ).
   /scwm/cl_rf_bll_srvc=>set_line( '1' ).
 
+* 序号输入框：显式打开输入属性
+  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_SCR-SELNO' ).
+
 * 光标定位到序号输入框
   /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_SCR-SELNO' ).
 
