@@ -28,7 +28,7 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    写回系统，不需要做任何 SE63**。语言列表已写在仓库的 `.abapgit.xml` 里（`<I18N_LANGUAGES>` +
    `<USE_LXE>`）；若译文没生效，检查 abapGit 仓库设置 → *Serialize Translations (experimental LXE
    approach)*，语言填 `DE,CS,FR,ZH`
-6. **所有报错消息**来自消息类 `ZEWM_MSG`（`src/zewm_msg.msag.xml`，Pull 时一起导入，无需单独激活）
+6. **所有报错消息**来自消息类 `ZEWM_RF_MSG`（`src/zewm_rf_msg.msag.xml`，Pull 时一起导入，无需单独激活）
 
 ## 2. Customizing（SPRO → EWM → Mobile Data Entry → RF Framework，按顺序）
 
@@ -174,9 +174,9 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
    均为静态方法、签名匹配；不符则按系统内标准 `/SCWM/RF_*` FM 校准写法。
 
 3. **运行时 dump**（DYNPRO/RF 调用链 short dump）：标准 RF 框架会捕获 E 型消息
-   显示在屏底，不应 dump。所有报错消息都来自消息类 `ZEWM_MSG`
-   （`MESSAGE eNNN(zewm_msg)`，如 `MESSAGE e001(zewm_msg)`）；新增消息时要同时写进
-   `src/zewm_msg.msag.xml` **和**四个 `zewm_msg.msag.i18n.<语言>.po`。
+   显示在屏底，不应 dump。所有报错消息都来自消息类 `ZEWM_RF_MSG`
+   （`MESSAGE eNNN(zewm_rf_msg)`，如 `MESSAGE e001(zewm_rf_msg)`）；新增消息时要同时写进
+   `src/zewm_rf_msg.msag.xml` **和**四个 `zewm_rf_msg.msag.i18n.<语言>.po`。
 
 4. **import 屏幕报 `RPY_DYNPRO_INSERT`**：走上文 §3 Plan B。
 
@@ -220,5 +220,5 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + MEINS_DSP + GUID_*） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
-| 消息类 | ZEWM_MSG | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_msg)`，001–011） |
-| 翻译 | `zfg_rf_zdifhu.fugr.i18n.<语言>.po` + `zewm_msg.msag.i18n.<语言>.po` | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息，由 abapGit LXE 写回系统 |
+| 消息类 | ZEWM_RF_MSG | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
+| 翻译 | `zfg_rf_zdifhu.fugr.i18n.<语言>.po` + `zewm_rf_msg.msag.i18n.<语言>.po` | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息，由 abapGit LXE 写回系统 |

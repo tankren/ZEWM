@@ -33,7 +33,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
 *     空 HU：提示并停留本屏
       IF cs_zdifhu_s_scr-huident IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(zewm_msg).
+        MESSAGE e001(zewm_rf_msg).
       ENDIF.
 
       ls_huident-huident = cs_zdifhu_s_scr-huident.
@@ -53,7 +53,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
           OTHERS         = 3.
       IF sy-subrc <> 0 OR lt_huhdr IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e002(zewm_msg).
+        MESSAGE e002(zewm_rf_msg).
       ENDIF.
 
       READ TABLE lt_huhdr INTO ls_huhdr INDEX 1.
@@ -96,7 +96,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
 
       IF ct_zdifhu_t_items IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e003(zewm_msg).
+        MESSAGE e003(zewm_rf_msg).
       ENDIF.
   ENDCASE.
 

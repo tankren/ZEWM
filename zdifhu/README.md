@@ -32,7 +32,7 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    in the repository's `.abapgit.xml` (`<I18N_LANGUAGES>` + `<USE_LXE>`); if the translated texts do not
    show up, check the abapGit repo settings → *Serialize Translations (experimental LXE approach)* and
    enter `DE,CS,FR,ZH`
-6. All error messages come from the message class `ZEWM_MSG` (`src/zewm_msg.msag.xml`, imported by the
+6. All error messages come from the message class `ZEWM_RF_MSG` (`src/zewm_rf_msg.msag.xml`, imported by the
    Pull; nothing to activate)
 
 ## 2. Customizing (SPRO → EWM → Mobile Data Entry → RF Framework, in this order)
@@ -202,9 +202,9 @@ Activate.
 
 3. **Runtime dump** (short dump in the DYNPRO/RF call chain): the standard RF framework catches E-type
    messages and shows them at the bottom of the screen, so it should not dump. All error messages are
-   raised from the message class `ZEWM_MSG` (`MESSAGE eNNN(zewm_msg)`, e.g. `MESSAGE e001(zewm_msg)`);
-   when you add a message, put it into `src/zewm_msg.msag.xml` **and** into the four
-   `zewm_msg.msag.i18n.<lang>.po` files.
+   raised from the message class `ZEWM_RF_MSG` (`MESSAGE eNNN(zewm_rf_msg)`, e.g. `MESSAGE e001(zewm_rf_msg)`);
+   when you add a message, put it into `src/zewm_rf_msg.msag.xml` **and** into the four
+   `zewm_rf_msg.msag.i18n.<lang>.po` files.
 
 4. **Import reports `RPY_DYNPRO_INSERT`**: follow §3 Plan B.
 
@@ -251,5 +251,5 @@ Activate.
 | Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
 | Table type | ZSDIFHU_ITEM_TT | List internal table |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | Global data containers (Customizing) |
-| Message class | ZEWM_MSG | All error messages of the FMs (`MESSAGE eNNN(zewm_msg)`, 001–011) |
-| Translations | `zfg_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_msg.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |
+| Message class | ZEWM_RF_MSG | All error messages of the FMs (`MESSAGE eNNN(zewm_rf_msg)`, 001–011) |
+| Translations | `zfg_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_rf_msg.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |

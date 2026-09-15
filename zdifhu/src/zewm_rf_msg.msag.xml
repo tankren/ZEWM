@@ -3,62 +3,62 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <T100A>
-    <ARBGB>ZEWM_MSG</ARBGB>
+    <ARBGB>ZEWM_RF_MSG</ARBGB>
     <MASTERLANG>E</MASTERLANG>
     <STEXT>ZDIFHU RF messages</STEXT>
    </T100A>
    <T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>001</MSGNR>
      <TEXT>Please enter HU number</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>002</MSGNR>
      <TEXT>HU not found</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>003</MSGNR>
      <TEXT>No material items in HU</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>006</MSGNR>
      <TEXT>Difference posting failed</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>007</MSGNR>
      <TEXT>Save failed, rolled back</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>008</MSGNR>
      <TEXT>Please enter item number</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>009</MSGNR>
      <TEXT>Item does not exist</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>010</MSGNR>
      <TEXT>Counted quantity must be greater than zero</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
-     <ARBGB>ZEWM_MSG</ARBGB>
+     <ARBGB>ZEWM_RF_MSG</ARBGB>
      <MSGNR>011</MSGNR>
      <TEXT>Counted quantity equals current quantity</TEXT>
     </T100>

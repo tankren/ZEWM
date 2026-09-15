@@ -48,7 +48,7 @@ zdifhu/
     ├── zsdifhu_item.tabl.xml
     ├── zsdifhu_item_tt.ttyp.xml
     ├── zsdifhu_prod.tabl.xml
-    ├── zewm_msg.msag.xml
+    ├── zewm_rf_msg.msag.xml
     ├── zfg_rf_zdifhu.fugr.xml
     ├── zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap / .xml
     ├── zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap / .xml
@@ -57,11 +57,11 @@ zdifhu/
     ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9002_pbo.abap / _pai.abap
     ├── zfg_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap
     ├── zfg_rf_zdifhu.fugr.i18n.de.po / .cs.po / .fr.po / .zh.po
-    └── zewm_msg.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
+    └── zewm_rf_msg.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
 ```
 
 （上表是**最终交付状态**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、`ZSDIFHU_PROD`、
-消息类 `ZEWM_MSG` 与 8 个 LXE 翻译文件。）
+消息类 `ZEWM_RF_MSG` 与 8 个 LXE 翻译文件。）
 
 命名依据（已与 abapGit 官方测试仓库 `abapGit-tests/FUGR`、`abapGit-tests/FUGR_dynp_template` 核对）：
 - FUGR 文件名全小写；include 文件名 = `<fg>.fugr.<include小写名>.abap/.xml`
@@ -1368,7 +1368,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | 结构 | ZSDIFHU_PROD | 明细屏（含 QUAN_COUNT 实盘数量） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
-| 消息类 | ZEWM_MSG | FM 全部报错消息（`MESSAGE eNNN(zewm_msg)`） |
+| 消息类 | ZEWM_RF_MSG | FM 全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`） |
 | 翻译 | `*.i18n.<语言>.po` | DE / CS / FR / ZH（abapGit LXE，Pull 时写回系统） |
 ````
 
@@ -1412,15 +1412,15 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 6. ~~**遗留**：早期误过账（库存 96→144）已落库，需人工做更正凭证。~~ **已关闭**：这是开发系统，
    过账数据本身无所谓，无需更正凭证（用户 2026-09-15 确认）。
 
-## 执行后修订 4（2026-09-15：消息类 ZEWM_MSG + 多语言 LXE —— 已系统实测通过）
+## 执行后修订 4（2026-09-15：消息类 ZEWM_RF_MSG + 多语言 LXE —— 已系统实测通过）
 
 1. **报错消息改用消息类**：原来 9 处 `MESSAGE e001(00) WITH '…'(nnn)`（文本符号写法）全部改为
-   `MESSAGE eNNN(zewm_msg)`；消息类 `ZEWM_MSG` 由 `src/zewm_msg.msag.xml` 交付（Pull 时导入，
+   `MESSAGE eNNN(zewm_rf_msg)`；消息类 `ZEWM_RF_MSG` 由 `src/zewm_rf_msg.msag.xml` 交付（Pull 时导入，
    无需单独激活）。消息号沿用原编号：001/002/003（`9000_pai`）、008/009（`9001_pai`）、
    010/011/006/007（`9002_pai`）。
 2. **多语言（DE/CS/FR/ZH）走 abapGit LXE**：新增 8 个 gettext PO 文件 ——
    `zfg_rf_zdifhu.fugr.i18n.<语言>.po`（4 个屏幕标签 + 3 个屏幕描述）与
-   `zewm_msg.msag.i18n.<语言>.po`（9 条消息）；仓库根 `.abapgit.xml` 增加 `<I18N_LANGUAGES>`
+   `zewm_rf_msg.msag.i18n.<语言>.po`（9 条消息）；仓库根 `.abapgit.xml` 增加 `<I18N_LANGUAGES>`
    （CS/DE/FR/ZH）+ `<USE_LXE>X</USE_LXE>`。Pull 时 abapGit 按**英文源文本**匹配 PO 的 `msgid`，
    把 `msgstr` 经 FM `LXE_OBJ_TEXT_PAIR_WRITE` 写回系统 —— **不需要任何 SE63 操作**
    （用户实测中文 OK）。
@@ -1428,3 +1428,8 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
    超过字段宽度（`HU`=2 / `No.`=3 / `HU:`=3 / `Actual Qty`=10）。
 4. **「执行后修订 2」第 6 条（RSCHA 缺 `REFERENCE`）已关闭**：CHANGING 参数传值/传引用在本流程中
    未造成问题（跨步骤容器传递、过账、列表刷新均实测正常），不再改动。
+5. **消息类改名 `ZEWM_MSG` → `ZEWM_RF_MSG`**：用户在 SE91 直接重命名（消息号、译文、传输记录随对象走，
+   不需要建新删旧）。仓库侧同步：`src/zewm_rf_msg.msag.xml`（含 T100A/T100 的 ARBGB）+ 4 个
+   `zewm_rf_msg.msag.i18n.<语言>.po` 改名（PO 内容只有 msgid/msgstr，不含对象名）+ 3 个 FM 里
+   9 处 `MESSAGE eNNN(zewm_rf_msg)` + 文档。**PO 文件名必须与消息类名一致**，否则 abapGit 找不到对象；
+   Pull 时对象已存在（新名字）→ 直接更新，不会留下旧对象。
