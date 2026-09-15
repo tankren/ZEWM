@@ -142,11 +142,12 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 - [ ] 屏幕 2 输入不存在的序号 → 报错 "Item does not exist"（防呆生效）
 - [ ] 输入存在的序号 → ENTER → 屏幕 3 显示该物料（物料号/描述/当前数量/单位）
 - [ ] 屏幕 3 输入实盘数量 → ENTER → 过账成功，回到列表（当前数量已刷新、序号已清空）
+- [ ] 屏幕 3 输入 0 / 负数 / 留空 → 报错 "Counted quantity must be greater than zero"，不过账
 - [ ] 屏幕 3 输入与当前相同的数量 → 报错 "Counted quantity equals current quantity"，不过账
 - [ ] 屏幕 3 按 BACK → 回列表；屏幕 2 按 BACK → 回屏幕 1；屏幕 1 按 BACK → 结束事务回菜单
   （屏幕 2 的 BACK 只有在 step flow 的 `ZDIF3/ENTER` 行填 `SSTEP=ZDIF3 + PRMOD=0` 时才正确）
 - [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
-- [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
+- [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常（一屏 1 个物料，每个物料 3 行）
 
 > **过账符号约定（实现细节，改代码时别弄反）**：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`
 > 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**

@@ -8,15 +8,19 @@
 
 ## 1. 需求概述
 
-新建 RF logical transaction `ZDIFHU`，两屏流程：
+新建 RF logical transaction `ZDIFHU`，三步三屏流程：
+
+**业务背景**：GR 收货后、上架前的 **shortage 识别与纠正** —— 实盘数量必须 **> 0**
+（0 无业务含义：没有货就不构成 shortage；负数、空都不允许）。
 
 - **屏幕 1 (9000)**：输入/扫描 HU 号，ENTER 后跳转到屏幕 2
-- **屏幕 2 (9001)**：显示 HU 内库存列表（物料号、物料描述、当前数量、单位），
-  顶部有**扫描框**（防呆），扫描物料号后光标定位到该行，输入**实盘数量**（可编辑），
-  ENTER 立即过账差异，回到扫描框处理下一个物料
-- 一屏放不下时，用下箭头**翻页**（标准 RF 表格处理）
-- 过账 API：`/SCWM/CL_WM_PACKING=>POST_DIFFERENCE`
-- 差异计算：差异 = 实盘数量 − 当前系统数量（代码自己算）
+- **屏幕 2 (9001)**：显示 HU 内库存列表（每物料占 3 行：序号 + 物料号 / 描述 / 数量 + 单位），
+  顶部有**序号输入框**；输入序号 + ENTER → 进入屏幕 3
+- **屏幕 3 (9002)**：显示选中物料的明细（物料号 / 描述 / 当前数量 / 单位），
+  输入**实盘数量** + ENTER → 立即过账差异 → 返回列表（序号自动清空）
+- 一屏放不下时，用框架预定义的 **PGUP/PGDN** 翻页（模板上的翻页按钮）
+- 过账 API：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`（实例方法）
+- 差异计算：差异 = 当前系统数量 − 实盘数量（代码自己算，符号约定见 §3.3）
 
 ## 2. 架构与对象
 
@@ -192,9 +196,9 @@ WHEN 'BACK'.                              " 取消：清实盘数量，导航交
   CLEAR cs_zdifhu_prod-quan_count.
 
 WHEN OTHERS.                              " ENTER
-  " 1. 实盘必填；2. 差异 = 当前 − 实盘（⚠️ 符号见下）
-  IF cs_zdifhu_prod-quan_count IS INITIAL.
-    MESSAGE 'Please enter counted quantity'(010).
+  " 1. 实盘必须 > 0（空 / 0 / 负数都拒绝）；2. 差异 = 当前 − 实盘（⚠️ 符号见下）
+  IF cs_zdifhu_prod-quan_count <= 0.
+    MESSAGE 'Counted quantity must be greater than zero'(010).
   ENDIF.
   lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
   IF lv_diff = 0.
@@ -287,4 +291,4 @@ WHEN OTHERS.                              " ENTER
 - [ ] 屏幕 2 扫描不存在的物料 → 报错（防呆生效）
 - [ ] 扫描存在物料 → 光标定位 → 输入实盘数量 → ENTER → 差异过账成功，当前数量更新
 - [ ] 列表超出一屏 → 下箭头可翻页
-- [ ] 差异 = 实盘 − 当前，过账后库存正确
+- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存），过账后库存正确

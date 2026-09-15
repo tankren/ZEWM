@@ -26,10 +26,12 @@ FUNCTION z_rf_zdifhu_9002_pai.
     WHEN OTHERS.
 *     ENTER：实盘数量校验 + 差异过账
 
-*     1. 实盘数量必填
-      IF cs_zdifhu_prod-quan_count IS INITIAL.
+*     1. 实盘数量必须大于 0
+*        业务：GR 后、上架前的 shortage 纠正，空 / 0 / 负数都不允许
+*        （0 无业务含义：没有货就不是 shortage；负数更是非法输入）
+      IF cs_zdifhu_prod-quan_count <= 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Please enter counted quantity'(010).
+        MESSAGE e001(00) WITH 'Counted quantity must be greater than zero'(010).
       ENDIF.
 
 *     2. 差异计算（当前 − 实盘）

@@ -158,6 +158,8 @@ Activate.
       (material no. / description / current quantity / unit)
 - [ ] On screen 3, enter the counted quantity → ENTER → posting succeeds and returns to the list
       (quantity refreshed, sequence number cleared)
+- [ ] On screen 3, enter 0 / a negative quantity / nothing → error
+      "Counted quantity must be greater than zero", nothing is posted
 - [ ] On screen 3, enter the same quantity as the current one → error
       "Counted quantity equals current quantity", nothing is posted
 - [ ] Screen 3 BACK → back to the list; screen 2 BACK → back to screen 1; screen 1 BACK → leave the
@@ -166,7 +168,7 @@ Activate.
       `SSTEP=ZDIF3 + PRMOD=0`)
 - [ ] Difference = current − counted (shortage positive → stock decreases, surplus negative → stock
       increases); verify the stock afterwards in `/SCWM/MON`
-- [ ] More than 3 materials in the list → paging (PGUP/PGDN) works
+- [ ] More than 1 material in the list → paging (PGUP/PGDN) works (one material per screen, 3 lines each)
 
 > **Posting sign convention (implementation detail — do not get it backwards when changing code)**: in
 > `/SCWM/CL_WM_PACKING->POST_DIFFERENCE`, `is_quan-quan` **positive = goods issue (stock decreases),
