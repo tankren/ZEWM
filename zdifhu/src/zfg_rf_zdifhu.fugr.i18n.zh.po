@@ -1,0 +1,54 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "HU"
+msgstr "HU"
+
+msgid "No."
+msgstr "序号"
+
+msgid "HU:"
+msgstr "HU:"
+
+msgid "Actual Qty"
+msgstr "实盘数量"
+
+msgid "ZDIFHU HU input"
+msgstr "ZDIFHU HU 输入"
+
+msgid "ZDIFHU item list"
+msgstr "ZDIFHU 物料清单"
+
+msgid "ZDIFHU counted quantity"
+msgstr "ZDIFHU 实盘数量"
+
+msgid "Please enter HU number"
+msgstr "请输入 HU 号"
+
+msgid "HU not found"
+msgstr "未找到 HU"
+
+msgid "No material items in HU"
+msgstr "HU 中没有物料行项目"
+
+msgid "Please enter item number"
+msgstr "请输入序号"
+
+msgid "Item does not exist"
+msgstr "序号不存在"
+
+msgid "Counted quantity must be greater than zero"
+msgstr "实盘数量必须大于 0"
+
+msgid "Counted quantity equals current quantity"
+msgstr "实盘数量等于当前数量"
+
+msgid "Difference posting failed"
+msgstr "差异过账失败"
+
+msgid "Save failed, rolled back"
+msgstr "保存失败，已回滚"

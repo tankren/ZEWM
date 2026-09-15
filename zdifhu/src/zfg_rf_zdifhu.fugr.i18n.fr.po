@@ -1,0 +1,54 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "HU"
+msgstr "HU"
+
+msgid "No."
+msgstr "N°"
+
+msgid "HU:"
+msgstr "HU:"
+
+msgid "Actual Qty"
+msgstr "Qté comptée"
+
+msgid "ZDIFHU HU input"
+msgstr "ZDIFHU saisie HU"
+
+msgid "ZDIFHU item list"
+msgstr "ZDIFHU liste articles"
+
+msgid "ZDIFHU counted quantity"
+msgstr "ZDIFHU qté comptée"
+
+msgid "Please enter HU number"
+msgstr "Veuillez saisir le numéro HU"
+
+msgid "HU not found"
+msgstr "HU introuvable"
+
+msgid "No material items in HU"
+msgstr "Aucun article dans le HU"
+
+msgid "Please enter item number"
+msgstr "Veuillez saisir le numéro d'article"
+
+msgid "Item does not exist"
+msgstr "L'article n'existe pas"
+
+msgid "Counted quantity must be greater than zero"
+msgstr "La quantité comptée doit être supérieure à zéro"
+
+msgid "Counted quantity equals current quantity"
+msgstr "La quantité comptée est égale à la quantité actuelle"
+
+msgid "Difference posting failed"
+msgstr "Échec de la comptabilisation de l'écart"
+
+msgid "Save failed, rolled back"
+msgstr "Échec de l'enregistrement, annulé"
