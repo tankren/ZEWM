@@ -41,6 +41,8 @@
 | FM PBO/PAI | `Z_RF_ZDIFHU_9000_PBO` / `_PAI` | 屏幕 1：读 HU、填列表 |
 | FM PBO/PAI | `Z_RF_ZDIFHU_9001_PBO` / `_PAI` | 屏幕 2：列表 + 序号选择 |
 | FM PBO/PAI | `Z_RF_ZDIFHU_9002_PBO` / `_PAI` | 屏幕 3：明细 + 差异过账 |
+| 消息类 | `ZEWM_MSG` | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_msg)`，001–011） |
+| 翻译 | `*.i18n.<语言>.po`（abapGit LXE） | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息；Pull 时自动写回系统 |
 
 ### Step Flow（/SCWM/TSTEP_FLOW）
 
@@ -125,7 +127,7 @@ CALL FUNCTION '/SCWM/HU_READ_MULT'
   EXPORTING it_huident = lt_huident  iv_lgnum = lv_lgnum
   IMPORTING et_huhdr   = lt_huhdr    et_huitm = lt_huitm
   EXCEPTIONS wrong_input = 1 not_possible = 2 OTHERS = 3.
-" HU 不存在 / 读失败 → set_fcode('INIT') + MESSAGE E…（停留本屏）
+" HU 不存在 / 读失败 → set_fcode('INIT') + MESSAGE e002(zewm_msg)（停留本屏）
 
 " 2. 只取直接项目（不支持嵌套包装）
 CLEAR ct_zdifhu_t_items.
@@ -144,7 +146,7 @@ LOOP AT lt_huitm INTO ls_huitm WHERE guid_parent = lt_huhdr[ 1 ]-guid_hu.
   " 组装 ZSDIFHU_ITEM 行：seqno（序号，自增）/ matnr / maktx / quan(当前) / meins / guid_stock / guid_hu
   APPEND ls_item TO ct_zdifhu_t_items.
 ENDLOOP.
-" 列表为空 → MESSAGE（该 HU 无物料）
+" 列表为空 → MESSAGE e003(zewm_msg)（该 HU 无物料）
 ```
 
 ### 3.2 屏幕 2 PBO（列表三件套 + 输入属性，必需）
@@ -179,11 +181,11 @@ CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
     CLEAR cs_zdifhu_s_scr-selno.          " 回屏 1 由框架弹调用栈处理
   WHEN OTHERS.                            " ENTER
     IF cs_zdifhu_s_scr-selno IS INITIAL.  " 防呆 1：必须输序号
-      set_fcode('INIT') + MESSAGE 'Please enter item number'(008).
+      set_fcode('INIT') + MESSAGE e008(zewm_msg).
     ENDIF.
     READ TABLE ct_zdifhu_t_items INTO ls_item WITH KEY seqno = cs_zdifhu_s_scr-selno.
     IF sy-subrc <> 0.                     " 防呆 2：序号必须存在
-      set_fcode('INIT') + MESSAGE 'Item does not exist'(009).
+      set_fcode('INIT') + MESSAGE e009(zewm_msg).
     ENDIF.
     CLEAR cs_zdifhu_prod.                 " 明细由 9002_PBO 按 selno 填
 ENDCASE.
@@ -198,11 +200,11 @@ WHEN 'BACK'.                              " 取消：清实盘数量，导航交
 WHEN OTHERS.                              " ENTER
   " 1. 实盘必须 > 0（空 / 0 / 负数都拒绝）；2. 差异 = 当前 − 实盘（⚠️ 符号见下）
   IF cs_zdifhu_prod-quan_count <= 0.
-    MESSAGE 'Counted quantity must be greater than zero'(010).
+    MESSAGE e010(zewm_msg).
   ENDIF.
   lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
   IF lv_diff = 0.
-    MESSAGE 'Counted quantity equals current quantity'(011).
+    MESSAGE e011(zewm_msg).
   ENDIF.
 
   " 3. 过账（实例方法，必须先 CREATE OBJECT）
@@ -246,6 +248,20 @@ WHEN OTHERS.                              " ENTER
 - 列表超一屏的翻页由框架预定义 fcode **PGUP/PGDN** 自动处理（模板 pushbutton），
   **不需要**自定义 `DOWN` 行、也不需要手动维护起始行变量。
 
+### 3.6 消息类与多语言（abapGit LXE）
+
+- **消息类 `ZEWM_MSG`**（`src/zewm_msg.msag.xml`）集中管理全部报错消息，FM 里一律用
+  `MESSAGE eNNN(zewm_msg)`（如 `MESSAGE e001(zewm_msg)`），不再用文本符号写法
+  `MESSAGE e001(00) WITH '...'(nnn)`。消息号：001 HU 未输入 / 002 HU 查不到 / 003 HU 无物料 /
+  006 过账失败 / 007 保存失败 / 008 序号未输入 / 009 序号不存在 / 010 实盘 ≤ 0 / 011 实盘 = 当前。
+- **翻译（DE / CS / FR / ZH）走 abapGit 的 LXE 机制**：每个语言一个 gettext PO 文件
+  （`zfg_rf_zdifhu.fugr.i18n.<语言>.po` 放屏幕文本、`zewm_msg.msag.i18n.<语言>.po` 放消息文本），
+  仓库根 `.abapgit.xml` 里声明 `<I18N_LANGUAGES>`（CS/DE/FR/ZH）+ `<USE_LXE>X</USE_LXE>`。
+  Pull 时 abapGit 按 **英文源文本** 匹配 PO 的 `msgid`，把 `msgstr` 通过
+  `LXE_OBJ_TEXT_PAIR_WRITE` 写回系统 —— **不需要任何 SE63 操作**（已实测中文生效）。
+- 注意：源文本必须与系统里的英文原文完全一致（大小写 / 尾部空格），否则该条静默跳过；
+  屏幕标签不能超过字段宽度（`HU`=2 / `No.`=3 / `HU:`=3 / `Actual Qty`=10）。
+
 ## 4. 屏幕布局
 
 ```
@@ -287,8 +303,12 @@ WHEN OTHERS.                              " ENTER
 ## 6. 验收标准
 
 - [ ] `/SCWM/RFUI` → 菜单/测试环境调用 `ZDIFHU`，屏幕 1 显示 HU 输入框
-- [ ] 输入存在的 HU → ENTER → 屏幕 2 显示该 HU 物料列表（物料号/描述/数量/单位正确）
-- [ ] 屏幕 2 扫描不存在的物料 → 报错（防呆生效）
-- [ ] 扫描存在物料 → 光标定位 → 输入实盘数量 → ENTER → 差异过账成功，当前数量更新
-- [ ] 列表超出一屏 → 下箭头可翻页
-- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存），过账后库存正确
+- [ ] 输入存在的 HU → ENTER → 屏幕 2 显示该 HU 物料列表（序号 + 物料号/描述/数量/单位，每物料 3 行）
+- [ ] 屏幕 2 输入不存在的序号 → 报错 "Item does not exist"（防呆生效）
+- [ ] 输入存在的序号 → ENTER → 屏幕 3 显示该物料（物料号/描述/当前数量/单位）
+- [ ] 屏幕 3 输入实盘数量 → ENTER → 过账成功、回到列表（当前数量已刷新、序号已清空）
+- [ ] 屏幕 3 输入 0 / 负数 / 留空 → 报错 "Counted quantity must be greater than zero"，不过账
+- [ ] 屏幕 3 按 BACK → 回列表；屏幕 2 按 BACK → 回屏幕 1；屏幕 1 按 BACK → 结束事务
+- [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常
+- [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存），过账后 `/SCWM/MON` 库存正确
+- [ ] 用 DE / CS / FR / ZH 登录 → 屏幕标签与报错消息为译文

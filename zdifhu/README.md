@@ -27,6 +27,13 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    built-in type:
    HUIDENT→CHAR 20; SEQNO→NUMC 3; QUAN/QUAN_COUNT→QUAN, length 13, 3 decimals;
    MEINS→UNIT 3; GUID_*→CHAR 32
+5. **Translations (DE / CS / FR / ZH)** are delivered as abapGit LXE files (`*.i18n.<lang>.po`) and are
+   written back into the system by the Pull itself — **no SE63 work needed**. The language list is already
+   in the repository's `.abapgit.xml` (`<I18N_LANGUAGES>` + `<USE_LXE>`); if the translated texts do not
+   show up, check the abapGit repo settings → *Serialize Translations (experimental LXE approach)* and
+   enter `DE,CS,FR,ZH`
+6. All error messages come from the message class `ZEWM_MSG` (`src/zewm_msg.msag.xml`, imported by the
+   Pull; nothing to activate)
 
 ## 2. Customizing (SPRO → EWM → Mobile Data Entry → RF Framework, in this order)
 
@@ -169,6 +176,8 @@ Activate.
 - [ ] Difference = current − counted (shortage positive → stock decreases, surplus negative → stock
       increases); verify the stock afterwards in `/SCWM/MON`
 - [ ] More than 1 material in the list → paging (PGUP/PGDN) works (one material per screen, 3 lines each)
+- [ ] Log on with language DE / CS / FR / ZH → the screen labels (`HU`, `No.`, `HU:`, `Actual Qty`) and the
+      error messages appear translated
 
 > **Posting sign convention (implementation detail — do not get it backwards when changing code)**: in
 > `/SCWM/CL_WM_PACKING->POST_DIFFERENCE`, `is_quan-quan` **positive = goods issue (stock decreases),
@@ -192,8 +201,10 @@ Activate.
    modules in your system.
 
 3. **Runtime dump** (short dump in the DYNPRO/RF call chain): the standard RF framework catches E-type
-   messages and shows them at the bottom of the screen, so it should not dump. If it does, replace the
-   `MESSAGE e001(00) WITH '...'` in the FM with a standard RF message class `MESSAGE eXXX(zmsg)`.
+   messages and shows them at the bottom of the screen, so it should not dump. All error messages are
+   raised from the message class `ZEWM_MSG` (`MESSAGE eNNN(zewm_msg)`, e.g. `MESSAGE e001(zewm_msg)`);
+   when you add a message, put it into `src/zewm_msg.msag.xml` **and** into the four
+   `zewm_msg.msag.i18n.<lang>.po` files.
 
 4. **Import reports `RPY_DYNPRO_INSERT`**: follow §3 Plan B.
 
@@ -222,6 +233,13 @@ Activate.
     `/SCWM/TSTEP_FLOW` is set to `SSTEP=ZDIF2 + PRMOD=1`. Change it to **`SSTEP=ZDIF3 + PRMOD=0`**
     (see §2 step 3, rule B).
 
+11. **Translated texts do not show up (DE/CS/FR/ZH)**: the LXE PO files are matched by the **English
+    source text** — if the English original in the system differs (case, trailing blanks) that entry is
+    skipped silently; a screen label longer than its field is truncated. Also check the repo settings:
+    *Serialize Translations (experimental LXE approach)* on, language list `DE,CS,FR,ZH` (the repository's
+    `.abapgit.xml` already carries it). Field widths of the labels: `HU` = 2 (screen 9000), `No.` = 3,
+    `HU:` = 3 (screen 9001), `Actual Qty` = 10 (screen 9002).
+
 ## 6. Object list
 
 | Object | Name | Description |
@@ -233,3 +251,5 @@ Activate.
 | Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
 | Table type | ZSDIFHU_ITEM_TT | List internal table |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | Global data containers (Customizing) |
+| Message class | ZEWM_MSG | All error messages of the FMs (`MESSAGE eNNN(zewm_msg)`, 001–011) |
+| Translations | `zfg_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_msg.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |

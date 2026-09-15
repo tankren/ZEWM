@@ -40,23 +40,28 @@ python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); prin
 zdifhu/
 ├── .abapgit.xml
 ├── README.md
+├── README.zh.md
+├── docs/
 └── src/
     ├── package.devc.xml
+    ├── zsdifhu_scr.tabl.xml
     ├── zsdifhu_item.tabl.xml
     ├── zsdifhu_item_tt.ttyp.xml
-    ├── zsdifhu_scr.tabl.xml
+    ├── zsdifhu_prod.tabl.xml
+    ├── zewm_msg.msag.xml
     ├── zfg_rf_zdifhu.fugr.xml
-    ├── zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap
-    ├── zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.xml
-    ├── zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap
-    ├── zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.xml
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pbo.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pai.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pbo.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pai.abap
-    ├── zfg_rf_zdifhu.fugr.screen_9000.abap
-    └── zfg_rf_zdifhu.fugr.screen_9001.abap
+    ├── zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap / .xml
+    ├── zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap / .xml
+    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pbo.abap / _pai.abap
+    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pbo.abap / _pai.abap
+    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9002_pbo.abap / _pai.abap
+    ├── zfg_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap
+    ├── zfg_rf_zdifhu.fugr.i18n.de.po / .cs.po / .fr.po / .zh.po
+    └── zewm_msg.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
 ```
+
+（上表是**最终交付状态**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、`ZSDIFHU_PROD`、
+消息类 `ZEWM_MSG` 与 8 个 LXE 翻译文件。）
 
 命名依据（已与 abapGit 官方测试仓库 `abapGit-tests/FUGR`、`abapGit-tests/FUGR_dynp_template` 核对）：
 - FUGR 文件名全小写；include 文件名 = `<fg>.fugr.<include小写名>.abap/.xml`
@@ -1349,7 +1354,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 - [ ] 屏幕 3 输入实盘数量 → ENTER → 过账成功，回列表且当前数量已刷新
 - [ ] 屏幕 3 输入与当前相同数量 → 报错 "Counted quantity equals current quantity"，不过账
 - [ ] 屏幕 3 BACK → 回列表；屏幕 2 BACK → 回屏幕 1；屏幕 1 BACK → 结束事务回菜单
-- [ ] 列表超 3 个物料 → 翻页（PGUP/PGDN）正常
+- [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常
 - [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
 
 ## 5. 对象清单
@@ -1363,6 +1368,8 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | 结构 | ZSDIFHU_PROD | 明细屏（含 QUAN_COUNT 实盘数量） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
+| 消息类 | ZEWM_MSG | FM 全部报错消息（`MESSAGE eNNN(zewm_msg)`） |
+| 翻译 | `*.i18n.<语言>.po` | DE / CS / FR / ZH（abapGit LXE，Pull 时写回系统） |
 ````
 
 - [ ] **Step 2: 全量验证**
@@ -1402,4 +1409,22 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 3. **[Critical] 差异符号反了**（实测 96 → 输入 48 → 变 144）：`post_difference` 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**（内部按正负选 `wmegc_lime_post_outbound` / `wmegc_lime_post_inbound`）。修复：`lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.`（盘亏为正 → 减库存）。
 4. **[Bug] 过账后返回列表时序号没清空**：`9002_PAI` 过账成功分支加 `CLEAR cs_zdifhu_prod-quan_count.` + `CLEAR cs_zdifhu_s_scr-selno.`。
 5. **[配置] 漏配数据容器 → ENTER 直接 dump**：`/SCWM/TPARAM_CAT` 缺 `CS_ZDIFHU_PROD → ZSDIFHU_PROD` 时，框架拼参数表失败 → `CALL_FUNCTION_PARM_MISSING`（FM 体根本没执行）。三行必须齐：`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`。
-6. **遗留**：早期误过账（库存 96→144）已落库，需人工做更正凭证。
+6. ~~**遗留**：早期误过账（库存 96→144）已落库，需人工做更正凭证。~~ **已关闭**：这是开发系统，
+   过账数据本身无所谓，无需更正凭证（用户 2026-09-15 确认）。
+
+## 执行后修订 4（2026-09-15：消息类 ZEWM_MSG + 多语言 LXE —— 已系统实测通过）
+
+1. **报错消息改用消息类**：原来 9 处 `MESSAGE e001(00) WITH '…'(nnn)`（文本符号写法）全部改为
+   `MESSAGE eNNN(zewm_msg)`；消息类 `ZEWM_MSG` 由 `src/zewm_msg.msag.xml` 交付（Pull 时导入，
+   无需单独激活）。消息号沿用原编号：001/002/003（`9000_pai`）、008/009（`9001_pai`）、
+   010/011/006/007（`9002_pai`）。
+2. **多语言（DE/CS/FR/ZH）走 abapGit LXE**：新增 8 个 gettext PO 文件 ——
+   `zfg_rf_zdifhu.fugr.i18n.<语言>.po`（4 个屏幕标签 + 3 个屏幕描述）与
+   `zewm_msg.msag.i18n.<语言>.po`（9 条消息）；仓库根 `.abapgit.xml` 增加 `<I18N_LANGUAGES>`
+   （CS/DE/FR/ZH）+ `<USE_LXE>X</USE_LXE>`。Pull 时 abapGit 按**英文源文本**匹配 PO 的 `msgid`，
+   把 `msgstr` 经 FM `LXE_OBJ_TEXT_PAIR_WRITE` 写回系统 —— **不需要任何 SE63 操作**
+   （用户实测中文 OK）。
+3. **注意**：PO 按源文本匹配，英文原文（大小写 / 尾部空格）不一致的条目会被静默跳过；屏幕标签不能
+   超过字段宽度（`HU`=2 / `No.`=3 / `HU:`=3 / `Actual Qty`=10）。
+4. **「执行后修订 2」第 6 条（RSCHA 缺 `REFERENCE`）已关闭**：CHANGING 参数传值/传引用在本流程中
+   未造成问题（跨步骤容器传递、过账、列表刷新均实测正常），不再改动。

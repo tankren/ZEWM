@@ -24,6 +24,11 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    `ZSDIFHU*` 激活报错，SE11 把对应字段从数据元素引用改为内建类型：
    HUIDENT→CHAR 20；SEQNO→NUMC 3；QUAN/QUAN_COUNT→QUAN 长 13 小数 3；
    MEINS→UNIT 3；GUID_*→CHAR 32
+5. **多语言（DE / CS / FR / ZH）**：翻译以 abapGit LXE 文件（`*.i18n.<语言>.po`）交付，**Pull 时自动
+   写回系统，不需要做任何 SE63**。语言列表已写在仓库的 `.abapgit.xml` 里（`<I18N_LANGUAGES>` +
+   `<USE_LXE>`）；若译文没生效，检查 abapGit 仓库设置 → *Serialize Translations (experimental LXE
+   approach)*，语言填 `DE,CS,FR,ZH`
+6. **所有报错消息**来自消息类 `ZEWM_MSG`（`src/zewm_msg.msag.xml`，Pull 时一起导入，无需单独激活）
 
 ## 2. Customizing（SPRO → EWM → Mobile Data Entry → RF Framework，按顺序）
 
@@ -148,6 +153,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
   （屏幕 2 的 BACK 只有在 step flow 的 `ZDIF3/ENTER` 行填 `SSTEP=ZDIF3 + PRMOD=0` 时才正确）
 - [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
 - [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常（一屏 1 个物料，每个物料 3 行）
+- [ ] 用语言 DE / CS / FR / ZH 登录 → 屏幕标签（`HU`、`No.`、`HU:`、`Actual Qty`）与报错消息均为译文
 
 > **过账符号约定（实现细节，改代码时别弄反）**：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`
 > 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**
@@ -168,8 +174,9 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
    均为静态方法、签名匹配；不符则按系统内标准 `/SCWM/RF_*` FM 校准写法。
 
 3. **运行时 dump**（DYNPRO/RF 调用链 short dump）：标准 RF 框架会捕获 E 型消息
-   显示在屏底，不应 dump；若异常 dump，把 FM 里的 `MESSAGE e001(00) WITH '...'`
-   改为标准 RF 消息类 `MESSAGE eXXX(zmsg)`。
+   显示在屏底，不应 dump。所有报错消息都来自消息类 `ZEWM_MSG`
+   （`MESSAGE eNNN(zewm_msg)`，如 `MESSAGE e001(zewm_msg)`）；新增消息时要同时写进
+   `src/zewm_msg.msag.xml` **和**四个 `zewm_msg.msag.i18n.<语言>.po`。
 
 4. **import 屏幕报 `RPY_DYNPRO_INSERT`**：走上文 §3 Plan B。
 
@@ -196,6 +203,12 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 10. **在列表屏按 BACK 又回到明细屏**：`/SCWM/TSTEP_FLOW` 里 `ZDIF3/ENTER` 行填成了
     `SSTEP=ZDIF2 + PRMOD=1`。改成 **`SSTEP=ZDIF3 + PRMOD=0`**（见 §2 第 3 步规则 B）。
 
+11. **译文不生效（DE/CS/FR/ZH）**：LXE 的 PO 文件是**按英文源文本匹配**的 —— 若系统里的英文原文
+    与 PO 里的不完全一致（大小写、尾部空格），该条会被静默跳过；标签比字段宽度长会被截断。
+    另检查仓库设置：*Serialize Translations (experimental LXE approach)* 要勾上、语言填
+    `DE,CS,FR,ZH`（仓库 `.abapgit.xml` 里已经带了）。标签字段宽度：`HU`=2（屏 9000）、
+    `No.`=3、`HU:`=3（屏 9001）、`Actual Qty`=10（屏 9002）。
+
 ## 6. 对象清单
 
 | 对象 | 名称 | 说明 |
@@ -207,3 +220,5 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + MEINS_DSP + GUID_*） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
+| 消息类 | ZEWM_MSG | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_msg)`，001–011） |
+| 翻译 | `zfg_rf_zdifhu.fugr.i18n.<语言>.po` + `zewm_msg.msag.i18n.<语言>.po` | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息，由 abapGit LXE 写回系统 |
