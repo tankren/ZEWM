@@ -31,7 +31,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
 *        （0 无业务含义：没有货就不是 shortage；负数更是非法输入）
       IF cs_zdifhu_prod-quan_count <= 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Counted quantity must be greater than zero'(010).
+        MESSAGE e010(zewm_msg).
       ENDIF.
 
 *     2. 差异计算（当前 − 实盘）
@@ -41,7 +41,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
       lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
       IF lv_diff = 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Counted quantity equals current quantity'(011).
+        MESSAGE e011(zewm_msg).
       ENDIF.
 
       ls_quan-quan = lv_diff.
@@ -62,7 +62,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
           OTHERS        = 2.
       IF sy-subrc <> 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Difference posting failed'(006).
+        MESSAGE e006(zewm_msg).
       ENDIF.
 
 *     4. 落库：save 不带 commit，外层显式 COMMIT
@@ -76,7 +76,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
         ROLLBACK WORK.
         /scwm/cl_tm=>cleanup( ).
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Save failed, rolled back'(007).
+        MESSAGE e007(zewm_msg).
       ENDIF.
       COMMIT WORK AND WAIT.
       /scwm/cl_tm=>cleanup( ).

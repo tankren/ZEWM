@@ -25,30 +25,3 @@ msgstr "ZDIFHU Positionsliste"
 
 msgid "ZDIFHU counted quantity"
 msgstr "ZDIFHU Zählmenge"
-
-msgid "Please enter HU number"
-msgstr "Bitte HU-Nummer eingeben"
-
-msgid "HU not found"
-msgstr "HU nicht gefunden"
-
-msgid "No material items in HU"
-msgstr "Keine Materialpositionen in HU"
-
-msgid "Please enter item number"
-msgstr "Bitte Positionsnummer eingeben"
-
-msgid "Item does not exist"
-msgstr "Position existiert nicht"
-
-msgid "Counted quantity must be greater than zero"
-msgstr "Zählmenge muss größer als Null sein"
-
-msgid "Counted quantity equals current quantity"
-msgstr "Zählmenge entspricht aktueller Menge"
-
-msgid "Difference posting failed"
-msgstr "Differenzbuchung fehlgeschlagen"
-
-msgid "Save failed, rolled back"
-msgstr "Sichern fehlgeschlagen, zurückgerollt"

@@ -26,7 +26,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
 *     未输序号：提示并停留本屏
       IF cs_zdifhu_s_scr-selno IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Please enter item number'(008).
+        MESSAGE e008(zewm_msg).
       ENDIF.
 
 *     序号不存在：提示并停留本屏
@@ -34,7 +34,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
            WITH KEY seqno = cs_zdifhu_s_scr-selno.
       IF sy-subrc <> 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(00) WITH 'Item does not exist'(009).
+        MESSAGE e009(zewm_msg).
       ENDIF.
 
 *     选中成功：清明细容器，明细屏 PBO 会按序号重新填充
