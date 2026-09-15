@@ -91,8 +91,10 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
   - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`（列 1，只显）、`ZSDIFHU_ITEM-MATNR`（列 5，只显）
   - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`（列 1，只显，长度 30）
   - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`（列 1，只显，长度 13）、`ZSDIFHU_ITEM-MEINS`（列 15，只显）
-- 只读字段用 `OUTPUT_FLD=X + OUTPUTONLY=X`；**可输入字段只用 `INPUT_FLD=X + OUTPUT_FLD=X`，
-  绝不能带 `REQU_ENTRY`**（见 §5 第 8 条）
+- 只读字段**只用 `OUTPUT_FLD=X`** —— **不要加 `OUTPUTONLY`**：加了就变成平面文字，不是标准那种
+  带边框的只读框（SAP 标准 RF 屏幕里 `OUTPUTONLY` 用了 0 次）；
+  **可输入字段只用 `INPUT_FLD=X + OUTPUT_FLD=X`，绝不能带 `REQU_ENTRY`**（见 §5 第 8 条）
+- 同一个 dynpro 屏幕**不允许两个同名字段** —— 两处都要显示单位时用两个 DDIC 字段（`MEINS` + `MEINS_DSP`）
 - 多行行块必须满足 **`HEIGHT = LOOP_BLOCK × LOOP_DISP`**（标准程序全部如此，
   如 `/SCWM/RF_INQUIRY_PM` 屏 0204：`LOOP_BLOCK=4 × LOOP_DISP=2 = HEIGHT=8`）
 - Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` 相同）：

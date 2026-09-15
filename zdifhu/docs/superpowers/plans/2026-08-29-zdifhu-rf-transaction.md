@@ -1312,9 +1312,10 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
      - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`(c1)、`ZSDIFHU_ITEM-MATNR`(c5)（均只显）
      - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`(c1，长 30)
      - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`(c1，长 13)、`ZSDIFHU_ITEM-MEINS`(c15)
-   - 只读字段属性用 `OUTPUT_FLD + OUTPUTONLY`；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
-     且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；多行行块必须满足
-     `HEIGHT = LOOP_BLOCK × LOOP_DISP`
+   - 只读字段属性**只用 `OUTPUT_FLD`**（不要加 `OUTPUTONLY`，加了是平面文字而非标准只读框；
+     标准 `/SCWM/RF_INQUIRY_PM` 里 `OUTPUTONLY` 出现 0 次）；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
+     且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；同一个屏幕**不允许两个同名字段**；
+     多行行块必须满足 `HEIGHT = LOOP_BLOCK × LOOP_DISP`
  3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：行1 `-MATNR` / 行2 `-MAKTX` / 行3 `-QUAN` + `-MEINS`
     均只显（无标签）；行4 文本 `Actual Qty`；行5 `-QUAN_COUNT` 可输入（实盘数量）+ `-MEINS_DSP`（只显单位）。
     注意：`-MEINS_DSP` 是结构里专供显示的第二个单位字段——同一个 dynpro 屏幕**不允许两个同名字段**

@@ -161,6 +161,9 @@ ENDLOOP.
   且 TOP include 必须有 `TABLES: zsdifhu_scr, zsdifhu_item, zsdifhu_prod.`
 - 可输入字段的 dynpro 属性只用 `INPUT_FLD + OUTPUT_FLD`，**不能带 `REQU_ENTRY`**，
   并在 PBO 里用 `set_screlm_input_on` 显式打开（见 README §5 第 8 条）。
+- 只读字段**只用 `OUTPUT_FLD`**（不加 `OUTPUTONLY`，否则是平面文字而非标准只读框；标准程序
+  `/SCWM/RF_INQUIRY_PM` 里 `OUTPUTONLY` 出现 0 次）。
+- 同一个 dynpro 屏幕**不允许两个同名字段**（两处都显示单位 → 用 `MEINS` + `MEINS_DSP` 两个字段）。
 
 ### 3.3 屏幕 2 PAI（序号选择）与屏幕 3 PAI（差异过账）
 

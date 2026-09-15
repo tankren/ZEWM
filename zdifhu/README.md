@@ -102,8 +102,11 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
   - block line 2: `ZSDIFHU_ITEM-MAKTX` (col 1, display only, length 30)
   - block line 3: `ZSDIFHU_ITEM-QUAN` (col 1, display only, length 13), `ZSDIFHU_ITEM-MEINS`
     (col 15, display only)
-- Read-only fields use `OUTPUT_FLD=X + OUTPUTONLY=X`; **input fields use only `INPUT_FLD=X + OUTPUT_FLD=X`
-  and must never carry `REQU_ENTRY`** (see §5 item 8)
+- Read-only fields use **`OUTPUT_FLD=X` only** — do **not** add `OUTPUTONLY`, which renders the value as
+  flat text instead of the standard read-only box (SAP's own RF screens use `OUTPUTONLY` 0 times);
+  **input fields use only `INPUT_FLD=X + OUTPUT_FLD=X` and must never carry `REQU_ENTRY`** (see §5 item 8)
+- A dynpro screen may not contain two fields with the same name — two display fields that both need the
+  unit use two DDIC fields (`MEINS` + `MEINS_DSP`)
 - A multi-line block must satisfy **`HEIGHT = LOOP_BLOCK × LOOP_DISP`** (all standard screens do, e.g.
   `/SCWM/RF_INQUIRY_PM` screen 0204: `LOOP_BLOCK=4 × LOOP_DISP=2 = HEIGHT=8`)
 - Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9001.abap`):
