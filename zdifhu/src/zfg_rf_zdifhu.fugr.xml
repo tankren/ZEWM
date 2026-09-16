@@ -594,8 +594,8 @@
       <DESCRIPT>ZDIFHU HU detail</DESCRIPT>
       <TYPE>I</TYPE>
       <NEXTSCREEN>9004</NEXTSCREEN>
-      <LINES>007</LINES>
-      <COLUMNS>040</COLUMNS>
+      <LINES>013</LINES>
+      <COLUMNS>027</COLUMNS>
      </HEADER>
      <CONTAINERS>
       <RPY_DYCATT>
@@ -608,74 +608,8 @@
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-HUIDENT</NAME>
-       <LINE>001</LINE>
-       <COLUMN>001</COLUMN>
-       <LENGTH>006</LENGTH>
-       <VISLENGTH>006</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <MODIFIC>2</MODIFIC>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <LABELLEFT>X</LABELLEFT>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEMPLATE</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-HUIDENT</NAME>
-       <TEXT>__________________________</TEXT>
-       <ROLLING>X</ROLLING>
-       <LINE>001</LINE>
-       <COLUMN>008</COLUMN>
-       <LENGTH>026</LENGTH>
-       <VISLENGTH>020</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <MODIFIC>X</MODIFIC>
-       <CONV_EXIT>RFAHU</CONV_EXIT>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-LETYP</NAME>
-       <LINE>001</LINE>
-       <COLUMN>029</COLUMN>
-       <LENGTH>004</LENGTH>
-       <VISLENGTH>004</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <MODIFIC>2</MODIFIC>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <LABELLEFT>X</LABELLEFT>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEMPLATE</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-LETYP</NAME>
-       <LINE>001</LINE>
-       <COLUMN>034</COLUMN>
-       <LENGTH>004</LENGTH>
-       <VISLENGTH>004</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-PMAT</NAME>
-       <LINE>002</LINE>
+       <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
@@ -683,6 +617,37 @@
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
        <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-LETYP</NAME>
+       <LINE>001</LINE>
+       <COLUMN>018</COLUMN>
+       <LENGTH>004</LENGTH>
+       <VISLENGTH>004</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-LETYP</NAME>
+       <LINE>001</LINE>
+       <COLUMN>023</COLUMN>
+       <LENGTH>004</LENGTH>
+       <VISLENGTH>004</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
        <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
       <RPY_DYFATC>
@@ -693,7 +658,7 @@
        <TEXT>________________________________</TEXT>
        <ROLLING>X</ROLLING>
        <LINE>002</LINE>
-       <COLUMN>008</COLUMN>
+       <COLUMN>001</COLUMN>
        <LENGTH>032</LENGTH>
        <VISLENGTH>026</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -730,7 +695,7 @@
        <LINE>003</LINE>
        <COLUMN>008</COLUMN>
        <LENGTH>255</LENGTH>
-       <VISLENGTH>012</VISLENGTH>
+       <VISLENGTH>015</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -746,7 +711,7 @@
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-UNIT_GW</NAME>
        <LINE>003</LINE>
-       <COLUMN>021</COLUMN>
+       <COLUMN>024</COLUMN>
        <LENGTH>003</LENGTH>
        <VISLENGTH>003</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -761,9 +726,45 @@
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-MAX_WEIGHT</NAME>
+       <LINE>004</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>006</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-MAX_WEIGHT</NAME>
+       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
+       <ROLLING>X</ROLLING>
+       <LINE>004</LINE>
+       <COLUMN>008</COLUMN>
+       <LENGTH>255</LENGTH>
+       <VISLENGTH>015</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>X</MODIFIC>
+       <CONV_EXIT>QNTY1</CONV_EXIT>
+       <UP_LOWER>X</UP_LOWER>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-T_WEIGHT</NAME>
-       <LINE>003</LINE>
-       <COLUMN>025</COLUMN>
+       <LINE>005</LINE>
+       <COLUMN>001</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -780,10 +781,10 @@
        <NAME>/SCWM/S_RF_INQ_HU-T_WEIGHT</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>003</LINE>
-       <COLUMN>032</COLUMN>
+       <LINE>005</LINE>
+       <COLUMN>008</COLUMN>
        <LENGTH>255</LENGTH>
-       <VISLENGTH>008</VISLENGTH>
+       <VISLENGTH>015</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -798,7 +799,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-G_VOLUME</NAME>
-       <LINE>004</LINE>
+       <LINE>006</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
@@ -816,10 +817,10 @@
        <NAME>/SCWM/S_RF_INQ_HU-G_VOLUME</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>004</LINE>
+       <LINE>006</LINE>
        <COLUMN>008</COLUMN>
        <LENGTH>255</LENGTH>
-       <VISLENGTH>012</VISLENGTH>
+       <VISLENGTH>015</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -834,8 +835,8 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-UNIT_GV</NAME>
-       <LINE>004</LINE>
-       <COLUMN>021</COLUMN>
+       <LINE>006</LINE>
+       <COLUMN>024</COLUMN>
        <LENGTH>003</LENGTH>
        <VISLENGTH>003</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -850,9 +851,45 @@
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-MAX_VOLUME</NAME>
+       <LINE>007</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>006</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-MAX_VOLUME</NAME>
+       <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
+       <ROLLING>X</ROLLING>
+       <LINE>007</LINE>
+       <COLUMN>008</COLUMN>
+       <LENGTH>255</LENGTH>
+       <VISLENGTH>015</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>X</MODIFIC>
+       <CONV_EXIT>QNTY1</CONV_EXIT>
+       <UP_LOWER>X</UP_LOWER>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-T_VOLUME</NAME>
-       <LINE>004</LINE>
-       <COLUMN>025</COLUMN>
+       <LINE>008</LINE>
+       <COLUMN>001</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -869,10 +906,10 @@
        <NAME>/SCWM/S_RF_INQ_HU-T_VOLUME</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>004</LINE>
-       <COLUMN>032</COLUMN>
+       <LINE>008</LINE>
+       <COLUMN>008</COLUMN>
        <LENGTH>255</LENGTH>
-       <VISLENGTH>008</VISLENGTH>
+       <VISLENGTH>015</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
@@ -889,7 +926,7 @@
        <NAME>/SCWM/S_RF_INQ_HU-LENGTH</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>005</LINE>
+       <LINE>009</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>255</LENGTH>
        <VISLENGTH>010</VISLENGTH>
@@ -908,7 +945,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>T1</NAME>
        <TEXT>/</TEXT>
-       <LINE>005</LINE>
+       <LINE>009</LINE>
        <COLUMN>012</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
@@ -923,7 +960,7 @@
        <NAME>/SCWM/S_RF_INQ_HU-WIDTH</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>005</LINE>
+       <LINE>009</LINE>
        <COLUMN>014</COLUMN>
        <LENGTH>255</LENGTH>
        <VISLENGTH>010</VISLENGTH>
@@ -942,7 +979,7 @@
        <TYPE>TEXT</TYPE>
        <NAME>T2</NAME>
        <TEXT>/</TEXT>
-       <LINE>005</LINE>
+       <LINE>009</LINE>
        <COLUMN>025</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>002</VISLENGTH>
@@ -957,8 +994,8 @@
        <NAME>/SCWM/S_RF_INQ_HU-HEIGHT</NAME>
        <TEXT>____________________________________________________________________________________________________________________________________</TEXT>
        <ROLLING>X</ROLLING>
-       <LINE>005</LINE>
-       <COLUMN>027</COLUMN>
+       <LINE>010</LINE>
+       <COLUMN>001</COLUMN>
        <LENGTH>255</LENGTH>
        <VISLENGTH>010</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -976,8 +1013,8 @@
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-UNIT_LWH</NAME>
        <TEXT>___</TEXT>
-       <LINE>005</LINE>
-       <COLUMN>038</COLUMN>
+       <LINE>010</LINE>
+       <COLUMN>012</COLUMN>
        <LENGTH>003</LENGTH>
        <VISLENGTH>003</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -992,80 +1029,30 @@
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-WSBIN</NAME>
-       <TEXT>Bin</TEXT>
-       <LINE>006</LINE>
-       <COLUMN>001</COLUMN>
-       <LENGTH>003</LENGTH>
-       <VISLENGTH>003</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <MODIFIC>F</MODIFIC>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <LABELLEFT>X</LABELLEFT>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-WSBIN</NAME>
-       <ROLLING>X</ROLLING>
-       <LINE>006</LINE>
-       <COLUMN>005</COLUMN>
-       <LENGTH>018</LENGTH>
-       <VISLENGTH>018</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-DSTGRP</NAME>
-       <LINE>006</LINE>
-       <COLUMN>024</COLUMN>
-       <LENGTH>006</LENGTH>
-       <VISLENGTH>006</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <MODIFIC>2</MODIFIC>
-       <REQU_ENTRY>N</REQU_ENTRY>
-       <LABELLEFT>X</LABELLEFT>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEMPLATE</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-DSTGRP</NAME>
-       <ROLLING>X</ROLLING>
-       <LINE>006</LINE>
-       <COLUMN>031</COLUMN>
-       <LENGTH>010</LENGTH>
-       <VISLENGTH>010</VISLENGTH>
-       <HEIGHT>001</HEIGHT>
-       <FORMAT>CHAR</FORMAT>
-       <FROM_DICT>X</FROM_DICT>
-       <OUTPUT_FLD>X</OUTPUT_FLD>
-       <REQU_ENTRY>N</REQU_ENTRY>
-      </RPY_DYFATC>
-      <RPY_DYFATC>
-       <CONT_TYPE>SCREEN</CONT_TYPE>
-       <CONT_NAME>SCREEN</CONT_NAME>
-       <TYPE>TEXT</TYPE>
-       <NAME>/SCWM/S_RF_INQ_HU-TOP</NAME>
-       <LINE>007</LINE>
-       <COLUMN>001</COLUMN>
+       <NAME>/SCWM/S_RF_INQ_HU-HAZMAT_IND</NAME>
+       <LINE>010</LINE>
+       <COLUMN>023</COLUMN>
        <LENGTH>004</LENGTH>
        <VISLENGTH>004</VISLENGTH>
        <HEIGHT>001</HEIGHT>
        <FORMAT>CHAR</FORMAT>
        <FROM_DICT>X</FROM_DICT>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-TOP</NAME>
+       <LINE>011</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>004</LENGTH>
+       <VISLENGTH>003</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
        <MODIFIC>2</MODIFIC>
        <REQU_ENTRY>N</REQU_ENTRY>
        <LABELLEFT>X</LABELLEFT>
@@ -1075,7 +1062,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-TOP</NAME>
-       <LINE>007</LINE>
+       <LINE>011</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>002</VISLENGTH>
@@ -1090,7 +1077,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-BOTTOM</NAME>
-       <LINE>007</LINE>
+       <LINE>011</LINE>
        <COLUMN>008</COLUMN>
        <LENGTH>004</LENGTH>
        <VISLENGTH>004</VISLENGTH>
@@ -1106,7 +1093,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-BOTTOM</NAME>
-       <LINE>007</LINE>
+       <LINE>011</LINE>
        <COLUMN>013</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
@@ -1121,7 +1108,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-FLGMOVE</NAME>
-       <LINE>007</LINE>
+       <LINE>011</LINE>
        <COLUMN>015</COLUMN>
        <LENGTH>004</LENGTH>
        <VISLENGTH>004</VISLENGTH>
@@ -1138,7 +1125,7 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-FLGMOVE</NAME>
-       <LINE>007</LINE>
+       <LINE>011</LINE>
        <COLUMN>020</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
@@ -1155,8 +1142,8 @@
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-PHYSTAT</NAME>
-       <LINE>007</LINE>
-       <COLUMN>022</COLUMN>
+       <LINE>012</LINE>
+       <COLUMN>001</COLUMN>
        <LENGTH>006</LENGTH>
        <VISLENGTH>006</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -1173,8 +1160,8 @@
        <TYPE>TEMPLATE</TYPE>
        <NAME>/SCWM/S_RF_INQ_HU-PHYSTAT</NAME>
        <TEXT>_</TEXT>
-       <LINE>007</LINE>
-       <COLUMN>029</COLUMN>
+       <LINE>012</LINE>
+       <COLUMN>008</COLUMN>
        <LENGTH>001</LENGTH>
        <VISLENGTH>001</VISLENGTH>
        <HEIGHT>001</HEIGHT>
@@ -1185,6 +1172,71 @@
        <REQU_ENTRY>N</REQU_ENTRY>
        <POSS_ENTRY>0</POSS_ENTRY>
        <DICT_I_VAL>X</DICT_I_VAL>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-DSTGRP</NAME>
+       <LINE>012</LINE>
+       <COLUMN>010</COLUMN>
+       <LENGTH>006</LENGTH>
+       <VISLENGTH>006</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>2</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-DSTGRP</NAME>
+       <ROLLING>X</ROLLING>
+       <LINE>012</LINE>
+       <COLUMN>017</COLUMN>
+       <LENGTH>010</LENGTH>
+       <VISLENGTH>010</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>N</REQU_ENTRY>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEXT</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-WSBIN</NAME>
+       <TEXT>Bin</TEXT>
+       <LINE>013</LINE>
+       <COLUMN>001</COLUMN>
+       <LENGTH>003</LENGTH>
+       <VISLENGTH>003</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <MODIFIC>F</MODIFIC>
+       <REQU_ENTRY>N</REQU_ENTRY>
+       <LABELLEFT>X</LABELLEFT>
+      </RPY_DYFATC>
+      <RPY_DYFATC>
+       <CONT_TYPE>SCREEN</CONT_TYPE>
+       <CONT_NAME>SCREEN</CONT_NAME>
+       <TYPE>TEMPLATE</TYPE>
+       <NAME>/SCWM/S_RF_INQ_HU-WSBIN</NAME>
+       <ROLLING>X</ROLLING>
+       <LINE>013</LINE>
+       <COLUMN>005</COLUMN>
+       <LENGTH>018</LENGTH>
+       <VISLENGTH>018</VISLENGTH>
+       <HEIGHT>001</HEIGHT>
+       <FORMAT>CHAR</FORMAT>
+       <FROM_DICT>X</FROM_DICT>
+       <OUTPUT_FLD>X</OUTPUT_FLD>
+       <REQU_ENTRY>N</REQU_ENTRY>
       </RPY_DYFATC>
       <RPY_DYFATC>
        <CONT_TYPE>SCREEN</CONT_TYPE>
