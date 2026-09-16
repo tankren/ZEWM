@@ -122,14 +122,16 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 
 **Screen 9001 (list)**: subscreen, 7 lines × 40 columns
 
-- Line 1: text `No.` (col 1) + `ZSDIFHU_SCR-SELNO` (col 6, **input**, NUMC 3)
-- Line 2: text `HU:` (col 1) + `ZSDIFHU_SCR-HUIDENT` (col 6, display only)
+- Line 1: text `No.` (col 1, length 3) + `ZSDIFHU_SCR-SELNO` (col 5, **input**, NUMC, length 3 —
+  the sequence box is deliberately only 3 wide, it does not fill the line)
+- Line 2: text `HU:` (col 1, length 3) + `ZSDIFHU_SCR-HUIDENT` (col 5, display only, length 22)
 - From line 3: select the 5 DDIC fields as a Step Loop, **3 lines per block** (`LOOP_BLOCK=3`,
   `LOOP_DISP=1`, `HEIGHT=3`; one material takes 3 lines, so one complete material fits on the screen):
-  - block line 1: `ZSDIFHU_ITEM-SEQNO` (col 1, display only), `ZSDIFHU_ITEM-MATNR` (col 5, display only)
-  - block line 2: `ZSDIFHU_ITEM-MAKTX` (col 1, display only, length 30)
-  - block line 3: `ZSDIFHU_ITEM-QUAN` (col 1, display only, length 13), `ZSDIFHU_ITEM-MEINS`
-    (col 15, display only)
+  - block line 1: `ZSDIFHU_ITEM-SEQNO` (col 1, display only, length 3), `ZSDIFHU_ITEM-MATNR`
+    (col 5, display only, length 22)
+  - block line 2: `ZSDIFHU_ITEM-MAKTX` (col 1, display only, length 26)
+  - block line 3: `ZSDIFHU_ITEM-QUAN` (col 5, display only, length 18), `ZSDIFHU_ITEM-MEINS`
+    (col 24, display only, length 3)
 - Read-only fields use **`OUTPUT_FLD=X` only** — do **not** add `OUTPUTONLY`, which renders the value as
   flat text instead of the standard read-only box (SAP's own RF screens use `OUTPUTONLY` 0 times);
   **input fields use only `INPUT_FLD=X + OUTPUT_FLD=X` and must never carry `REQU_ENTRY`** (see §5 item 8)
@@ -156,11 +158,13 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 
 **Screen 9002 (detail)**: subscreen, 7 lines × 40 columns
 
-- Line 1: `ZSDIFHU_PROD-MATNR` (display only, no label)
-- Line 2: `ZSDIFHU_PROD-MAKTX` (display only, no label)
-- Line 3: `ZSDIFHU_PROD-QUAN` (display only) + `ZSDIFHU_PROD-MEINS` (display only)
-- Line 4: text `Actual Qty` (the only label kept on the screen)
-- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (**input**) + `ZSDIFHU_PROD-MEINS_DSP` (display only)
+- Line 1: `ZSDIFHU_PROD-MATNR` (col 1, display only, no label, length 26)
+- Line 2: `ZSDIFHU_PROD-MAKTX` (col 1, display only, no label, length 26)
+- Line 3: `ZSDIFHU_PROD-QUAN` (col 1, display only, length 22) + `ZSDIFHU_PROD-MEINS`
+  (col 24, display only, length 3)
+- Line 4: text `Actual Qty` (col 1, length 26 — the only label kept on the screen)
+- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (col 1, **input**, length 22) + `ZSDIFHU_PROD-MEINS_DSP`
+  (col 24, display only, length 3)
   (`MEINS_DSP` is a second unit field kept in the structure for display only — a dynpro screen may not
   contain two fields with the same name. The duplicate names you see in SAP's own RF screens are always
   "TEXT label + TEMPLATE field" pairs, never two TEMPLATE fields.)

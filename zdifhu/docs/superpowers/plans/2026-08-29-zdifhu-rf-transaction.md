@@ -1318,19 +1318,20 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 
 1. SE51 → 程序 `SAPLZFG_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，7 行 × 40 列
 2. 布局（列表屏）：
-   - 行 1：文本 `No.`(c1) + `ZSDIFHU_SCR-SELNO`(c6，可输入，NUMC 3)
-   - 行 2：文本 `HU:`(c1) + `ZSDIFHU_SCR-HUIDENT`(c6，只显)
+   - 行 1：文本 `No.`(c1，长 3) + `ZSDIFHU_SCR-SELNO`(c5，可输入，NUMC，长 3 —— 序号框故意只给 3 位，不占满整行)
+   - 行 2：文本 `HU:`(c1，长 3) + `ZSDIFHU_SCR-HUIDENT`(c5，只显，长 22)
    - 行 3 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 3 行**（LOOP_BLOCK=3、重复 1 次、
      HEIGHT=3，一屏 1 个物料）：
-     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`(c1)、`ZSDIFHU_ITEM-MATNR`(c5)（均只显）
-     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`(c1，长 30)
-     - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`(c1，长 13)、`ZSDIFHU_ITEM-MEINS`(c15)
+     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`(c1，长 3)、`ZSDIFHU_ITEM-MATNR`(c5，长 22)（均只显）
+     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`(c1，长 26)
+     - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`(c5，长 18)、`ZSDIFHU_ITEM-MEINS`(c24，长 3)
    - 只读字段属性**只用 `OUTPUT_FLD`**（不要加 `OUTPUTONLY`，加了是平面文字而非标准只读框；
      标准 `/SCWM/RF_INQUIRY_PM` 里 `OUTPUTONLY` 出现 0 次）；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
      且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；同一个屏幕**不允许两个同名字段**；
      多行行块必须满足 `HEIGHT = LOOP_BLOCK × LOOP_DISP`
- 3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：行1 `-MATNR` / 行2 `-MAKTX` / 行3 `-QUAN` + `-MEINS`
-    均只显（无标签）；行4 文本 `Actual Qty`；行5 `-QUAN_COUNT` 可输入（实盘数量）+ `-MEINS_DSP`（只显单位）。
+ 3. 屏幕 `9002`（明细屏，子屏幕 7 行 × 40 列）：行1 `-MATNR`(c1，长 26) / 行2 `-MAKTX`(c1，长 26) /
+    行3 `-QUAN`(c1，长 22) + `-MEINS`(c24，长 3) 均只显（无标签）；行4 文本 `Actual Qty`(c1，长 26)；
+    行5 `-QUAN_COUNT`(c1，长 22) 可输入（实盘数量）+ `-MEINS_DSP`(c24，长 3)（只显单位）。
     注意：`-MEINS_DSP` 是结构里专供显示的第二个单位字段——同一个 dynpro 屏幕**不允许两个同名字段**
     （标准 RF 里的同名都是「TEXT 标签字段 + TEMPLATE 字段」的组合）
 4. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
