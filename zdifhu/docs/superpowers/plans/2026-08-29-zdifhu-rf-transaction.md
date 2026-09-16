@@ -7,7 +7,7 @@
 **Architecture:** 包 `ZEWM` + 函数组 `ZFG_RF_ZDIFHU`（屏幕 9000/9001/9002 + **6 个** PBO/PAI FM）+ 4 个 DDIC 对象（结构 `ZSDIFHU_SCR`、`ZSDIFHU_ITEM`、`ZSDIFHU_PROD` + 表类型 `ZSDIFHU_ITEM_TT`）。RF 框架通过 Application Parameter（`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`）按名匹配 FM 的 CHANGING 参数传数据；差异过账用 `/SCWM/CL_WM_PACKING=>POST_DIFFERENCE`（**实例方法**：`CREATE OBJECT` + `->`）+ `SAVE` + `COMMIT WORK AND WAIT`。
 
 > ⚠️ **本文档是历史实施计划**：Task 1–11 的代码块记录的是**初版两屏设计**（跑通后被多轮修订）。
-> 最终实现以 **README**、本文档 §2 Customizing / §3 Plan B，以及文末「执行后修订 1/2/3」为准。
+> 最终实现以 **README**、本文档 §2 Customizing / §3 Plan B，以及文末「执行后修订 1–5」为准。
 
 **Tech Stack:** SAP S/4HANA embedded EWM（ABAP 7.50+）、abapGit 文件格式。
 
@@ -55,13 +55,14 @@ zdifhu/
     ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pbo.abap / _pai.abap
     ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pbo.abap / _pai.abap
     ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9002_pbo.abap / _pai.abap
-    ├── zfg_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap
+    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9004_pbo.abap / _pai.abap
+    ├── zfg_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap / screen_9004.abap
     ├── zfg_rf_zdifhu.fugr.i18n.de.po / .cs.po / .fr.po / .zh.po
     └── zewm_rf_msg.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
 ```
 
-（上表是**最终交付状态**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、`ZSDIFHU_PROD`、
-消息类 `ZEWM_RF_MSG` 与 8 个 LXE 翻译文件。）
+（上表是**最终交付状态**，共 **31 个文件**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、
+`ZSDIFHU_PROD`、消息类 `ZEWM_RF_MSG`、8 个 LXE 翻译文件，以及屏幕 9004 + `Z_RF_ZDIFHU_9004_PBO/_PAI`。）
 
 命名依据（已与 abapGit 官方测试仓库 `abapGit-tests/FUGR`、`abapGit-tests/FUGR_dynp_template` 核对）：
 - FUGR 文件名全小写；include 文件名 = `<fg>.fugr.<include小写名>.abap/.xml`
@@ -1277,7 +1278,8 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
    - APPLIC=`01`(WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
    - APPLIC=`01`(WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
    - APPLIC=`01`(WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
-2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`
+   - APPLIC=`01`(WME) / `CS_ZDIFHU_HU` / Parameter Type=`/SCWM/S_RF_INQ_HU`（HU 明细屏 9004，标准结构）
+2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`、`ZDIF4`
 3. **Define Step Flow**（`/SCWM/TSTEP_FLOW`）：
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
@@ -1288,22 +1290,28 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
    | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
    | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
    | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | HUINFO | Z_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
    | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
    | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
    | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF4 | INIT | Z_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
+   | ZDIFHU | ZDIF4 | BACK | Z_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
 
-4. **Define Function Code Profile**：含 INIT / ENTER / BACK（翻页 PGUP/PGDN 为框架预定义）
+4. **Define Function Code Profile**（`/SCWM/TFCOD_PRF`）：INIT / ENTER / BACK / CLEAR；**`ZDIF2` 加
+   `HUINFO`（`PUSHB=PB1`，或 `FNKEY=F1` + `SHORTCUT=01`）**；`ZDIF4` 加 BACK。`HUINFO` 必须在
+   `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在（翻页 PGUP/PGDN 为框架预定义）
 5. **Map Logical Transaction Step to Subscreen**：
    - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
    - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
    - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
+   - `ZDIFHU`/`ZDIF4` → `SAPLZFG_RF_ZDIFHU` `9004`
 6. **Presentation / Personalization Profile**：复用现有 `**` 或按需新建
 7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
 8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
    确认 `DIFD` + 业务上下文 `PPT` + 执行步骤 `16` 存在；不存在则维护或改代码
    （`z_rf_zdifhu_9002_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
 
-## 3. Plan B：屏幕 9001 / 9002 手工重建（仅当 import 屏幕报错时）
+## 3. Plan B：屏幕 9001 / 9002 / 9004 手工重建（仅当 import 屏幕报错时）
 
 abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 删除 fugr.xml 中对应屏幕的 `<item>` 重新 import，然后 SE51 手建：
@@ -1433,3 +1441,33 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
    `zewm_rf_msg.msag.i18n.<语言>.po` 改名（PO 内容只有 msgid/msgstr，不含对象名）+ 3 个 FM 里
    9 处 `MESSAGE eNNN(zewm_rf_msg)` + 文档。**PO 文件名必须与消息类名一致**，否则 abapGit 找不到对象；
    Pull 时对象已存在（新名字）→ 直接更新，不会留下旧对象。
+
+
+## 执行后修订 5（2026-09-16：HUINFO 按钮 + 屏幕 9004 HU 明细屏 —— 已系统实测通过）
+
+1. **需求**：在列表屏（屏幕 2 / 步 ZDIF2）加一个按钮，照抄标准 RF 查询事务 `INHUOV` 的 **HUINFO** 按钮，
+   进入一个显示 HU 抬头明细的新屏幕。
+2. **为什么不复用标准 FM**：标准 `/SCWM/RF_INQ_INHULT_PAI` 的 `HUINFO` 分支读的是它自己的容器
+   `CS_INQ_HU-HUIDENT`，我们的流程里该字段为空 → 复用会报 `e300`（HU is empty）。改为**在自己 PAI 里抄
+   标准逻辑**：`9001_PAI` 新增 `WHEN 'HUINFO'` 分支（清 selno / 清 `cs_zdifhu_hu` / HU 号空 → `e001` /
+   `CONVERSION_EXIT_ALPHA_INPUT` / `/SCWM/HU_READ` → `ls_huhdr` / 空 → `e002` / `MOVE-CORRESPONDING` 填
+   `cs_zdifhu_hu` / 库位回退链 `lgpla → rsrc → tu_num → wsbin` / 包装物料 `pmat = ls_huhdr-pmat_guid`（RAW16，
+   屏幕字段带 `CONV_EXIT=MDLPD` 自动显示物料号）/ `huident = cs_zdifhu_s_scr-huident`）。**分支只填容器，
+   不 `set_fcode` 跳屏** —— 跳屏由 step flow 的 `ZDIF2/HUINFO` 行完成。
+3. **新增对象**：屏幕 `9004`（**标准屏 `/SCWM/SAPLRF_INQUIRY_PM` 0202 的逐字节克隆**：13×27、38 个字段，
+   只改 PROGRAM / SCREEN / NEXTSCREEN / DESCRIPT；含之前漏掉的 `MAX_WEIGHT` / `MAX_VOLUME` / `HAZMAT_IND`）、
+   FM `Z_RF_ZDIFHU_9004_PBO`（只 `init_screen_param( ) + set_screen_param( 'CS_ZDIFHU_HU' )`）/
+   `Z_RF_ZDIFHU_9004_PAI`（只有 BACK 空处理）、App.Parameter `CS_ZDIFHU_HU → /SCWM/S_RF_INQ_HU`（**复用标准
+   结构，不新建 DDIC 对象**）、TOP include 加 `TABLES /scwm/s_rf_inq_hu.`。交付文件 28 → **31 个**。
+4. **注意（踩过的坑）**：
+   - 手搭的 7×40 屏幕会被 `RPY_DYNPRO_INSERT` 拒掉（整个 FUGR 反序列化失败 → 看不到屏幕 9004）→
+     **直接克隆标准屏幕**才稳。
+   - 同一个 dynpro 屏幕**不允许两个同名字段**；标准屏里的“同名”都是「`TEXT` 标签字段 + `TEMPLATE`
+     字段」配对（9004 里 14 组），不是错误。
+   - 新容器必须先配 `/SCWM/TPARAM_CAT` 行，否则按任何键都 `CALL_FUNCTION_PARM_MISSING`
+     （dump 里报 `CS_ZDIFHU_HU`）；`/SCWM/TSTEP_SCR` 里 ZDIF4 若指向标准程序 `/SCWM/SAPLRF_INQUIRY_PM`
+     屏幕 `202`，要改成 `SAPLZFG_RF_ZDIFHU` / `9004`。
+5. **系统最终配置（已实测）**：`/SCWM/TSTEP_FLOW` 12 行（新增 `ZDIF2/HUINFO → 9001_PAI, SSTEP=ZDIF4,
+   PRMOD=1, FCODE_BCKG=INIT`；`ZDIF4/INIT → 9004_PBO, PRMOD=2`；`ZDIF4/BACK → 9004_PAI, SSTEP=ZDIF2,
+   PRMOD=1, FCODE_BCKG=INIT`）；`/SCWM/TSTEP_SCR` ZDIF4 → `SAPLZFG_RF_ZDIFHU`/`9004`；`/SCWM/TFCOD_PRF`
+   `ZDIF2/HUINFO`（PUSHB=PB1 / FNKEY=F1 / SHORTCUT=01）+ `ZDIF4/BACK`；`/SCWM/TPARAM_CAT` 4 行。

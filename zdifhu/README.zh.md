@@ -2,11 +2,11 @@
 
 [English](README.md) | **中文**
 
-> **状态**：已在 S/4HANA embedded EWM（client 100）端到端实测通过 —— 三步流程、过账（盘盈/盘亏两个方向）、
-> BACK 返回链路、输入框属性、DE/CS/FR/ZH 多语言均在系统里验证过。交付：abapGit 仓库 `tankren/ZEWM`
-> 的 `zdifhu/` 子目录（28 个文件）。验收清单见 §4。
+> **状态**：已在 S/4HANA embedded EWM（client 100）端到端实测通过 —— 三步流程 + HU 明细屏（9004，从列表屏
+> 的 HUINFO 按钮进入）、过账（盘盈/盘亏两个方向）、BACK 返回链路、输入框属性、DE/CS/FR/ZH 多语言均在系统里
+> 验证过。交付：abapGit 仓库 `tankren/ZEWM` 的 `zdifhu/` 子目录（31 个文件）。验收清单见 §4。
 
-RF 逻辑事务 `ZDIFHU`，三步三屏：
+RF 逻辑事务 `ZDIFHU`，三步四屏（屏幕 9004 是 HU 明细，从屏幕 2 的 **HUINFO** 按钮进入）：
 
 1. **屏幕 1（9000）**：输/扫 HU 号 → ENTER
 2. **屏幕 2（9001）**：显示该 HU 内所有物料（**序号 + 物料号 / 描述 / 数量 + 单位**，
@@ -14,6 +14,10 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
 3. **屏幕 3（9002）**：显示选中物料的物料号/描述/当前数量/单位 + **实盘数量输入框**，
    输入实盘数量 → ENTER 立即过账差异（**差异 = 当前 − 实盘**，符号约定见 §4），随后回到列表并刷新数量
    （序号自动清空）
+4. **屏幕 4（9004）**：在屏幕 2 按 **HUINFO** 按钮（PB1 / F1）→ 显示 HU 抬头数据（HU 号、HU 类型、
+   包装物料、毛重/净重、毛体积/净体积、长宽高、库位等）；`BACK`（F7）返回列表。该屏幕是**标准 HU 明细屏**
+   `/SCWM/SAPLRF_INQUIRY_PM` **0202** 的克隆（13 × 27），数据容器复用**标准结构** `/SCWM/S_RF_INQ_HU`
+   —— **没有新增 DDIC 对象**
 
 过账 API：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`（实例方法）。
 
@@ -40,8 +44,10 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    - APPLIC=`01`（WME） / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
    - APPLIC=`01`（WME） / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
    - APPLIC=`01`（WME） / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+   - APPLIC=`01`（WME） / `CS_ZDIFHU_HU` / Parameter Type=`/SCWM/S_RF_INQ_HU`
+     （HU 明细屏 9004 用——复用**标准结构**，不需要建 Z 对象）
    （PARAM_NAME 必须与 FM 的 CHANGING 参数名**完全一致**，带 CS_/CT_ 前缀）
-2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`
+2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`、`ZDIF4`
 3. **Define Step Flow**（`/SCWM/TSTEP_FLOW`）：
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
@@ -52,9 +58,12 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
    | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
    | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | HUINFO | Z_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
    | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
    | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
    | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF4 | INIT | Z_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
+   | ZDIFHU | ZDIF4 | BACK | Z_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
 
    > **规则 A —— 跳步（踩过的坑）**：**凡是「A 步 → B 步」的跳转行，必须 `PRMOD=1` 且
    > `FCODE_BCKG` 填目标步 PBO 的触发码（这里是 `INIT`）**；`PRMOD=2` 只能用于
@@ -74,12 +83,15 @@ RF 逻辑事务 `ZDIFHU`，三步三屏：
    - ZDIF1/BACK 行：9000_PAI 内部 `set_fcode(c_fcode_compl_ltrans)` 结束事务
      （默认导航表 `/SCWM/TTRNS_NAV`）——**事务退出只在第一屏做**
    - 翻页（列表超一屏）由框架预定义 fcode **PGUP/PGDN** 自动处理，**不需**自定义 DOWN 行
-4. **Define Function Code Profile**：含 INIT / ENTER / BACK
+4. **Define Function Code Profile**（`/SCWM/TFCOD_PRF`）：三个工作步的 INIT / ENTER / BACK（及 CLEAR），
+   再加 **`ZDIF2` 的 `HUINFO`（`PUSHB=PB1`，或 `FNKEY=F1` + `SHORTCUT=01`）** 才能在列表屏看到按钮，
+   `ZDIF4` 加 BACK。`HUINFO` 本身必须在 `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在
    （翻页 PGUP/PGDN 是框架预定义 fcode，通过模板 pushbutton 自动可用）
 5. **Map Logical Transaction Step to Subscreen**：
    - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
    - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
    - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
+   - `ZDIFHU`/`ZDIF4` → `SAPLZFG_RF_ZDIFHU` `9004`
 6. **Presentation / Personalization Profile**：复用现有 `**` 或按需新建
 7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
 8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
@@ -142,6 +154,19 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
     MODULE USER_COMMAND_SSCR.
   ```
 
+**屏幕 9004（HU 明细）**：直接复制标准屏幕 `/SCWM/SAPLRF_INQUIRY_PM` 的 **0202**（13 行 × 27 列、38 个字段
+—— 每个属性一个 `TEXT` 标签字段 + 一个 `TEMPLATE` 字段，标准屏本身就是这种同名组合），只改程序名/屏号
+（`SAPLZFG_RF_ZDIFHU` / `9004`）。数据容器复用**标准结构** `/SCWM/S_RF_INQ_HU`，所以 TOP include 要有
+`TABLES /scwm/s_rf_inq_hu.`，容器 `CS_ZDIFHU_HU` 由 `9001_PAI` 的 `HUINFO` 分支填好。Flow logic：
+
+  ```abap
+  PROCESS BEFORE OUTPUT.
+    MODULE STATUS_SSCR.
+  *
+  PROCESS AFTER INPUT.
+    MODULE USER_COMMAND_SSCR.
+  ```
+
 激活。
 
 ## 4. 验收清单
@@ -157,6 +182,8 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
   （屏幕 2 的 BACK 只有在 step flow 的 `ZDIF3/ENTER` 行填 `SSTEP=ZDIF3 + PRMOD=0` 时才正确）
 - [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存，盘盈为负 → 加库存）；过账后 `/SCWM/MON` 库存正确
 - [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常（一屏 1 个物料，每个物料 3 行）
+- [ ] 屏幕 2 按 **HUINFO** 按钮（PB1/F1）→ 屏幕 4 显示 HU 抬头数据（HU 类型/包装物料/重量体积/长宽高/库位）；
+      `BACK`（F7）返回列表
 - [ ] 用语言 DE / CS / FR / ZH 登录 → 屏幕标签（`HU`、`No.`、`HU:`、`Actual Qty`）与报错消息均为译文
 
 > **过账符号约定（实现细节，改代码时别弄反）**：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`
@@ -200,9 +227,9 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
    见 `z_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`）。
 
 9. **按 ENTER 直接 dump `CALL_FUNCTION_PARM_MISSING`（`CX_SY_DYN_CALL_PARAM_MISSING`，
-   提示缺 `CS_ZDIFHU_PROD` 之类的参数）**：不是代码问题，是 `/SCWM/TPARAM_CAT`
+   提示缺 `CS_ZDIFHU_PROD` / `CS_ZDIFHU_HU` 之类的参数）**：不是代码问题，是 `/SCWM/TPARAM_CAT`
    （视图 `/SCWM/RF_CUSTOM`）**少了对应的数据容器行** → 框架拼不出参数表、在调 FM 之前
-   就报错（FM 函数体根本没执行）。核对 §2 第 1 步的 3 行是否都在。
+   就报错（FM 函数体根本没执行）。核对 §2 第 1 步的 **4 行**是否都在 —— dump 里报的参数名就是缺的那一行。
 
 10. **在列表屏按 BACK 又回到明细屏**：`/SCWM/TSTEP_FLOW` 里 `ZDIF3/ENTER` 行填成了
     `SSTEP=ZDIF2 + PRMOD=1`。改成 **`SSTEP=ZDIF3 + PRMOD=0`**（见 §2 第 3 步规则 B）。
@@ -213,16 +240,24 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
     `DE,CS,FR,ZH`（仓库 `.abapgit.xml` 里已经带了）。标签字段宽度：`HU`=2（屏 9000）、
     `No.`=3、`HU:`=3（屏 9001）、`Actual Qty`=10（屏 9002）。
 
+12. **列表屏看不到 HUINFO 按钮**：需要 function code profile 行 —— `/SCWM/TFCOD_PRF`，
+    `APPLIC=01` / `LTRANS=ZDIFHU` / `STEP=ZDIF2` / `FCODE=HUINFO`，`PUSHB=PB1`（或 `FNKEY=F1`），
+    且 `HUINFO` 要在 `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在（见 §2 第 4 步）。
+
+13. **HUINFO 跳到标准 HU 屏幕（或 dump）**：`/SCWM/TSTEP_SCR` 里 `ZDIF4` 指向的是标准程序
+    `/SCWM/SAPLRF_INQUIRY_PM` 的屏幕 `202`。把 `ZDIF4` 的两行改成 `SAPLZFG_RF_ZDIFHU` / `9004`
+    （见 §2 第 5 步）。
+
 ## 6. 对象清单
 
 | 对象 | 名称 | 说明 |
 |---|---|---|
 | 包 | ZEWM | |
-| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
+| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002/9004 + 8 FM（含 INCLUDE /SCWM/IRF_SSCR） |
 | 结构 | ZSDIFHU_SCR | 屏幕单值（HUIDENT + SELNO 序号输入） |
 | 结构 | ZSDIFHU_ITEM | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
 | 结构 | ZSDIFHU_PROD | 明细屏（SEQNO + MATNR + MAKTX + QUAN 当前 + MEINS + QUAN_COUNT 实盘 + MEINS_DSP + GUID_*） |
 | 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
-| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
-| 消息类 | ZEWM_RF_MSG | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
+| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS / CS_ZDIFHU_HU | 全局数据容器（Customizing）；`CS_ZDIFHU_HU` 指向**标准结构** `/SCWM/S_RF_INQ_HU`，供 HU 明细屏 9004 使用 |
+| 消息类 | ZEWM_RF_MSG | 8 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
 | 翻译 | `zfg_rf_zdifhu.fugr.i18n.<语言>.po` + `zewm_rf_msg.msag.i18n.<语言>.po` | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息，由 abapGit LXE 写回系统 |

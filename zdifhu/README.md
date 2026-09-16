@@ -3,11 +3,13 @@
 **English** | [中文](README.zh.md)
 
 > **Status:** implemented and verified end-to-end on S/4HANA embedded EWM (client 100) — the three-step
-> flow, posting in both directions, the BACK navigation chain, the input-field attributes and the
-> DE/CS/FR/ZH translations were all tested in the system. Delivery: abapGit repository
-> `tankren/ZEWM`, subfolder `zdifhu/` (28 files). Acceptance checklist: §4.
+> flow plus the HU-detail screen (9004, opened from the list via the HUINFO pushbutton), posting in both
+> directions, the BACK navigation chain, the input-field attributes and the DE/CS/FR/ZH translations were
+> all tested in the system. Delivery: abapGit repository `tankren/ZEWM`, subfolder `zdifhu/` (31 files).
+> Acceptance checklist: §4.
 
-RF logical transaction `ZDIFHU`, three steps / three screens:
+RF logical transaction `ZDIFHU`, three steps / four screens (screen 9004 is the HU detail, opened
+from screen 2 with the **HUINFO** pushbutton):
 
 1. **Screen 1 (9000)**: enter or scan the HU number → ENTER
 2. **Screen 2 (9001)**: lists every material inside that HU (**sequence no. + material no. / description /
@@ -17,6 +19,11 @@ RF logical transaction `ZDIFHU`, three steps / three screens:
    plus a **counted quantity input field**. Type the counted quantity → ENTER posts the difference
    immediately (**difference = current − counted**, sign convention see §4), then returns to the list and
    refreshes the quantity (the sequence number is cleared automatically)
+4. **Screen 4 (9004)**: on screen 2 press the **HUINFO** pushbutton (PB1 / F1) → the HU header data is
+   displayed (HU number, HU type, packaging material, gross/tare weight, gross/tare volume, dimensions,
+   bin, ...); `BACK` (F7) returns to the list. The screen is a **copy of the standard HU-detail screen**
+   `/SCWM/SAPLRF_INQUIRY_PM` 0202 (13 × 27) and reuses the **standard** structure `/SCWM/S_RF_INQ_HU` as
+   its data container — no new DDIC object was added for it
 
 Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
 
@@ -46,10 +53,12 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    - APPLIC=`01` (WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
    - APPLIC=`01` (WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
    - APPLIC=`01` (WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+   - APPLIC=`01` (WME) / `CS_ZDIFHU_HU` / Parameter Type=`/SCWM/S_RF_INQ_HU`
+     (HU-detail screen 9004 — the **standard** structure is reused, no Z object needed)
 
    (PARAM_NAME must match the CHANGING parameter names of the function modules **exactly**, including the
    CS_/CT_ prefix)
-2. **Define Steps in Logical Transaction**: `ZDIFHU` → `ZDIF1`, `ZDIF2`, `ZDIF3`
+2. **Define Steps in Logical Transaction**: `ZDIFHU` → `ZDIF1`, `ZDIF2`, `ZDIF3`, `ZDIF4`
 3. **Define Step Flow** (`/SCWM/TSTEP_FLOW`):
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
@@ -60,9 +69,12 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
    | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
    | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | HUINFO | Z_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
    | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
    | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
    | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF4 | INIT | Z_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
+   | ZDIFHU | ZDIF4 | BACK | Z_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
 
    > **Rule A — step changes (a pit we fell into)**: every row that jumps from step A to step B must use
    > `PRMOD=1` with `FCODE_BCKG` set to the PBO trigger code of the target step (`INIT` here). `PRMOD=2`
@@ -86,12 +98,16 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
      (default navigation table `/SCWM/TTRNS_NAV`) — **the transaction is exited from the first screen only**
    - Paging (when the list exceeds one screen) is handled automatically by the framework's predefined
      fcodes **PGUP/PGDN**; **no** custom DOWN row is needed
-4. **Define Function Code Profile**: include INIT / ENTER / BACK
+4. **Define Function Code Profile** (`/SCWM/TFCOD_PRF`): INIT / ENTER / BACK (and CLEAR) for the three
+   working steps, plus **`HUINFO` on `ZDIF2` with `PUSHB=PB1`** (or `FNKEY=F1` / `SHORTCUT=01`) so the
+   button appears on the list screen, and BACK on `ZDIF4`. `HUINFO` itself must exist in
+   `/SCWM/TFCOD_CAT` for `APPLIC=01`
    (PGUP/PGDN are framework-predefined fcodes, available automatically through the template pushbuttons)
 5. **Map Logical Transaction Step to Subscreen**:
    - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
    - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
    - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
+   - `ZDIFHU`/`ZDIF4` → `SAPLZFG_RF_ZDIFHU` `9004`
 6. **Presentation / Personalization Profile**: reuse the existing `**` or create new ones as needed
 7. **RF Menu Manager**: attach the transaction to a menu (while testing you can call it directly from the
    RF Test Environment)
@@ -158,6 +174,21 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
     MODULE USER_COMMAND_SSCR.
   ```
 
+**Screen 9004 (HU detail)**: copy the standard screen `/SCWM/SAPLRF_INQUIRY_PM` **0202** (13 lines × 27
+columns, 38 fields — one `TEXT` label + one `TEMPLATE` field per attribute; that duplicate-name pattern
+is exactly what SAP's own screens look like) and change only the program name / screen number
+(`SAPLZFG_RF_ZDIFHU` / `9004`). It reuses the **standard** structure `/SCWM/S_RF_INQ_HU`, so the TOP
+include needs `TABLES /scwm/s_rf_inq_hu.` and the container `CS_ZDIFHU_HU` is filled by the `HUINFO`
+branch of `9001_PAI`. Flow logic:
+
+  ```abap
+  PROCESS BEFORE OUTPUT.
+    MODULE STATUS_SSCR.
+  *
+  PROCESS AFTER INPUT.
+    MODULE USER_COMMAND_SSCR.
+  ```
+
 Activate.
 
 ## 4. Acceptance checklist
@@ -181,6 +212,8 @@ Activate.
 - [ ] Difference = current − counted (shortage positive → stock decreases, surplus negative → stock
       increases); verify the stock afterwards in `/SCWM/MON`
 - [ ] More than 1 material in the list → paging (PGUP/PGDN) works (one material per screen, 3 lines each)
+- [ ] On screen 2 press the **HUINFO** pushbutton (PB1 / F1) → screen 4 shows the HU header data
+      (HU type, packaging material, weights/volumes, dimensions, bin); `BACK` (F7) returns to the list
 - [ ] Log on with language DE / CS / FR / ZH → the screen labels (`HU`, `No.`, `HU:`, `Actual Qty`) and the
       error messages appear translated
 
@@ -229,10 +262,12 @@ Activate.
    `z_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`).
 
 9. **Pressing ENTER dumps immediately with `CALL_FUNCTION_PARM_MISSING` (`CX_SY_DYN_CALL_PARAM_MISSING`,
-   complaining about a missing parameter such as `CS_ZDIFHU_PROD`)**: this is not a code problem —
+   complaining about a missing parameter such as `CS_ZDIFHU_PROD` or `CS_ZDIFHU_HU`)**: this is not a
+   code problem —
    `/SCWM/TPARAM_CAT` (view `/SCWM/RF_CUSTOM`) is **missing the corresponding data container row**, so the
    framework cannot build the parameter table and fails before calling the FM (the FM body never executes).
-   Verify that all three rows from §2 step 1 exist.
+   Verify that all **four** rows from §2 step 1 exist — the parameter named in the dump tells you which
+   one is missing.
 
 10. **Pressing BACK on the list screen returns to the detail screen**: the `ZDIF3/ENTER` row in
     `/SCWM/TSTEP_FLOW` is set to `SSTEP=ZDIF2 + PRMOD=1`. Change it to **`SSTEP=ZDIF3 + PRMOD=0`**
@@ -245,16 +280,24 @@ Activate.
     `.abapgit.xml` already carries it). Field widths of the labels: `HU` = 2 (screen 9000), `No.` = 3,
     `HU:` = 3 (screen 9001), `Actual Qty` = 10 (screen 9002).
 
+12. **The HUINFO pushbutton does not appear on screen 2**: the fcode needs a function code profile row —
+    `/SCWM/TFCOD_PRF`, `APPLIC=01` / `LTRANS=ZDIFHU` / `STEP=ZDIF2` / `FCODE=HUINFO` with `PUSHB=PB1`
+    (or `FNKEY=F1`), and `HUINFO` must exist in `/SCWM/TFCOD_CAT` for `APPLIC=01` (see §2 step 4).
+
+13. **HUINFO jumps to the standard HU screen (or dumps)**: `/SCWM/TSTEP_SCR` maps `ZDIF4` to the standard
+    program `/SCWM/SAPLRF_INQUIRY_PM` screen `202`. Change both `ZDIF4` rows to `SAPLZFG_RF_ZDIFHU` /
+    `9004` (see §2 step 5).
+
 ## 6. Object list
 
 | Object | Name | Description |
 |---|---|---|
 | Package | ZEWM | |
-| Function Group | ZFG_RF_ZDIFHU | Screens 9000/9001/9002 + 6 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
+| Function Group | ZFG_RF_ZDIFHU | Screens 9000/9001/9002/9004 + 8 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
 | Structure | ZSDIFHU_SCR | Screen single values (HUIDENT + SELNO sequence input) |
 | Structure | ZSDIFHU_ITEM | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |
 | Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
 | Table type | ZSDIFHU_ITEM_TT | List internal table |
-| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | Global data containers (Customizing) |
+| App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS / CS_ZDIFHU_HU | Global data containers (Customizing). `CS_ZDIFHU_HU` points to the **standard** structure `/SCWM/S_RF_INQ_HU`, reused by the HU-detail screen 9004 |
 | Message class | ZEWM_RF_MSG | All error messages of the FMs (`MESSAGE eNNN(zewm_rf_msg)`, 001–011) |
 | Translations | `zfg_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_rf_msg.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |

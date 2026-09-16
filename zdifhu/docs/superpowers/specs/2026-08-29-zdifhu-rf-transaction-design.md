@@ -3,14 +3,14 @@
 - 日期：2026-08-29
 - 系统：SAP S/4HANA embedded EWM
 - 交付格式：abapGit 风格（参考 ZMM 项目：`src/package.devc.xml` + 源码 + README）
-- 状态：**已实现并在系统实测通过**（三步三屏 / 过账两个方向 / BACK 返回链路 / 输入属性 / 多语言）
-- 实现过程中的关键修订（与本文档初版的差异）见 plan 的「执行后修订 1–4」
+- 状态：**已实现并在系统实测通过**（三步四屏 / HU 明细屏 9004 / 过账两个方向 / BACK 返回链路 / 输入属性 / 多语言）
+- 实现过程中的关键修订（与本文档初版的差异）见 plan 的「执行后修订 1–5」
 
 ---
 
 ## 1. 需求概述
 
-新建 RF logical transaction `ZDIFHU`，三步三屏流程：
+新建 RF logical transaction `ZDIFHU`，三步四屏流程：
 
 **业务背景**：GR 收货后、上架前的 **shortage 识别与纠正** —— 实盘数量必须 **> 0**
 （0 无业务含义：没有货就不构成 shortage；负数、空都不允许）。
@@ -20,6 +20,9 @@
   顶部有**序号输入框**；输入序号 + ENTER → 进入屏幕 3
 - **屏幕 3 (9002)**：显示选中物料的明细（物料号 / 描述 / 当前数量 / 单位），
   输入**实盘数量** + ENTER → 立即过账差异 → 返回列表（序号自动清空）
+- **屏幕 4 (9004)**：在屏幕 2 上按 **HUINFO** 按钮（PB1/F1）→ 显示 HU 抬头信息（HU 类型、包装物料、
+  毛重/净重、毛体积/净体积、长宽高、库位、危险品标识等）；`BACK`(F7) 返回列表。该屏幕**直接复用标准屏幕**
+  `/SCWM/SAPLRF_INQUIRY_PM` 的 0202（13×27），数据容器复用**标准结构** `/SCWM/S_RF_INQ_HU`（不新增 DDIC 对象）
 - 一屏放不下时，用框架预定义的 **PGUP/PGDN** 翻页（模板上的翻页按钮）
 - 过账 API：`/SCWM/CL_WM_PACKING->POST_DIFFERENCE`（实例方法）
 - 差异计算：差异 = 当前系统数量 − 实盘数量（代码自己算，符号约定见 §3.3）
@@ -33,6 +36,7 @@
 | 屏幕 1 | `9000` | HU 号输入（子屏幕） |
 | 屏幕 2 | `9001` | 物料列表：序号 + 物料号/描述/数量/单位（每物料 3 行）+ 序号输入框 |
 | 屏幕 3 | `9002` | 明细 + 实盘数量输入 + 差异过账（子屏幕） |
+| 屏幕 4 | `9004` | HU 抬头明细（从屏幕 2 的 HUINFO 按钮进入；复用标准屏 0202 与标准结构 `/SCWM/S_RF_INQ_HU`） |
 | 全局结构（单值） | `ZSDIFHU_SCR` | 屏幕字段容器：huident、selno（序号输入） |
 | 全局结构（行） | `ZSDIFHU_ITEM` | 列表行：seqno, matnr, maktx, quan, meins, guid_stock, guid_hu |
 | 全局结构（明细） | `ZSDIFHU_PROD` | 明细屏：seqno, matnr, maktx, quan(当前), meins, quan_count(实盘), guid_* |
@@ -40,10 +44,12 @@
 | App. Parameter 1 | `CS_ZDIFHU_S_SCR` | PARAM_TYPE=`ZSDIFHU_SCR`（视图 `/SCWM/RF_CUSTOM`，表 `/SCWM/TPARAM_CAT`，APPLIC=`01`） |
 | App. Parameter 2 | `CT_ZDIFHU_T_ITEMS` | PARAM_TYPE=`ZSDIFHU_ITEM_TT`（同上） |
 | App. Parameter 3 | `CS_ZDIFHU_PROD` | PARAM_TYPE=`ZSDIFHU_PROD`（同上） |
+| App. Parameter 4 | `CS_ZDIFHU_HU` | PARAM_TYPE=`/SCWM/S_RF_INQ_HU`（**标准结构**，HU 明细屏 9004 用） |
 | FM PBO/PAI | `Z_RF_ZDIFHU_9000_PBO` / `_PAI` | 屏幕 1：读 HU、填列表 |
 | FM PBO/PAI | `Z_RF_ZDIFHU_9001_PBO` / `_PAI` | 屏幕 2：列表 + 序号选择 |
 | FM PBO/PAI | `Z_RF_ZDIFHU_9002_PBO` / `_PAI` | 屏幕 3：明细 + 差异过账 |
-| 消息类 | `ZEWM_RF_MSG` | 6 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
+| FM PBO/PAI | `Z_RF_ZDIFHU_9004_PBO` / `_PAI` | 屏幕 4：HU 明细（PBO 只注册容器 `CS_ZDIFHU_HU`；PAI 只有 BACK） |
+| 消息类 | `ZEWM_RF_MSG` | 8 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
 | 翻译 | `*.i18n.<语言>.po`（abapGit LXE） | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息；Pull 时自动写回系统 |
 
 ### Step Flow（/SCWM/TSTEP_FLOW）
@@ -61,6 +67,8 @@
 >   框架只做普通导航、调用栈里仍残留 ZDIF3 → 在列表屏按 `BACK` 会被弹回明细屏。
 > - **`BACK` 由框架弹内部调用栈处理**（不读 step flow 行的 `SSTEP`），保留 BACK 行只是为了
 >   让 BACK 也能触发对应屏幕的 PAI。
+> - **HUINFO 按钮（屏幕 2 → 屏幕 4）走同一条规则 A**：`ZDIF2/HUINFO → SSTEP=ZDIF4 + PRMOD=1 +
+>   FCODE_BCKG=INIT`；`HUINFO` 分支只填容器 `CS_ZDIFHU_HU`，不自己 `set_fcode` 跳屏。
 
 ```
 ZDIFHU / ZDIF1 / INIT  → Z_RF_ZDIFHU_9000_PBO  → ZDIF1  (PRMOD 2, 同步骤重显示)
@@ -72,6 +80,9 @@ ZDIFHU / ZDIF2 / BACK  → Z_RF_ZDIFHU_9001_PAI  → ZDIF1  (PRMOD 1, FCODE_BCKG
 ZDIFHU / ZDIF3 / INIT  → Z_RF_ZDIFHU_9002_PBO  → ZDIF3  (PRMOD 2, 同步骤重显示)
 ZDIFHU / ZDIF3 / ENTER → Z_RF_ZDIFHU_9002_PAI  → ZDIF3  (PRMOD 0, 不换步；返回靠 PAI 的 UPDBCK)
 ZDIFHU / ZDIF3 / BACK  → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF2 / HUINFO → Z_RF_ZDIFHU_9001_PAI → ZDIF4  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF4 / INIT  → Z_RF_ZDIFHU_9004_PBO  → ZDIF4  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF4 / BACK  → Z_RF_ZDIFHU_9004_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
 ```
 
 ### Customizing（SPRO → EWM → Mobile Data Entry → RF Framework）
@@ -81,16 +92,20 @@ ZDIFHU / ZDIF3 / BACK  → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG
    - APPLIC=`01`（WME），`CS_ZDIFHU_S_SCR` → Parameter Type `ZSDIFHU_SCR`
    - APPLIC=`01`（WME），`CT_ZDIFHU_T_ITEMS` → Parameter Type `ZSDIFHU_ITEM_TT`
    - APPLIC=`01`（WME），`CS_ZDIFHU_PROD` → Parameter Type `ZSDIFHU_PROD`
+   - APPLIC=`01`（WME），`CS_ZDIFHU_HU` → Parameter Type `/SCWM/S_RF_INQ_HU`（标准结构，HU 明细屏 9004）
    - 这些参数是跨步骤/跨 PBO-PAI 的全局数据容器，**必须同时作为 CHANGING 参数写进
-     6 个 FM 的接口**（框架按参数名匹配传入），且先于 step/flow 配置；漏配任何一行，
+     8 个 FM 的接口**（框架按参数名匹配传入），且先于 step/flow 配置；漏配任何一行，
      框架调 FM 时会直接 `CALL_FUNCTION_PARM_MISSING`
-2. Define Steps in Logical Transaction：`ZDIFHU` → steps `ZDIF1`、`ZDIF2`、`ZDIF3`
+2. Define Steps in Logical Transaction：`ZDIFHU` → steps `ZDIF1`、`ZDIF2`、`ZDIF3`、`ZDIF4`
 3. Define Step Flow：上表条目
-4. Define Function Code Profile：INIT / ENTER / BACK（翻页 PGUP/PGDN 为框架预定义）
+4. Define Function Code Profile（`/SCWM/TFCOD_PRF`）：三个工作步的 INIT / ENTER / BACK（及 CLEAR）；
+   **`ZDIF2` 加 `HUINFO`（`PUSHB=PB1`，或 `FNKEY=F1` + `SHORTCUT=01`）** 列表屏才有按钮；`ZDIF4` 加 BACK。
+   `HUINFO` 必须在 `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在（翻页 PGUP/PGDN 为框架预定义）
 5. Map Logical Transaction Step to Subscreen：
    - `ZDIFHU/ZDIF1` → `SAPLZFG_RF_ZDIFHU 9000`
    - `ZDIFHU/ZDIF2` → `SAPLZFG_RF_ZDIFHU 9001`
    - `ZDIFHU/ZDIF3` → `SAPLZFG_RF_ZDIFHU 9002`
+   - `ZDIFHU/ZDIF4` → `SAPLZFG_RF_ZDIFHU 9004`
 6. Presentation / Personalization Profile 分配（复用现有 `**`，或按需要新建）
 7. RF Menu Manager：菜单挂载（可选，测试期可直接用 RF Test Environment 调用）
 8. Define Exception Codes（SPRO → EWM → Cross-Process Settings → Exception Codes）：
@@ -98,14 +113,15 @@ ZDIFHU / ZDIF3 / BACK  → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG
 
 ## 3. 数据流与关键实现
 
-### 3.0 FM 接口约定（6 个 FM 统一）
+### 3.0 FM 接口约定（8 个 FM 统一）
 
 ```abap
-FUNCTION z_rf_zdifhu_9000_pbo.   " 其余 5 个 FM 同构（只声明本步用到的容器）
+FUNCTION z_rf_zdifhu_9000_pbo.   " 其余 7 个 FM 同构（只声明本步用到的容器）
 *"  CHANGING
 *"     REFERENCE(CS_ZDIFHU_S_SCR)   TYPE ZSDIFHU_SCR      " = App.Param CS_ZDIFHU_S_SCR
 *"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE ZSDIFHU_ITEM_TT  " = App.Param CT_ZDIFHU_T_ITEMS
 *"     REFERENCE(CS_ZDIFHU_PROD)    TYPE ZSDIFHU_PROD     " = App.Param CS_ZDIFHU_PROD
+*"     REFERENCE(CS_ZDIFHU_HU)      TYPE /SCWM/S_RF_INQ_HU " = App.Param CS_ZDIFHU_HU（屏幕 4，标准结构）
 ```
 - **不能有 `IMPORTING` 字段参数**（框架只传 CHANGING 参数表，见 §3.4）。
 - CHANGING 参数名与 Application Parameter 同名（带 `CS_`/`CT_` 前缀），框架按名匹配动态传入。
@@ -190,8 +206,29 @@ CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
       set_fcode('INIT') + MESSAGE e009(zewm_rf_msg).
     ENDIF.
     CLEAR cs_zdifhu_prod.                 " 明细由 9002_PBO 按 selno 填
+  WHEN 'HUINFO'.                            " 抄标准 /SCWM/RF_INQ_INHULT_PAI 的 HUINFO 分支
+    CLEAR cs_zdifhu_s_scr-selno.  CLEAR cs_zdifhu_hu.
+    lv_huident = cs_zdifhu_s_scr-huident.
+    IF lv_huident IS INITIAL.               " HU 号为空
+      set_fcode('INIT') + MESSAGE e001(zewm_rf_msg).
+    ENDIF.
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT' ... " 前导零补齐
+    CALL FUNCTION '/SCWM/HU_READ'            " 标准 FM（无 EXCEPTIONS 子句）
+      EXPORTING iv_lgnum = lv_lgnum  iv_huident = lv_huident
+      IMPORTING es_huhdr = ls_huhdr.
+    IF ls_huhdr-huident IS INITIAL.          " 查不到
+      set_fcode('INIT') + MESSAGE e002(zewm_rf_msg).
+    ENDIF.
+    MOVE-CORRESPONDING ls_huhdr TO cs_zdifhu_hu.
+    " 库位回退链 lgpla → rsrc → tu_num → wsbin；包装物料 PMAT = pmat_guid（RAW16，
+    " 屏幕字段带 CONV_EXIT=MDLPD，自动显示成物料号）
+    cs_zdifhu_hu-pmat = ls_huhdr-pmat_guid.
+    cs_zdifhu_hu-huident = cs_zdifhu_s_scr-huident.
 ENDCASE.
 ```
+（`HUINFO` 分支只填容器、**不自己 `set_fcode` 跳屏** —— 跳屏由 step flow 的 `ZDIF2/HUINFO` 行完成；
+屏幕 4 的 `9004_PBO` 只做 `init_screen_param( ) + set_screen_param( 'CS_ZDIFHU_HU' )`，`9004_PAI` 只有
+`BACK` 空处理。）
 
 **9002_PAI（明细屏，过账）**：
 
@@ -285,6 +322,13 @@ WHEN OTHERS.                              " ENTER
 │ Actual Qty                                 │
 │ [__________] PC   ← 唯一可输入框           │
 └────────────────────────────────────────────┘
+
+┌─ 屏幕 9004（HU 抬头明细，从屏幕 2 的 HUINFO 按钮进入）───────────┐
+│ 标准屏 /SCWM/SAPLRF_INQUIRY_PM 0202 的克隆：13 行 × 27 列、38 字段 │
+│ HU 号 / HU 类型 / 包装物料 / 毛重·净重 / 毛体积·净体积 / 长×宽×高 / │
+│ 库位 / 存储类型 / 危险品标识 / 顶·底标识 / 物理状态 …              │
+│ （全部只读；F7 = BACK 返回列表）                                  │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
 ## 5. 风险与待确认
@@ -312,5 +356,6 @@ WHEN OTHERS.                              " ENTER
 - [ ] 屏幕 3 输入 0 / 负数 / 留空 → 报错 "Counted quantity must be greater than zero"，不过账
 - [ ] 屏幕 3 按 BACK → 回列表；屏幕 2 按 BACK → 回屏幕 1；屏幕 1 按 BACK → 结束事务
 - [ ] 列表超 1 个物料 → 翻页（PGUP/PGDN）正常
+- [ ] 屏幕 2 按 **HUINFO** 按钮（PB1/F1）→ 屏幕 4 显示 HU 抬头数据；`BACK`(F7) 返回列表
 - [ ] 差异 = 当前 − 实盘（盘亏为正 → 减库存），过账后 `/SCWM/MON` 库存正确
 - [ ] 用 DE / CS / FR / ZH 登录 → 屏幕标签与报错消息为译文
