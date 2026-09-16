@@ -5,6 +5,10 @@ TABLES: zsdifhu_scr,
         zsdifhu_item,
         zsdifhu_prod.
 
+* HU 明细屏 9004 的屏幕字段工作区
+* （容器 CS_ZDIFHU_HU 的类型就是 /SCWM/S_RF_INQ_HU，框架按此名 ASSIGN，屏幕字段名 /SCWM/S_RF_INQ_HU-*）
+TABLES /scwm/s_rf_inq_hu.
+
 *----------------------------------------------------------------------*
 * 重读 HU，按 GUID_STOCK 刷新单行的当前数量（过账后调用）
 *----------------------------------------------------------------------*
