@@ -5,7 +5,7 @@
 > **Status:** implemented and verified end-to-end on S/4HANA embedded EWM (client 100) — the three-step
 > flow plus the HU-detail screen (9004, opened from the list via the HUINFO pushbutton), posting in both
 > directions, the BACK navigation chain, the input-field attributes and the DE/CS/FR/ZH translations were
-> all tested in the system. Delivery: abapGit repository `tankren/ZEWM`, subfolder `zdifhu/` (31 files).
+> all tested in the system. Delivery: abapGit repository `tankren/ZEWM`, subfolder `zdifhu/` (30 files).
 > Acceptance checklist: §4.
 
 RF logical transaction `ZDIFHU`, three steps / four screens (screen 9004 is the HU detail, opened

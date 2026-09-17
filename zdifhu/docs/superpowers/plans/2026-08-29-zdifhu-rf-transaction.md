@@ -43,7 +43,6 @@ zdifhu/
 ├── README.zh.md
 ├── docs/
 └── src/
-    ├── package.devc.xml
     ├── zewm_zdifhu_scr_1s.tabl.xml
     ├── zewm_zdifhu_item_1s.tabl.xml
     ├── zewm_zdifhu_item_1tt.ttyp.xml
@@ -61,7 +60,7 @@ zdifhu/
     └── zewm_msg_rf.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
 ```
 
-（上表是**最终交付状态**，共 **31 个文件**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、
+（上表是**最终交付状态**，共 **30 个文件**（**不含 `package.devc.xml`**，见文末「执行后修订 6」）；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、
 `ZEWM_ZDIFHU_PROD_1S`、消息类 `ZEWM_MSG_RF`、8 个 LXE 翻译文件，以及屏幕 9004 + `ZEWM_RF_ZDIFHU_9004_PBO/_PAI`。）
 
 命名依据（已与 abapGit 官方测试仓库 `abapGit-tests/FUGR`、`abapGit-tests/FUGR_dynp_template` 核对）：
@@ -1472,3 +1471,18 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
    PRMOD=1, FCODE_BCKG=INIT`；`ZDIF4/INIT → 9004_PBO, PRMOD=2`；`ZDIF4/BACK → 9004_PAI, SSTEP=ZDIF2,
    PRMOD=1, FCODE_BCKG=INIT`）；`/SCWM/TSTEP_SCR` ZDIF4 → `SAPLZEWM_RF_ZDIFHU`/`9004`；`/SCWM/TFCOD_PRF`
    `ZDIF2/HUINFO`（PUSHB=PB1 / FNKEY=F1 / SHORTCUT=01）+ `ZDIF4/BACK`；`/SCWM/TPARAM_CAT` 4 行。
+
+## 执行后修订 6（2026-09-17：公司命名规则改名 + 包名 + 删除 package.devc.xml）
+
+1. **全量改名到公司命名规则**（旧名 0 残留；内容改 22 个文件、文件改名 30 个；commit `7e092a5`）：
+   函数组 `ZFG_RF_ZDIFHU` → `ZEWM_RF_ZDIFHU`（主程序 `SAPLZEWM_RF_ZDIFHU`，TOP `LZEWM_RF_ZDIFHUTOP`，
+   UXX `LZEWM_RF_ZDIFHUUXX`）；8 个 FM `Z_RF_ZDIFHU_*` → `ZEWM_RF_ZDIFHU_*`；
+   结构 `ZSDIFHU_SCR`/`_ITEM`/`_PROD` → `ZEWM_ZDIFHU_SCR_1S`/`_ITEM_1S`/`_PROD_1S`（后缀 `_1S`）；
+   表类型 `ZSDIFHU_ITEM_TT` → `ZEWM_ZDIFHU_ITEM_1TT`（后缀 `_1TT`）；消息类 `ZEWM_RF_MSG` → `ZEWM_MSG_RF`。
+   **不改**：屏幕号 9000/9001/9002/9004、step 名 ZDIF1–4、App.Parameter 名（`CS_`/`CT_` 前缀，标准 SAP 方案包同样如此）、
+   复用的标准结构 `/SCWM/S_RF_INQ_HU`、不用命名空间。
+2. **包名 = `ZEWM_RFUI`**（写入 README ×2 / spec / plan；commit `43eda31`）。包名不在任何交付文件里，
+   由 abapGit 建 repo 时填写。
+3. **删除 `src/package.devc.xml`**（交付文件 31 → **30**）：abapGit 的 DEVC 反序列化在包已存在时执行
+   `set_all_attributes` 且 `ls_data_sign-ctext = abap_true`（另含 packtype/mainpack/restricted 等 sign），
+   会用 XML 里的 `CTEXT` 覆盖公司包的短文本并可能改动其属性；包由建 repo 时 F4 选择，本就存在，故不再交付该文件。

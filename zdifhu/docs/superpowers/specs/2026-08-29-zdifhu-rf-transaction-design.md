@@ -2,7 +2,7 @@
 
 - 日期：2026-08-29
 - 系统：SAP S/4HANA embedded EWM
-- 交付格式：abapGit 风格（参考 ZMM 项目：`src/package.devc.xml` + 源码 + README）
+- 交付格式：abapGit 风格（参考 ZMM 项目：`src/package.devc.xml` + 源码 + README）；**本项目不含 `package.devc.xml`** —— abapGit 反序列化 DEVC 时会把 XML 里的 `CTEXT` 写进已存在包的短文本并可能改动其它属性，包由建 repo 时选择，无需该文件
 - 状态：**已实现并在系统实测通过**（三步四屏 / HU 明细屏 9004 / 过账两个方向 / BACK 返回链路 / 输入属性 / 多语言）
 - 实现过程中的关键修订（与本文档初版的差异）见 plan 的「执行后修订 1–5」
 

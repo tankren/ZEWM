@@ -4,7 +4,7 @@
 
 > **状态**：已在 S/4HANA embedded EWM（client 100）端到端实测通过 —— 三步流程 + HU 明细屏（9004，从列表屏
 > 的 HUINFO 按钮进入）、过账（盘盈/盘亏两个方向）、BACK 返回链路、输入框属性、DE/CS/FR/ZH 多语言均在系统里
-> 验证过。交付：abapGit 仓库 `tankren/ZEWM` 的 `zdifhu/` 子目录（31 个文件）。验收清单见 §4。
+> 验证过。交付：abapGit 仓库 `tankren/ZEWM` 的 `zdifhu/` 子目录（30 个文件）。验收清单见 §4。
 
 RF 逻辑事务 `ZDIFHU`，三步四屏（屏幕 9004 是 HU 明细，从屏幕 2 的 **HUINFO** 按钮进入）：
 
