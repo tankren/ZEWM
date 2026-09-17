@@ -1,14 +1,14 @@
-FUNCTION z_rf_zdifhu_9001_pai.
+FUNCTION zewm_rf_zdifhu_9001_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZSDIFHU_PROD
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZEWM_ZDIFHU_PROD_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"     REFERENCE(CS_ZDIFHU_HU) TYPE  /SCWM/S_RF_INQ_HU
 *"----------------------------------------------------------------------
 
-  DATA: ls_item    TYPE zsdifhu_item,
+  DATA: ls_item    TYPE zewm_zdifhu_item_1s,
         ls_huhdr   TYPE /scwm/s_huhdr_int,
         lv_lgnum   TYPE /scwm/lgnum,
         lv_huident TYPE /scwm/de_huident.
@@ -32,7 +32,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
       lv_huident = cs_zdifhu_s_scr-huident.
       IF lv_huident IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(zewm_rf_msg).
+        MESSAGE e001(zewm_msg_rf).
       ENDIF.
 
       CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
@@ -50,7 +50,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
           es_huhdr   = ls_huhdr.
       IF ls_huhdr-huident IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e002(zewm_rf_msg).
+        MESSAGE e002(zewm_msg_rf).
       ENDIF.
 
       MOVE-CORRESPONDING ls_huhdr TO cs_zdifhu_hu.
@@ -84,7 +84,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
 *     未输序号：提示并停留本屏
       IF cs_zdifhu_s_scr-selno IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e008(zewm_rf_msg).
+        MESSAGE e008(zewm_msg_rf).
       ENDIF.
 
 *     序号不存在：提示并停留本屏
@@ -92,7 +92,7 @@ FUNCTION z_rf_zdifhu_9001_pai.
            WITH KEY seqno = cs_zdifhu_s_scr-selno.
       IF sy-subrc <> 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e009(zewm_rf_msg).
+        MESSAGE e009(zewm_msg_rf).
       ENDIF.
 
 *     选中成功：清明细容器，明细屏 PBO 会按序号重新填充

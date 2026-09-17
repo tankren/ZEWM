@@ -1,9 +1,9 @@
-FUNCTION z_rf_zdifhu_9000_pai.
+FUNCTION zewm_rf_zdifhu_9000_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
   DATA: lt_huident    TYPE /scwm/tt_huident,
@@ -15,7 +15,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
         ls_mat_global TYPE /scwm/s_material_global,
         lv_lgnum      TYPE /scwm/lgnum,
         lv_seqno      TYPE /scwm/de_rf_seqno,
-        ls_item       TYPE zsdifhu_item.
+        ls_item       TYPE zewm_zdifhu_item_1s.
 
   lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
   /scwm/cl_tm=>set_lgnum( lv_lgnum ).
@@ -33,7 +33,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
 *     空 HU：提示并停留本屏
       IF cs_zdifhu_s_scr-huident IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e001(zewm_rf_msg).
+        MESSAGE e001(zewm_msg_rf).
       ENDIF.
 
       ls_huident-huident = cs_zdifhu_s_scr-huident.
@@ -53,7 +53,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
           OTHERS         = 3.
       IF sy-subrc <> 0 OR lt_huhdr IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e002(zewm_rf_msg).
+        MESSAGE e002(zewm_msg_rf).
       ENDIF.
 
       READ TABLE lt_huhdr INTO ls_huhdr INDEX 1.
@@ -96,7 +96,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
 
       IF ct_zdifhu_t_items IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e003(zewm_rf_msg).
+        MESSAGE e003(zewm_msg_rf).
       ENDIF.
   ENDCASE.
 

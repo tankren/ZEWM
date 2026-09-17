@@ -1,15 +1,15 @@
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE LZFG_RF_ZDIFHUTOP.               " Global Declarations
+  INCLUDE LZEWM_RF_ZDIFHUTOP.               " Global Declarations
   INCLUDE /SCWM/IRF_SSCR.                   " RF Framework subscreen modules
-  INCLUDE LZFG_RF_ZDIFHUUXX.               " Function Modules
+  INCLUDE LZEWM_RF_ZDIFHUUXX.               " Function Modules
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *
 *******************************************************************
-* INCLUDE LZFG_RF_ZDIFHUF...               " Subroutines
-* INCLUDE LZFG_RF_ZDIFHUO...               " PBO-Modules
-* INCLUDE LZFG_RF_ZDIFHUI...               " PAI-Modules
-* INCLUDE LZFG_RF_ZDIFHUE...               " Events
-* INCLUDE LZFG_RF_ZDIFHUP...               " Local class implement.
+* INCLUDE LZEWM_RF_ZDIFHUF...               " Subroutines
+* INCLUDE LZEWM_RF_ZDIFHUO...               " PBO-Modules
+* INCLUDE LZEWM_RF_ZDIFHUI...               " PAI-Modules
+* INCLUDE LZEWM_RF_ZDIFHUE...               " Events
+* INCLUDE LZEWM_RF_ZDIFHUP...               " Local class implement.

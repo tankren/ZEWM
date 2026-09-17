@@ -4,7 +4,7 @@
 
 **Goal:** 交付 abapGit 风格源码包，实现 EWM RF 逻辑事务 `ZDIFHU`（HU 盘点差异过账，**3 屏流程**）。
 
-**Architecture:** 包 `ZEWM` + 函数组 `ZFG_RF_ZDIFHU`（屏幕 9000/9001/9002 + **6 个** PBO/PAI FM）+ 4 个 DDIC 对象（结构 `ZSDIFHU_SCR`、`ZSDIFHU_ITEM`、`ZSDIFHU_PROD` + 表类型 `ZSDIFHU_ITEM_TT`）。RF 框架通过 Application Parameter（`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`）按名匹配 FM 的 CHANGING 参数传数据；差异过账用 `/SCWM/CL_WM_PACKING=>POST_DIFFERENCE`（**实例方法**：`CREATE OBJECT` + `->`）+ `SAVE` + `COMMIT WORK AND WAIT`。
+**Architecture:** 包 `ZEWM` + 函数组 `ZEWM_RF_ZDIFHU`（屏幕 9000/9001/9002 + **6 个** PBO/PAI FM）+ 4 个 DDIC 对象（结构 `ZEWM_ZDIFHU_SCR_1S`、`ZEWM_ZDIFHU_ITEM_1S`、`ZEWM_ZDIFHU_PROD_1S` + 表类型 `ZEWM_ZDIFHU_ITEM_1TT`）。RF 框架通过 Application Parameter（`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`）按名匹配 FM 的 CHANGING 参数传数据；差异过账用 `/SCWM/CL_WM_PACKING=>POST_DIFFERENCE`（**实例方法**：`CREATE OBJECT` + `->`）+ `SAVE` + `COMMIT WORK AND WAIT`。
 
 > ⚠️ **本文档是历史实施计划**：Task 1–11 的代码块记录的是**初版两屏设计**（跑通后被多轮修订）。
 > 最终实现以 **README**、本文档 §2 Customizing / §3 Plan B，以及文末「执行后修订 1–5」为准。
@@ -44,25 +44,25 @@ zdifhu/
 ├── docs/
 └── src/
     ├── package.devc.xml
-    ├── zsdifhu_scr.tabl.xml
-    ├── zsdifhu_item.tabl.xml
-    ├── zsdifhu_item_tt.ttyp.xml
-    ├── zsdifhu_prod.tabl.xml
-    ├── zewm_rf_msg.msag.xml
-    ├── zfg_rf_zdifhu.fugr.xml
-    ├── zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap / .xml
-    ├── zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap / .xml
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pbo.abap / _pai.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pbo.abap / _pai.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9002_pbo.abap / _pai.abap
-    ├── zfg_rf_zdifhu.fugr.z_rf_zdifhu_9004_pbo.abap / _pai.abap
-    ├── zfg_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap / screen_9004.abap
-    ├── zfg_rf_zdifhu.fugr.i18n.de.po / .cs.po / .fr.po / .zh.po
-    └── zewm_rf_msg.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
+    ├── zewm_zdifhu_scr_1s.tabl.xml
+    ├── zewm_zdifhu_item_1s.tabl.xml
+    ├── zewm_zdifhu_item_1tt.ttyp.xml
+    ├── zewm_zdifhu_prod_1s.tabl.xml
+    ├── zewm_msg_rf.msag.xml
+    ├── zewm_rf_zdifhu.fugr.xml
+    ├── zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.abap / .xml
+    ├── zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.abap / .xml
+    ├── zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9000_pbo.abap / _pai.abap
+    ├── zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9001_pbo.abap / _pai.abap
+    ├── zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9002_pbo.abap / _pai.abap
+    ├── zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9004_pbo.abap / _pai.abap
+    ├── zewm_rf_zdifhu.fugr.screen_9000.abap / screen_9001.abap / screen_9002.abap / screen_9004.abap
+    ├── zewm_rf_zdifhu.fugr.i18n.de.po / .cs.po / .fr.po / .zh.po
+    └── zewm_msg_rf.msag.i18n.de.po / .cs.po / .fr.po / .zh.po
 ```
 
 （上表是**最终交付状态**，共 **31 个文件**；Task 1–11 只创建了最初的 15 个文件，后续修订新增了屏幕 9002、
-`ZSDIFHU_PROD`、消息类 `ZEWM_RF_MSG`、8 个 LXE 翻译文件，以及屏幕 9004 + `Z_RF_ZDIFHU_9004_PBO/_PAI`。）
+`ZEWM_ZDIFHU_PROD_1S`、消息类 `ZEWM_MSG_RF`、8 个 LXE 翻译文件，以及屏幕 9004 + `ZEWM_RF_ZDIFHU_9004_PBO/_PAI`。）
 
 命名依据（已与 abapGit 官方测试仓库 `abapGit-tests/FUGR`、`abapGit-tests/FUGR_dynp_template` 核对）：
 - FUGR 文件名全小写；include 文件名 = `<fg>.fugr.<include小写名>.abap/.xml`
@@ -128,11 +128,11 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
 
 ---
 
-### Task 2: DDIC 结构 ZSDIFHU_ITEM + 表类型 ZSDIFHU_ITEM_TT
+### Task 2: DDIC 结构 ZEWM_ZDIFHU_ITEM_1S + 表类型 ZEWM_ZDIFHU_ITEM_1TT
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zsdifhu_item.tabl.xml`
-- Create: `/home/tankren/opencode/zdifhu/src/zsdifhu_item_tt.ttyp.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_zdifhu_item_1s.tabl.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_zdifhu_item_1tt.ttyp.xml`
 
 结构字段（7 个，全部引用数据元素，COMPTYPE=E）：
 
@@ -148,7 +148,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
 
 ⚠️ 若某 `/SCWM/DE_*` 数据元素在目标系统不存在（SE11 核对），把该字段改为内建类型：QUAN→`DATATYPE=QUAN LENG=000013 DECIMALS=000003`、MEINS→`DATATYPE=UNIT LENG=000003`、GUID→`DATATYPE=CHAR LENG=000032`，并加 `<MASK>` 同 DATATYPE 值、`COMPTYPE=D`、去掉 ROLLNAME。
 
-- [ ] **Step 1: 写 `zsdifhu_item.tabl.xml`**
+- [ ] **Step 1: 写 `zewm_zdifhu_item_1s.tabl.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -156,7 +156,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DD02V>
-    <TABNAME>ZSDIFHU_ITEM</TABNAME>
+    <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
     <DDLANGUAGE>E</DDLANGUAGE>
     <TABCLASS>INTTAB</TABCLASS>
     <DDTEXT>RF ZDIFHU HU item line</DDTEXT>
@@ -164,7 +164,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
    </DD02V>
    <DD03P_TABLE>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>MATNR</FIELDNAME>
      <POSITION>0001</POSITION>
      <ROLLNAME>MATNR</ROLLNAME>
@@ -172,7 +172,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>MAKTX</FIELDNAME>
      <POSITION>0002</POSITION>
      <ROLLNAME>MAKTX</ROLLNAME>
@@ -180,7 +180,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>QUAN</FIELDNAME>
      <POSITION>0003</POSITION>
      <ROLLNAME>/SCWM/DE_QUANTITY</ROLLNAME>
@@ -188,7 +188,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>MEINS</FIELDNAME>
      <POSITION>0004</POSITION>
      <ROLLNAME>/SCWM/DE_BASE_UOM</ROLLNAME>
@@ -196,7 +196,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>DIFF_QUAN</FIELDNAME>
      <POSITION>0005</POSITION>
      <ROLLNAME>/SCWM/DE_QUANTITY</ROLLNAME>
@@ -204,7 +204,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>GUID_STOCK</FIELDNAME>
      <POSITION>0006</POSITION>
      <ROLLNAME>/LIME/GUID_STOCK</ROLLNAME>
@@ -212,7 +212,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_ITEM</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_ITEM_1S</TABNAME>
      <FIELDNAME>GUID_HU</FIELDNAME>
      <POSITION>0007</POSITION>
      <ROLLNAME>/SCWM/GUID_HU</ROLLNAME>
@@ -225,7 +225,7 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
 </abapGit>
 ```
 
-- [ ] **Step 2: 写 `zsdifhu_item_tt.ttyp.xml`**
+- [ ] **Step 2: 写 `zewm_zdifhu_item_1tt.ttyp.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -233,9 +233,9 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DD40V>
-    <TYPENAME>ZSDIFHU_ITEM_TT</TYPENAME>
+    <TYPENAME>ZEWM_ZDIFHU_ITEM_1TT</TYPENAME>
     <DDLANGUAGE>E</DDLANGUAGE>
-    <ROWTYPE>ZSDIFHU_ITEM</ROWTYPE>
+    <ROWTYPE>ZEWM_ZDIFHU_ITEM_1S</ROWTYPE>
     <ROWKIND>S</ROWKIND>
     <DATATYPE>STRU</DATATYPE>
     <ACCESSMODE>T</ACCESSMODE>
@@ -251,21 +251,21 @@ cd /home/tankren/opencode/zdifhu && for f in .abapgit.xml src/package.devc.xml; 
 - [ ] **Step 3: 验证**
 
 ```bash
-cd /home/tankren/opencode/zdifhu && for f in src/zsdifhu_item.tabl.xml src/zsdifhu_item_tt.ttyp.xml; do python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); print('OK', sys.argv[1])" "$f"; done
+cd /home/tankren/opencode/zdifhu && for f in src/zewm_zdifhu_item_1s.tabl.xml src/zewm_zdifhu_item_1tt.ttyp.xml; do python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); print('OK', sys.argv[1])" "$f"; done
 ```
 
 预期：两行 `OK ...`；并目视核对 7 个字段 POSITION 连续、ROLLNAME 与上表一致。
 
 ---
 
-### Task 3: DDIC 结构 ZSDIFHU_SCR
+### Task 3: DDIC 结构 ZEWM_ZDIFHU_SCR_1S
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zsdifhu_scr.tabl.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_zdifhu_scr_1s.tabl.xml`
 
 字段：HUIDENT（/SCWM/DE_HUIDENT，HU 号）、MATNR_SCAN（MATNR，屏幕 2 扫描框）。
 
-- [ ] **Step 1: 写 `zsdifhu_scr.tabl.xml`**
+- [ ] **Step 1: 写 `zewm_zdifhu_scr_1s.tabl.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -273,7 +273,7 @@ cd /home/tankren/opencode/zdifhu && for f in src/zsdifhu_item.tabl.xml src/zsdif
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <DD02V>
-    <TABNAME>ZSDIFHU_SCR</TABNAME>
+    <TABNAME>ZEWM_ZDIFHU_SCR_1S</TABNAME>
     <DDLANGUAGE>E</DDLANGUAGE>
     <TABCLASS>INTTAB</TABCLASS>
     <DDTEXT>RF ZDIFHU screen fields</DDTEXT>
@@ -281,7 +281,7 @@ cd /home/tankren/opencode/zdifhu && for f in src/zsdifhu_item.tabl.xml src/zsdif
    </DD02V>
    <DD03P_TABLE>
     <DD03P>
-     <TABNAME>ZSDIFHU_SCR</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_SCR_1S</TABNAME>
      <FIELDNAME>HUIDENT</FIELDNAME>
      <POSITION>0001</POSITION>
      <ROLLNAME>/SCWM/DE_HUIDENT</ROLLNAME>
@@ -289,7 +289,7 @@ cd /home/tankren/opencode/zdifhu && for f in src/zsdifhu_item.tabl.xml src/zsdif
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
     <DD03P>
-     <TABNAME>ZSDIFHU_SCR</TABNAME>
+     <TABNAME>ZEWM_ZDIFHU_SCR_1S</TABNAME>
      <FIELDNAME>MATNR_SCAN</FIELDNAME>
      <POSITION>0002</POSITION>
      <ROLLNAME>MATNR</ROLLNAME>
@@ -305,7 +305,7 @@ cd /home/tankren/opencode/zdifhu && for f in src/zsdifhu_item.tabl.xml src/zsdif
 - [ ] **Step 2: 验证**
 
 ```bash
-python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zsdifhu_scr.tabl.xml'); print('OK')"
+python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zewm_zdifhu_scr_1s.tabl.xml'); print('OK')"
 ```
 
 预期：`OK`。
@@ -315,15 +315,15 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 ### Task 4: Function Group 骨架（含 4 个 FM 接口定义）
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.xml`
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap`
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.xml`
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap`
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.xml`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.xml`
 
-4 个 FM 接口完全一致（spec §3.0）：`IMPORTING iv_lgnum TYPE /scwm/lgnum`（VALUE 参数）+ `CHANGING cs_zdifhu_s_scr TYPE zsdifhu_scr / ct_zdifhu_t_items TYPE zdifhu_item_tt`。CHANGING 参数名与 Application Parameter 同名（框架按名匹配）。每个参数在 `<DOCUMENTATION>` 中有一条 `<RSFDO>`（KIND=P），省略会导致 abapGit 永久显示 modified。`<DYNPROS>` 在 Task 9/10 追加。
+4 个 FM 接口完全一致（spec §3.0）：`IMPORTING iv_lgnum TYPE /scwm/lgnum`（VALUE 参数）+ `CHANGING cs_zdifhu_s_scr TYPE zewm_zdifhu_scr_1s / ct_zdifhu_t_items TYPE zdifhu_item_tt`。CHANGING 参数名与 Application Parameter 同名（框架按名匹配）。每个参数在 `<DOCUMENTATION>` 中有一条 `<RSFDO>`（KIND=P），省略会导致 abapGit 永久显示 modified。`<DYNPROS>` 在 Task 9/10 追加。
 
-- [ ] **Step 1: 写 `zfg_rf_zdifhu.fugr.xml`**
+- [ ] **Step 1: 写 `zewm_rf_zdifhu.fugr.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -332,12 +332,12 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
   <asx:values>
    <AREAT>RF ZDIFHU - HU difference posting</AREAT>
    <INCLUDES>
-    <SOBJ_NAME>LZFG_RF_ZDIFHUTOP</SOBJ_NAME>
-    <SOBJ_NAME>SAPLZFG_RF_ZDIFHU</SOBJ_NAME>
+    <SOBJ_NAME>LZEWM_RF_ZDIFHUTOP</SOBJ_NAME>
+    <SOBJ_NAME>SAPLZEWM_RF_ZDIFHU</SOBJ_NAME>
    </INCLUDES>
    <FUNCTIONS>
     <item>
-     <FUNCNAME>Z_RF_ZDIFHU_9000_PBO</FUNCNAME>
+     <FUNCNAME>ZEWM_RF_ZDIFHU_9000_PBO</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9000 PBO</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
@@ -348,11 +348,11 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
-       <TYP>ZSDIFHU_SCR</TYP>
+       <TYP>ZEWM_ZDIFHU_SCR_1S</TYP>
       </RSCHA>
       <RSCHA>
        <PARAMETER>CT_ZDIFHU_T_ITEMS</PARAMETER>
-       <TYP>ZSDIFHU_ITEM_TT</TYP>
+       <TYP>ZEWM_ZDIFHU_ITEM_1TT</TYP>
       </RSCHA>
      </CHANGING>
      <DOCUMENTATION>
@@ -371,7 +371,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      </DOCUMENTATION>
     </item>
     <item>
-     <FUNCNAME>Z_RF_ZDIFHU_9000_PAI</FUNCNAME>
+     <FUNCNAME>ZEWM_RF_ZDIFHU_9000_PAI</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9000 PAI</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
@@ -382,11 +382,11 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
-       <TYP>ZSDIFHU_SCR</TYP>
+       <TYP>ZEWM_ZDIFHU_SCR_1S</TYP>
       </RSCHA>
       <RSCHA>
        <PARAMETER>CT_ZDIFHU_T_ITEMS</PARAMETER>
-       <TYP>ZSDIFHU_ITEM_TT</TYP>
+       <TYP>ZEWM_ZDIFHU_ITEM_1TT</TYP>
       </RSCHA>
      </CHANGING>
      <DOCUMENTATION>
@@ -405,7 +405,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      </DOCUMENTATION>
     </item>
     <item>
-     <FUNCNAME>Z_RF_ZDIFHU_9001_PBO</FUNCNAME>
+     <FUNCNAME>ZEWM_RF_ZDIFHU_9001_PBO</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9001 PBO</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
@@ -416,11 +416,11 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
-       <TYP>ZSDIFHU_SCR</TYP>
+       <TYP>ZEWM_ZDIFHU_SCR_1S</TYP>
       </RSCHA>
       <RSCHA>
        <PARAMETER>CT_ZDIFHU_T_ITEMS</PARAMETER>
-       <TYP>ZSDIFHU_ITEM_TT</TYP>
+       <TYP>ZEWM_ZDIFHU_ITEM_1TT</TYP>
       </RSCHA>
      </CHANGING>
      <DOCUMENTATION>
@@ -439,7 +439,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      </DOCUMENTATION>
     </item>
     <item>
-     <FUNCNAME>Z_RF_ZDIFHU_9001_PAI</FUNCNAME>
+     <FUNCNAME>ZEWM_RF_ZDIFHU_9001_PAI</FUNCNAME>
      <SHORT_TEXT>RF ZDIFHU screen 9001 PAI</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
@@ -450,11 +450,11 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
      <CHANGING>
       <RSCHA>
        <PARAMETER>CS_ZDIFHU_S_SCR</PARAMETER>
-       <TYP>ZSDIFHU_SCR</TYP>
+       <TYP>ZEWM_ZDIFHU_SCR_1S</TYP>
       </RSCHA>
       <RSCHA>
        <PARAMETER>CT_ZDIFHU_T_ITEMS</PARAMETER>
-       <TYP>ZSDIFHU_ITEM_TT</TYP>
+       <TYP>ZEWM_ZDIFHU_ITEM_1TT</TYP>
       </RSCHA>
      </CHANGING>
      <DOCUMENTATION>
@@ -478,26 +478,26 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 </abapGit>
 ```
 
-- [ ] **Step 2: 写 `zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.abap`（主程序，固定模板）**
+- [ ] **Step 2: 写 `zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.abap`（主程序，固定模板）**
 
 ```abap
 *******************************************************************
 *   System-defined Include-files.                                 *
 *******************************************************************
-  INCLUDE LZFG_RF_ZDIFHUTOP.               " Global Declarations
-  INCLUDE LZFG_RF_ZDIFHUUXX.               " Function Modules
+  INCLUDE LZEWM_RF_ZDIFHUTOP.               " Global Declarations
+  INCLUDE LZEWM_RF_ZDIFHUUXX.               " Function Modules
 
 *******************************************************************
 *   User-defined Include-files (if necessary).                    *
 *******************************************************************
-* INCLUDE LZFG_RF_ZDIFHUF...               " Subroutines
-* INCLUDE LZFG_RF_ZDIFHUO...               " PBO-Modules
-* INCLUDE LZFG_RF_ZDIFHUI...               " PAI-Modules
-* INCLUDE LZFG_RF_ZDIFHUE...               " Events
-* INCLUDE LZFG_RF_ZDIFHUP...               " Local class implement.
+* INCLUDE LZEWM_RF_ZDIFHUF...               " Subroutines
+* INCLUDE LZEWM_RF_ZDIFHUO...               " PBO-Modules
+* INCLUDE LZEWM_RF_ZDIFHUI...               " PAI-Modules
+* INCLUDE LZEWM_RF_ZDIFHUE...               " Events
+* INCLUDE LZEWM_RF_ZDIFHUP...               " Local class implement.
 ```
 
-- [ ] **Step 3: 写 `zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.xml`**
+- [ ] **Step 3: 写 `zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -505,7 +505,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <PROGDIR>
-    <NAME>SAPLZFG_RF_ZDIFHU</NAME>
+    <NAME>SAPLZEWM_RF_ZDIFHU</NAME>
     <SUBC>F</SUBC>
     <RLOAD>E</RLOAD>
     <FIXPT>X</FIXPT>
@@ -516,17 +516,17 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 </abapGit>
 ```
 
-- [ ] **Step 4: 写 `zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.abap`（TOP：全局声明）**
+- [ ] **Step 4: 写 `zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.abap`（TOP：全局声明）**
 
 ```abap
-FUNCTION-POOL zfg_rf_zdifhu.             "MESSAGE-ID ..
+FUNCTION-POOL zewm_rf_zdifhu.             "MESSAGE-ID ..
 
-* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZSDIFHU_SCR-* / ZSDIFHU_ITEM-*）
-TABLES: zsdifhu_scr,
-        zsdifhu_item.
+* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZEWM_ZDIFHU_SCR_1S-* / ZEWM_ZDIFHU_ITEM_1S-*）
+TABLES: zewm_zdifhu_scr_1s,
+        zewm_zdifhu_item_1s.
 
 * 列表内表（屏幕 step-loop 数据源；PBO 时由 App.Param ZDIFHU_T_ITEMS 同步）
-DATA: gt_zdifhu_items TYPE zsdifhu_item_tt.
+DATA: gt_zdifhu_items TYPE zewm_zdifhu_item_1tt.
 
 * OK 码与 step-loop 翻页游标
 DATA: ok_code   TYPE sy-ucomm,
@@ -538,7 +538,7 @@ DATA: ok_code   TYPE sy-ucomm,
 FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
                            iv_huident    TYPE /scwm/de_huident
                            iv_guid_stock TYPE /lime/guid_stock
-                  CHANGING cs_item       TYPE zsdifhu_item.
+                  CHANGING cs_item       TYPE zewm_zdifhu_item_1s.
 
   DATA: lt_huident TYPE /scwm/tt_huident,
         ls_huident TYPE /scwm/s_huident,
@@ -571,7 +571,7 @@ FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
 ENDFORM.
 ```
 
-- [ ] **Step 5: 写 `zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.xml`**
+- [ ] **Step 5: 写 `zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.xml`**
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -579,7 +579,7 @@ ENDFORM.
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <PROGDIR>
-    <NAME>LZFG_RF_ZDIFHUTOP</NAME>
+    <NAME>LZEWM_RF_ZDIFHUTOP</NAME>
     <SUBC>I</SUBC>
     <FIXPT>X</FIXPT>
     <UCCHECK>X</UCCHECK>
@@ -592,31 +592,31 @@ ENDFORM.
 - [ ] **Step 6: 验证**
 
 ```bash
-cd /home/tankren/opencode/zdifhu/src && for f in zfg_rf_zdifhu.fugr.xml zfg_rf_zdifhu.fugr.saplzfg_rf_zdifhu.xml zfg_rf_zdifhu.fugr.lzfg_rf_zdifhutop.xml; do python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); print('OK', sys.argv[1])" "$f"; done
+cd /home/tankren/opencode/zdifhu/src && for f in zewm_rf_zdifhu.fugr.xml zewm_rf_zdifhu.fugr.saplzewm_rf_zdifhu.xml zewm_rf_zdifhu.fugr.lzewm_rf_zdifhutop.xml; do python3 -c "import xml.dom.minidom,sys; xml.dom.minidom.parse(sys.argv[1]); print('OK', sys.argv[1])" "$f"; done
 ```
 
 预期：三行 `OK ...`；目视核对 fugr.xml 含 4 个 `<item>`、每个含 1×RSIMP + 2×RSCHA + 3×RSFDO。
 
 ---
 
-### Task 5: FM Z_RF_ZDIFHU_9000_PBO
+### Task 5: FM ZEWM_RF_ZDIFHU_9000_PBO
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pbo.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9000_pbo.abap`
 
 PBO 只做一件事：初始化 TM 全局上下文（packing 类依赖）。数据清理由 BACK 流程回到本屏时由用户重新输入覆盖，不在 PBO 清（保留重显）。
 
 - [ ] **Step 1: 写 FM 文件**
 
 ```abap
-FUNCTION z_rf_zdifhu_9000_pbo.
+FUNCTION zewm_rf_zdifhu_9000_pbo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
 *"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
@@ -626,14 +626,14 @@ ENDFUNCTION.
 
 - [ ] **Step 2: 验证**
 
-目视核对：注释头参数与 fugr.xml 中 `Z_RF_ZDIFHU_9000_PBO` 的 RSIMP/RSCHA 完全一致（名字、类型、VALUE/REFERENCE）。
+目视核对：注释头参数与 fugr.xml 中 `ZEWM_RF_ZDIFHU_9000_PBO` 的 RSIMP/RSCHA 完全一致（名字、类型、VALUE/REFERENCE）。
 
 ---
 
-### Task 6: FM Z_RF_ZDIFHU_9000_PAI（HU 校验 + 库存读取）
+### Task 6: FM ZEWM_RF_ZDIFHU_9000_PAI（HU 校验 + 库存读取）
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.z_rf_zdifhu_9000_pai.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9000_pai.abap`
 
 逻辑（spec §3.1）：HU 号大写 → `/SCWM/HU_READ_MULT`（combined read）→ 只取直接项目（`guid_parent = huhdr-guid_hu`，不支持嵌套）→ MATID→MATNR（`/SCWM/MATERIAL_READ_SINGLE`）→ MAKT 描述 → 填 `ct_zdifhu_t_items`。失败时 `SET_FCODE( 'INIT' )` 回本屏 + `MESSAGE e001(00)` 报错（标准 RF FM 同款写法，框架捕获显示在 RF 屏底）。
 
@@ -642,14 +642,14 @@ ENDFUNCTION.
 - [ ] **Step 1: 写 FM 文件**
 
 ```abap
-FUNCTION z_rf_zdifhu_9000_pai.
+FUNCTION zewm_rf_zdifhu_9000_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
 *"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
   DATA: lt_huident    TYPE /scwm/tt_huident,
@@ -659,7 +659,7 @@ FUNCTION z_rf_zdifhu_9000_pai.
         lt_huitm      TYPE /scwm/tt_huitm,
         ls_huitm      TYPE /scwm/s_huitm,
         ls_mat_global TYPE /scwm/s_mat_global,
-        ls_item       TYPE zsdifhu_item.
+        ls_item       TYPE zewm_zdifhu_item_1s.
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
 
@@ -744,24 +744,24 @@ ENDFUNCTION.
 
 ---
 
-### Task 7: FM Z_RF_ZDIFHU_9001_PBO（列表三件套）
+### Task 7: FM ZEWM_RF_ZDIFHU_9001_PBO（列表三件套）
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pbo.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9001_pbo.abap`
 
 逻辑（spec §3.2）：三件套（init_screen_param / set_screen_param / set_scr_tabname）必需，否则 RF 框架无法把内表传到屏幕 step-loop；App.Param → FG 屏幕内表；光标定位扫描框。
 
 - [ ] **Step 1: 写 FM 文件**
 
 ```abap
-FUNCTION z_rf_zdifhu_9001_pbo.
+FUNCTION zewm_rf_zdifhu_9001_pbo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
 *"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
   /scwm/cl_tm=>set_lgnum( iv_lgnum ).
@@ -769,13 +769,13 @@ FUNCTION z_rf_zdifhu_9001_pbo.
 * RF 列表三件套（必需）
   /scwm/cl_rf_bll_srvc=>init_screen_param( ).
   /scwm/cl_rf_bll_srvc=>set_screen_param( 'ZDIFHU_T_ITEMS' ).
-  /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'ZSDIFHU_ITEM_TT' ).
+  /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'ZEWM_ZDIFHU_ITEM_1TT' ).
 
 * App.Param → 屏幕内表（step-loop 数据源）
   gt_zdifhu_items[] = ct_zdifhu_t_items[].
 
 * 光标回扫描框
-  SET CURSOR FIELD 'ZSDIFHU_SCR-MATNR_SCAN'.
+  SET CURSOR FIELD 'ZEWM_ZDIFHU_SCR_1S-MATNR_SCAN'.
 
 ENDFUNCTION.
 ```
@@ -786,10 +786,10 @@ ENDFUNCTION.
 
 ---
 
-### Task 8: FM Z_RF_ZDIFHU_9001_PAI（防呆 + 差异计算 + 过账）
+### Task 8: FM ZEWM_RF_ZDIFHU_9001_PAI（防呆 + 差异计算 + 过账）
 
 **Files:**
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.z_rf_zdifhu_9001_pai.abap`
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.zewm_rf_zdifhu_9001_pai.abap`
 
 逻辑（spec §3.3 + §3.5）：屏幕内表回写 App.Param → 按 FCODE 分支（DOWN 翻页 / BACK 不动 / 其余=ENTER 走防呆过账）。过账三步：`POST_DIFFERENCE`（DIFD/PPT/16）→ `SAVE(iv_commit=space)` → `COMMIT WORK AND WAIT`（失败 ROLLBACK）→ `CL_TM=>CLEANUP`；成功后 `PERFORM refresh_item` 刷新该行数量、清 diff_quan 和扫描框、`SET_FCODE('INIT')` 回本屏重显。
 
@@ -798,17 +798,17 @@ ENDFUNCTION.
 - [ ] **Step 1: 写 FM 文件**
 
 ```abap
-FUNCTION z_rf_zdifhu_9001_pai.
+FUNCTION zewm_rf_zdifhu_9001_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
 *"     VALUE(IV_LGNUM) TYPE  /SCWM/LGNUM
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
-  DATA: ls_item  TYPE zsdifhu_item,
+  DATA: ls_item  TYPE zewm_zdifhu_item_1s,
         lv_tabix TYPE sy-tabix,
         lv_diff  TYPE /scwm/de_quantity,
         ls_quan  TYPE /scwm/s_quan,
@@ -922,8 +922,8 @@ ENDFUNCTION.
 ### Task 9: 屏幕 9000（HU 输入）
 
 **Files:**
-- Modify: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.xml`（`<asx:values>` 内、`</FUNCTIONS>` 后追加 `<DYNPROS>` 段）
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.screen_9000.abap`
+- Modify: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.xml`（`<asx:values>` 内、`</FUNCTIONS>` 后追加 `<DYNPROS>` 段）
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.screen_9000.abap`
 
 屏幕属性：子屏幕（TYPE=S），8 行 × 40 列（RF 8x40 屏）。字段：DDIC 文本标签 + HUIDENT 输入框 + OKCODE。RF 子屏幕无 CUA（GUI status 由 RF 框架管理），不写 `<CUA>` 段。
 
@@ -933,7 +933,7 @@ ENDFUNCTION.
    <DYNPROS>
     <item>
      <HEADER>
-      <PROGRAM>SAPLZFG_RF_ZDIFHU</PROGRAM>
+      <PROGRAM>SAPLZEWM_RF_ZDIFHU</PROGRAM>
       <SCREEN>9000</SCREEN>
       <LANGUAGE>E</LANGUAGE>
       <DESCRIPT>ZDIFHU HU input</DESCRIPT>
@@ -953,7 +953,7 @@ ENDFUNCTION.
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
-       <NAME>ZSDIFHU_SCR-HUIDENT</NAME>
+       <NAME>ZEWM_ZDIFHU_SCR_1S-HUIDENT</NAME>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>010</LENGTH>
@@ -969,7 +969,7 @@ ENDFUNCTION.
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_SCR-HUIDENT</NAME>
+       <NAME>ZEWM_ZDIFHU_SCR_1S-HUIDENT</NAME>
        <LINE>001</LINE>
        <COLUMN>013</COLUMN>
        <LENGTH>020</LENGTH>
@@ -1009,7 +1009,7 @@ PROCESS AFTER INPUT.
 - [ ] **Step 3: 验证**
 
 ```bash
-python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.xml'); print('OK')"
+python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.xml'); print('OK')"
 ```
 
 预期：`OK`；目视核对 DYNPROS 在 FUNCTIONS 之后、CUA 不存在。
@@ -1019,12 +1019,12 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 ### Task 10: 屏幕 9001（扫描框 + 物料列表 step-loop）
 
 **Files:**
-- Modify: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.xml`（`<DYNPROS>` 内追加第二个 `<item>`）
-- Create: `/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.screen_9001.abap`
+- Modify: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.xml`（`<DYNPROS>` 内追加第二个 `<item>`）
+- Create: `/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.screen_9001.abap`
 
 布局（8 行 × 40 列）：
-- 行 1：扫描框标签 + `ZSDIFHU_SCR-MATNR_SCAN` 输入框
-- 行 2：`HU:` 文本 + `ZSDIFHU_SCR-HUIDENT` 只显
+- 行 1：扫描框标签 + `ZEWM_ZDIFHU_SCR_1S-MATNR_SCAN` 输入框
+- 行 2：`HU:` 文本 + `ZEWM_ZDIFHU_SCR_1S-HUIDENT` 只显
 - 行 4-8：固定 step-loop（容器 TYPE=LOOP，5 行可见），行内 5 列：MATNR（只显）/ MAKTX（只显）/ QUAN（只显）/ MEINS（只显）/ DIFF_QUAN（可输入）
 
 ⚠️ step-loop 的 LOOP 容器 XML 无官方样本可核对，import 若报 `RPY_DYNPRO_INSERT` 错误 → 按 README "Plan B" 用 SE51 手建屏幕 9001（10 分钟），其余对象不受影响。
@@ -1034,7 +1034,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 ```xml
     <item>
      <HEADER>
-      <PROGRAM>SAPLZFG_RF_ZDIFHU</PROGRAM>
+      <PROGRAM>SAPLZEWM_RF_ZDIFHU</PROGRAM>
       <SCREEN>9001</SCREEN>
       <LANGUAGE>E</LANGUAGE>
       <DESCRIPT>ZDIFHU item list</DESCRIPT>
@@ -1062,7 +1062,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEXT</TYPE>
-       <NAME>ZSDIFHU_SCR-MATNR_SCAN</NAME>
+       <NAME>ZEWM_ZDIFHU_SCR_1S-MATNR_SCAN</NAME>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>008</LENGTH>
@@ -1078,7 +1078,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_SCR-MATNR_SCAN</NAME>
+       <NAME>ZEWM_ZDIFHU_SCR_1S-MATNR_SCAN</NAME>
        <LINE>001</LINE>
        <COLUMN>010</COLUMN>
        <LENGTH>018</LENGTH>
@@ -1107,7 +1107,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>SCREEN</CONT_TYPE>
        <CONT_NAME>SCREEN</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_SCR-HUIDENT</NAME>
+       <NAME>ZEWM_ZDIFHU_SCR_1S-HUIDENT</NAME>
        <LINE>002</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>020</LENGTH>
@@ -1123,7 +1123,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MATNR</NAME>
+       <NAME>ZEWM_ZDIFHU_ITEM_1S-MATNR</NAME>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>010</LENGTH>
@@ -1139,7 +1139,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MAKTX</NAME>
+       <NAME>ZEWM_ZDIFHU_ITEM_1S-MAKTX</NAME>
        <LINE>001</LINE>
        <COLUMN>012</COLUMN>
        <LENGTH>010</LENGTH>
@@ -1155,7 +1155,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-QUAN</NAME>
+       <NAME>ZEWM_ZDIFHU_ITEM_1S-QUAN</NAME>
        <LINE>001</LINE>
        <COLUMN>023</COLUMN>
        <LENGTH>007</LENGTH>
@@ -1171,7 +1171,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-MEINS</NAME>
+       <NAME>ZEWM_ZDIFHU_ITEM_1S-MEINS</NAME>
        <LINE>001</LINE>
        <COLUMN>031</COLUMN>
        <LENGTH>003</LENGTH>
@@ -1187,7 +1187,7 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
        <CONT_TYPE>LOOP</CONT_TYPE>
        <CONT_NAME>LP_ITEMS</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
-       <NAME>ZSDIFHU_ITEM-DIFF_QUAN</NAME>
+       <NAME>ZEWM_ZDIFHU_ITEM_1S-DIFF_QUAN</NAME>
        <LINE>001</LINE>
        <COLUMN>035</COLUMN>
        <LENGTH>005</LENGTH>
@@ -1219,18 +1219,18 @@ python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencod
 
 ```abap
 PROCESS BEFORE OUTPUT.
-  LOOP AT gt_zdifhu_items INTO zsdifhu_item CURSOR gv_cursor.
+  LOOP AT gt_zdifhu_items INTO zewm_zdifhu_item_1s CURSOR gv_cursor.
   ENDLOOP.
 *
 PROCESS AFTER INPUT.
-  LOOP AT gt_zdifhu_items INTO zsdifhu_item.
+  LOOP AT gt_zdifhu_items INTO zewm_zdifhu_item_1s.
   ENDLOOP.
 ```
 
 - [ ] **Step 3: 验证**
 
 ```bash
-python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zfg_rf_zdifhu.fugr.xml'); print('OK')"
+python3 -c "import xml.dom.minidom; xml.dom.minidom.parse('/home/tankren/opencode/zdifhu/src/zewm_rf_zdifhu.fugr.xml'); print('OK')"
 ```
 
 预期：`OK`；目视核对 DYNPROS 含 2 个 `<item>`（9000、9001），9001 的 LOOP 容器含 5 个字段且 LINE 均为 001（行内坐标，循环重复由容器 HEIGHT=005 控制）。
@@ -1275,56 +1275,56 @@ RF 逻辑事务 `ZDIFHU`：屏幕 1 输/扫 HU 号 → 屏幕 2 显示 HU 物料
 > - `DOWN` 行已删除（翻页用框架 PGUP/PGDN）。
 
 1. **Define Application Parameters**（视图 `/SCWM/RF_CUSTOM`，SM30）：
-   - APPLIC=`01`(WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
-   - APPLIC=`01`(WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
-   - APPLIC=`01`(WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+   - APPLIC=`01`(WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZEWM_ZDIFHU_SCR_1S`
+   - APPLIC=`01`(WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZEWM_ZDIFHU_PROD_1S`
+   - APPLIC=`01`(WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZEWM_ZDIFHU_ITEM_1TT`
    - APPLIC=`01`(WME) / `CS_ZDIFHU_HU` / Parameter Type=`/SCWM/S_RF_INQ_HU`（HU 明细屏 9004，标准结构）
 2. **Define Steps in Logical Transaction**：`ZDIFHU` → `ZDIF1`、`ZDIF2`、`ZDIF3`、`ZDIF4`
 3. **Define Step Flow**（`/SCWM/TSTEP_FLOW`）：
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
    |---|---|---|---|---|---|---|
-   | ZDIFHU | ZDIF1 | INIT | Z_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 | |
-   | ZDIFHU | ZDIF1 | ENTER | Z_RF_ZDIFHU_9000_PAI | ZDIF2 | 1 | INIT |
-   | ZDIFHU | ZDIF1 | BACK | Z_RF_ZDIFHU_9000_PAI | ZDIF1 | 2 | |
-   | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
-   | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
-   | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
-   | ZDIFHU | ZDIF2 | HUINFO | Z_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
-   | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
-   | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
-   | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
-   | ZDIFHU | ZDIF4 | INIT | Z_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
-   | ZDIFHU | ZDIF4 | BACK | Z_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF1 | INIT | ZEWM_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF1 | ENTER | ZEWM_RF_ZDIFHU_9000_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF1 | BACK | ZEWM_RF_ZDIFHU_9000_PAI | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF2 | INIT | ZEWM_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
+   | ZDIFHU | ZDIF2 | ENTER | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | BACK | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | HUINFO | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
+   | ZDIFHU | ZDIF3 | INIT | ZEWM_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
+   | ZDIFHU | ZDIF3 | ENTER | ZEWM_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
+   | ZDIFHU | ZDIF3 | BACK | ZEWM_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF4 | INIT | ZEWM_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
+   | ZDIFHU | ZDIF4 | BACK | ZEWM_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
 
 4. **Define Function Code Profile**（`/SCWM/TFCOD_PRF`）：INIT / ENTER / BACK / CLEAR；**`ZDIF2` 加
    `HUINFO`（`PUSHB=PB1`，或 `FNKEY=F1` + `SHORTCUT=01`）**；`ZDIF4` 加 BACK。`HUINFO` 必须在
    `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在（翻页 PGUP/PGDN 为框架预定义）
 5. **Map Logical Transaction Step to Subscreen**：
-   - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
-   - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
-   - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
-   - `ZDIFHU`/`ZDIF4` → `SAPLZFG_RF_ZDIFHU` `9004`
+   - `ZDIFHU`/`ZDIF1` → `SAPLZEWM_RF_ZDIFHU` `9000`
+   - `ZDIFHU`/`ZDIF2` → `SAPLZEWM_RF_ZDIFHU` `9001`
+   - `ZDIFHU`/`ZDIF3` → `SAPLZEWM_RF_ZDIFHU` `9002`
+   - `ZDIFHU`/`ZDIF4` → `SAPLZEWM_RF_ZDIFHU` `9004`
 6. **Presentation / Personalization Profile**：复用现有 `**` 或按需新建
 7. **RF Menu Manager**：菜单挂载（测试期可用 RF Test Environment 直调）
 8. **Exception Codes**（SPRO → EWM → Cross-Process Settings → Exception Codes）：
    确认 `DIFD` + 业务上下文 `PPT` + 执行步骤 `16` 存在；不存在则维护或改代码
-   （`z_rf_zdifhu_9002_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
+   （`zewm_rf_zdifhu_9002_pai.abap` 中 `iv_exccode/iv_buscon/iv_exec_step` 三处常量）
 
 ## 3. Plan B：屏幕 9001 / 9002 / 9004 手工重建（仅当 import 屏幕报错时）
 
 abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 删除 fugr.xml 中对应屏幕的 `<item>` 重新 import，然后 SE51 手建：
 
-1. SE51 → 程序 `SAPLZFG_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，7 行 × 40 列
+1. SE51 → 程序 `SAPLZEWM_RF_ZDIFHU` → 屏幕 `9001`，属性：子屏幕，7 行 × 40 列
 2. 布局（列表屏）：
-   - 行 1：文本 `No.`(c1，长 3) + `ZSDIFHU_SCR-SELNO`(c5，可输入，NUMC，长 3 —— 序号框故意只给 3 位，不占满整行)
-   - 行 2：文本 `HU:`(c1，长 3) + `ZSDIFHU_SCR-HUIDENT`(c5，只显，长 22)
+   - 行 1：文本 `No.`(c1，长 3) + `ZEWM_ZDIFHU_SCR_1S-SELNO`(c5，可输入，NUMC，长 3 —— 序号框故意只给 3 位，不占满整行)
+   - 行 2：文本 `HU:`(c1，长 3) + `ZEWM_ZDIFHU_SCR_1S-HUIDENT`(c5，只显，长 22)
    - 行 3 起：框选 5 个 DDIC 字段做 Step Loop，**每行块 3 行**（LOOP_BLOCK=3、重复 1 次、
      HEIGHT=3，一屏 1 个物料）：
-     - 行块第 1 行：`ZSDIFHU_ITEM-SEQNO`(c1，长 3)、`ZSDIFHU_ITEM-MATNR`(c5，长 22)（均只显）
-     - 行块第 2 行：`ZSDIFHU_ITEM-MAKTX`(c1，长 26)
-     - 行块第 3 行：`ZSDIFHU_ITEM-QUAN`(c5，长 18)、`ZSDIFHU_ITEM-MEINS`(c24，长 3)
+     - 行块第 1 行：`ZEWM_ZDIFHU_ITEM_1S-SEQNO`(c1，长 3)、`ZEWM_ZDIFHU_ITEM_1S-MATNR`(c5，长 22)（均只显）
+     - 行块第 2 行：`ZEWM_ZDIFHU_ITEM_1S-MAKTX`(c1，长 26)
+     - 行块第 3 行：`ZEWM_ZDIFHU_ITEM_1S-QUAN`(c5，长 18)、`ZEWM_ZDIFHU_ITEM_1S-MEINS`(c24，长 3)
    - 只读字段属性**只用 `OUTPUT_FLD`**（不要加 `OUTPUTONLY`，加了是平面文字而非标准只读框；
      标准 `/SCWM/RF_INQUIRY_PM` 里 `OUTPUTONLY` 出现 0 次）；可输入字段只用 `INPUT_FLD + OUTPUT_FLD`
      且**绝不能带 `REQU_ENTRY`**（带了就输不进去）；同一个屏幕**不允许两个同名字段**；
@@ -1334,7 +1334,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
     行5 `-QUAN_COUNT`(c1，长 22) 可输入（实盘数量）+ `-MEINS_DSP`(c24，长 3)（只显单位）。
     注意：`-MEINS_DSP` 是结构里专供显示的第二个单位字段——同一个 dynpro 屏幕**不允许两个同名字段**
     （标准 RF 里的同名都是「TEXT 标签字段 + TEMPLATE 字段」的组合）
-4. Flow logic（与 `src/zfg_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
+4. Flow logic（与 `src/zewm_rf_zdifhu.fugr.screen_9001.abap` / `screen_9002.abap` 相同）：
 
    ```abap
    * 屏幕 9001（列表）
@@ -1371,13 +1371,13 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 | 对象 | 名称 | 说明 |
 |---|---|---|
 | 包 | ZEWM | |
-| Function Group | ZFG_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
-| 结构 | ZSDIFHU_SCR | 屏幕单值（HUIDENT + SELNO 序号输入） |
-| 结构 | ZSDIFHU_ITEM | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
-| 结构 | ZSDIFHU_PROD | 明细屏（含 QUAN_COUNT 实盘数量） |
-| 表类型 | ZSDIFHU_ITEM_TT | 列表内表 |
+| Function Group | ZEWM_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
+| 结构 | ZEWM_ZDIFHU_SCR_1S | 屏幕单值（HUIDENT + SELNO 序号输入） |
+| 结构 | ZEWM_ZDIFHU_ITEM_1S | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |
+| 结构 | ZEWM_ZDIFHU_PROD_1S | 明细屏（含 QUAN_COUNT 实盘数量） |
+| 表类型 | ZEWM_ZDIFHU_ITEM_1TT | 列表内表 |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS | 全局数据容器（Customizing） |
-| 消息类 | ZEWM_RF_MSG | FM 全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`） |
+| 消息类 | ZEWM_MSG_RF | FM 全部报错消息（`MESSAGE eNNN(zewm_msg_rf)`） |
 | 翻译 | `*.i18n.<语言>.po` | DE / CS / FR / ZH（abapGit LXE，Pull 时写回系统） |
 ````
 
@@ -1395,11 +1395,11 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 
 - **Spec 覆盖**：spec §2 对象表（Task 1-4）、Step Flow/Customizing（Task 11 README §2）、§3.0 接口（Task 4）、§3.1（Task 6）、§3.2（Task 7）、§3.3（Task 8）、§3.4（各 FM 首行 set_lgnum）、§3.5（Task 8 DOWN 分支 + Task 10 flow logic）、§4 布局（Task 9/10）、§5 风险（执行环境说明 §5 + 各任务 ⚠️ 备注）、§6 验收（README §4）。✅
 - **占位符**：无 TBD/TODO；所有代码完整。✅
-- **类型一致性**：FM 参数名/类型在 fugr.xml、FM 注释头、spec §3.0 三处一致；`refresh_item` FORM（TOP）与 9001_PAI 调用参数一致；屏幕字段名（ZSDIFHU_SCR-*/ZSDIFHU_ITEM-*）与 DDIC 结构、TOP 的 TABLES 声明一致；`gv_cursor`/`gt_zdifhu_items`/`zsdifhu_item`（TABLES 工作区）在 TOP 声明、PBO/PAI、flow logic 三处一致。✅
+- **类型一致性**：FM 参数名/类型在 fugr.xml、FM 注释头、spec §3.0 三处一致；`refresh_item` FORM（TOP）与 9001_PAI 调用参数一致；屏幕字段名（ZEWM_ZDIFHU_SCR_1S-*/ZEWM_ZDIFHU_ITEM_1S-*）与 DDIC 结构、TOP 的 TABLES 声明一致；`gv_cursor`/`gt_zdifhu_items`/`zewm_zdifhu_item_1s`（TABLES 工作区）在 TOP 声明、PBO/PAI、flow logic 三处一致。✅
 
 ## 执行后修订（final code review 修复，已同步交付物）
 
-1. **[Critical] step-loop 数据路径**：原稿 TOP 用 `DATA gs_zdifhu_item` 而屏幕字段名为 `ZSDIFHU_ITEM-*`（dynpro 按名绑定全局，二者不匹配 → 列表空白 + PAI 输入不回写 → 零差异守卫失效会误过账全量负差异）。修复：TOP 改 `TABLES: zsdifhu_scr, zsdifhu_item`（删 `gs_zdifhu_item`），screen_9001 两处 LOOP 改 `INTO zsdifhu_item`（PAI 带 INTO 才有行回写），README Plan B 同步。本文档 Task 4/10/11 代码块已更新为修复后版本。
+1. **[Critical] step-loop 数据路径**：原稿 TOP 用 `DATA gs_zdifhu_item` 而屏幕字段名为 `ZEWM_ZDIFHU_ITEM_1S-*`（dynpro 按名绑定全局，二者不匹配 → 列表空白 + PAI 输入不回写 → 零差异守卫失效会误过账全量负差异）。修复：TOP 改 `TABLES: zewm_zdifhu_scr_1s, zewm_zdifhu_item_1s`（删 `gs_zdifhu_item`），screen_9001 两处 LOOP 改 `INTO zewm_zdifhu_item_1s`（PAI 带 INTO 才有行回写），README Plan B 同步。本文档 Task 4/10/11 代码块已更新为修复后版本。
 2. **[Important] `gv_cursor` 跨 HU 不重置**：换 HU 后旧游标可能使屏幕 2 空白。修复：9000_PAI 成功路径加 `gv_cursor = 1.`（Task 6 代码块已更新）。
 
 ## 执行后修订 2（2026-09-14：屏幕 2 改「列表 → 明细」两步 + dump 根因）
@@ -1407,29 +1407,29 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
 1. **[Critical] 屏幕 2 误过账**：原 9001_PAI 只要 ENTER 且扫到物料就立即 `post_difference`（数量栏输不进 → diff 为 0 → 按 −当前数量过账，库存被清）。修复：改为**序号驱动**——列表屏只选行，过账移到新增的明细屏 9002。
 2. **[Bug] 数量栏无法输入 / 显示不全**：列表改为**每物料三行块**（行 1 序号+物料号，行 2 描述，行 3 数量+单位），输入移到明细屏。
 3. **[Critical] `GETWA_NOT_ASSIGNED` dump（`LRF_SSCRO02` 第 50 行）根因**：step flow 跨步骤跳转行写了 `PRMOD=2` 且 `FCODE_BCKG` 为空 → 目标步 PBO 模块从不执行 → 表 data container 未注册 → `READ TABLE <gt_scr>` dump。修复：跨步骤行一律 `PRMOD=1` + `FCODE_BCKG=INIT`（见上文修订后的 step flow 表）。
-4. **新增对象**：结构 `ZSDIFHU_PROD`、屏幕 9002、FM `Z_RF_ZDIFHU_9002_PBO/_PAI`、App.Parameter `CS_ZDIFHU_PROD`；`ZSDIFHU_SCR` 加 `SELNO`（/SCWM/DE_RF_SEQNO），`ZSDIFHU_ITEM` 加 `SEQNO` 并删 `DIFF_QUAN`。
+4. **新增对象**：结构 `ZEWM_ZDIFHU_PROD_1S`、屏幕 9002、FM `ZEWM_RF_ZDIFHU_9002_PBO/_PAI`、App.Parameter `CS_ZDIFHU_PROD`；`ZEWM_ZDIFHU_SCR_1S` 加 `SELNO`（/SCWM/DE_RF_SEQNO），`ZEWM_ZDIFHU_ITEM_1S` 加 `SEQNO` 并删 `DIFF_QUAN`。
 5. **其他**：`set_scr_tabname` 传 **CHANGING 参数名**（不是表类型名）；`set_line` 传字符 `'1'`；4 个 FM 去掉 `IMPORTING iv_lgnum`（框架不传字段参数），改用 `/scwm/cl_rf_bll_srvc=>get_lgnum( )`。
 6. **待验证**：`fugr.xml` 的 RSCHA 缺 `<REFERENCE>X</REFERENCE>`（CHANGING 传值 vs 标准传引用），过账测试若出现「PAI 改了值但屏幕/表没更新」再修。
 
 ## 执行后修订 3（2026-09-15：BACK 导航 / 输入属性 / 差异符号 —— 均已系统实测通过）
 
 1. **[Critical] 列表屏按 BACK 被弹回明细屏**：明细屏 `ZDIF3/ENTER` 行若自己换步（`SSTEP=ZDIF2` + `PRMOD=1`），框架走普通导航、内部调用栈仍残留 ZDIF3 → 在列表屏按 BACK 会弹回明细屏。修复：`ZDIF3/ENTER` 行改为 **`SSTEP=ZDIF3` + `PRMOD=0`**（对齐标准 `/SCWM/RF_XDIFHU` 的 `XDDIPR ENTER`），返回由 `9002_PAI` 结尾的 `set_prmod('1') + set_fcode('UPDBCK')` 完成（`UPDBCK` = 回上一步 + 同步调用栈 + 刷新目标步 PBO）。**框架的 `BACK` 是弹内部调用栈，不读 step flow 行的 SSTEP。**
-2. **[Critical] 输入框输不进去**：`ZSDIFHU_PROD-QUAN_COUNT` 的 dynpro 属性多了 `<REQU_ENTRY>N</REQU_ENTRY>`。标准 RF 的输入字段从不带 REQU_ENTRY（对照 `/SCWM/RF_INQUIRY_PM`：`INPUT_FLD=X` 36 个、`REQU_ENTRY=N` 356 个，**交集 0**）。修复：删该元素 + 在 PBO 里显式 `set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' )` / `set_screlm_input_on( 'ZSDIFHU_SCR-SELNO' )`。
+2. **[Critical] 输入框输不进去**：`ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT` 的 dynpro 属性多了 `<REQU_ENTRY>N</REQU_ENTRY>`。标准 RF 的输入字段从不带 REQU_ENTRY（对照 `/SCWM/RF_INQUIRY_PM`：`INPUT_FLD=X` 36 个、`REQU_ENTRY=N` 356 个，**交集 0**）。修复：删该元素 + 在 PBO 里显式 `set_screlm_input_on( 'ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT' )` / `set_screlm_input_on( 'ZEWM_ZDIFHU_SCR_1S-SELNO' )`。
 3. **[Critical] 差异符号反了**（实测 96 → 输入 48 → 变 144）：`post_difference` 的 `is_quan-quan` **正数 = 发货（库存减少）、负数 = 收货（库存增加）**（内部按正负选 `wmegc_lime_post_outbound` / `wmegc_lime_post_inbound`）。修复：`lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.`（盘亏为正 → 减库存）。
 4. **[Bug] 过账后返回列表时序号没清空**：`9002_PAI` 过账成功分支加 `CLEAR cs_zdifhu_prod-quan_count.` + `CLEAR cs_zdifhu_s_scr-selno.`。
-5. **[配置] 漏配数据容器 → ENTER 直接 dump**：`/SCWM/TPARAM_CAT` 缺 `CS_ZDIFHU_PROD → ZSDIFHU_PROD` 时，框架拼参数表失败 → `CALL_FUNCTION_PARM_MISSING`（FM 体根本没执行）。三行必须齐：`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`。
+5. **[配置] 漏配数据容器 → ENTER 直接 dump**：`/SCWM/TPARAM_CAT` 缺 `CS_ZDIFHU_PROD → ZEWM_ZDIFHU_PROD_1S` 时，框架拼参数表失败 → `CALL_FUNCTION_PARM_MISSING`（FM 体根本没执行）。三行必须齐：`CS_ZDIFHU_S_SCR` / `CT_ZDIFHU_T_ITEMS` / `CS_ZDIFHU_PROD`。
 6. ~~**遗留**：早期误过账（库存 96→144）已落库，需人工做更正凭证。~~ **已关闭**：这是开发系统，
    过账数据本身无所谓，无需更正凭证（用户 2026-09-15 确认）。
 
-## 执行后修订 4（2026-09-15：消息类 ZEWM_RF_MSG + 多语言 LXE —— 已系统实测通过）
+## 执行后修订 4（2026-09-15：消息类 ZEWM_MSG_RF + 多语言 LXE —— 已系统实测通过）
 
 1. **报错消息改用消息类**：原来 9 处 `MESSAGE e001(00) WITH '…'(nnn)`（文本符号写法）全部改为
-   `MESSAGE eNNN(zewm_rf_msg)`；消息类 `ZEWM_RF_MSG` 由 `src/zewm_rf_msg.msag.xml` 交付（Pull 时导入，
+   `MESSAGE eNNN(zewm_msg_rf)`；消息类 `ZEWM_MSG_RF` 由 `src/zewm_msg_rf.msag.xml` 交付（Pull 时导入，
    无需单独激活）。消息号沿用原编号：001/002/003（`9000_pai`）、008/009（`9001_pai`）、
    010/011/006/007（`9002_pai`）。
 2. **多语言（DE/CS/FR/ZH）走 abapGit LXE**：新增 8 个 gettext PO 文件 ——
-   `zfg_rf_zdifhu.fugr.i18n.<语言>.po`（4 个屏幕标签 + 3 个屏幕描述）与
-   `zewm_rf_msg.msag.i18n.<语言>.po`（9 条消息）；仓库根 `.abapgit.xml` 增加 `<I18N_LANGUAGES>`
+   `zewm_rf_zdifhu.fugr.i18n.<语言>.po`（4 个屏幕标签 + 3 个屏幕描述）与
+   `zewm_msg_rf.msag.i18n.<语言>.po`（9 条消息）；仓库根 `.abapgit.xml` 增加 `<I18N_LANGUAGES>`
    （CS/DE/FR/ZH）+ `<USE_LXE>X</USE_LXE>`。Pull 时 abapGit 按**英文源文本**匹配 PO 的 `msgid`，
    把 `msgstr` 经 FM `LXE_OBJ_TEXT_PAIR_WRITE` 写回系统 —— **不需要任何 SE63 操作**
    （用户实测中文 OK）。
@@ -1437,10 +1437,10 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
    超过字段宽度（`HU`=2 / `No.`=3 / `HU:`=3 / `Actual Qty`=10）。
 4. **「执行后修订 2」第 6 条（RSCHA 缺 `REFERENCE`）已关闭**：CHANGING 参数传值/传引用在本流程中
    未造成问题（跨步骤容器传递、过账、列表刷新均实测正常），不再改动。
-5. **消息类改名 `ZEWM_MSG` → `ZEWM_RF_MSG`**：用户在 SE91 直接重命名（消息号、译文、传输记录随对象走，
-   不需要建新删旧）。仓库侧同步：`src/zewm_rf_msg.msag.xml`（含 T100A/T100 的 ARBGB）+ 4 个
-   `zewm_rf_msg.msag.i18n.<语言>.po` 改名（PO 内容只有 msgid/msgstr，不含对象名）+ 3 个 FM 里
-   9 处 `MESSAGE eNNN(zewm_rf_msg)` + 文档。**PO 文件名必须与消息类名一致**，否则 abapGit 找不到对象；
+5. **消息类改名 `ZEWM_MSG` → `ZEWM_MSG_RF`**：用户在 SE91 直接重命名（消息号、译文、传输记录随对象走，
+   不需要建新删旧）。仓库侧同步：`src/zewm_msg_rf.msag.xml`（含 T100A/T100 的 ARBGB）+ 4 个
+   `zewm_msg_rf.msag.i18n.<语言>.po` 改名（PO 内容只有 msgid/msgstr，不含对象名）+ 3 个 FM 里
+   9 处 `MESSAGE eNNN(zewm_msg_rf)` + 文档。**PO 文件名必须与消息类名一致**，否则 abapGit 找不到对象；
    Pull 时对象已存在（新名字）→ 直接更新，不会留下旧对象。
 
 
@@ -1457,8 +1457,8 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
    不 `set_fcode` 跳屏** —— 跳屏由 step flow 的 `ZDIF2/HUINFO` 行完成。
 3. **新增对象**：屏幕 `9004`（**标准屏 `/SCWM/SAPLRF_INQUIRY_PM` 0202 的逐字节克隆**：13×27、38 个字段，
    只改 PROGRAM / SCREEN / NEXTSCREEN / DESCRIPT；含之前漏掉的 `MAX_WEIGHT` / `MAX_VOLUME` / `HAZMAT_IND`）、
-   FM `Z_RF_ZDIFHU_9004_PBO`（只 `init_screen_param( ) + set_screen_param( 'CS_ZDIFHU_HU' )`）/
-   `Z_RF_ZDIFHU_9004_PAI`（只有 BACK 空处理）、App.Parameter `CS_ZDIFHU_HU → /SCWM/S_RF_INQ_HU`（**复用标准
+   FM `ZEWM_RF_ZDIFHU_9004_PBO`（只 `init_screen_param( ) + set_screen_param( 'CS_ZDIFHU_HU' )`）/
+   `ZEWM_RF_ZDIFHU_9004_PAI`（只有 BACK 空处理）、App.Parameter `CS_ZDIFHU_HU → /SCWM/S_RF_INQ_HU`（**复用标准
    结构，不新建 DDIC 对象**）、TOP include 加 `TABLES /scwm/s_rf_inq_hu.`。交付文件 28 → **31 个**。
 4. **注意（踩过的坑）**：
    - 手搭的 7×40 屏幕会被 `RPY_DYNPRO_INSERT` 拒掉（整个 FUGR 反序列化失败 → 看不到屏幕 9004）→
@@ -1467,8 +1467,8 @@ cd /home/tankren/opencode/zdifhu && find . -type f \( -name "*.xml" -o -name "*.
      字段」配对（9004 里 14 组），不是错误。
    - 新容器必须先配 `/SCWM/TPARAM_CAT` 行，否则按任何键都 `CALL_FUNCTION_PARM_MISSING`
      （dump 里报 `CS_ZDIFHU_HU`）；`/SCWM/TSTEP_SCR` 里 ZDIF4 若指向标准程序 `/SCWM/SAPLRF_INQUIRY_PM`
-     屏幕 `202`，要改成 `SAPLZFG_RF_ZDIFHU` / `9004`。
+     屏幕 `202`，要改成 `SAPLZEWM_RF_ZDIFHU` / `9004`。
 5. **系统最终配置（已实测）**：`/SCWM/TSTEP_FLOW` 12 行（新增 `ZDIF2/HUINFO → 9001_PAI, SSTEP=ZDIF4,
    PRMOD=1, FCODE_BCKG=INIT`；`ZDIF4/INIT → 9004_PBO, PRMOD=2`；`ZDIF4/BACK → 9004_PAI, SSTEP=ZDIF2,
-   PRMOD=1, FCODE_BCKG=INIT`）；`/SCWM/TSTEP_SCR` ZDIF4 → `SAPLZFG_RF_ZDIFHU`/`9004`；`/SCWM/TFCOD_PRF`
+   PRMOD=1, FCODE_BCKG=INIT`）；`/SCWM/TSTEP_SCR` ZDIF4 → `SAPLZEWM_RF_ZDIFHU`/`9004`；`/SCWM/TFCOD_PRF`
    `ZDIF2/HUINFO`（PUSHB=PB1 / FNKEY=F1 / SHORTCUT=01）+ `ZDIF4/BACK`；`/SCWM/TPARAM_CAT` 4 行。

@@ -1,13 +1,13 @@
-FUNCTION z_rf_zdifhu_9002_pai.
+FUNCTION zewm_rf_zdifhu_9002_pai.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZSDIFHU_PROD
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZEWM_ZDIFHU_PROD_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
-  DATA: ls_item    TYPE zsdifhu_item,
+  DATA: ls_item    TYPE zewm_zdifhu_item_1s,
         lv_tabix   TYPE sy-tabix,
         lv_diff    TYPE /scwm/de_quantity,
         ls_quan    TYPE /scwm/s_quan,
@@ -31,7 +31,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
 *        （0 无业务含义：没有货就不是 shortage；负数更是非法输入）
       IF cs_zdifhu_prod-quan_count <= 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e010(zewm_rf_msg).
+        MESSAGE e010(zewm_msg_rf).
       ENDIF.
 
 *     2. 差异计算（当前 − 实盘）
@@ -41,7 +41,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
       lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
       IF lv_diff = 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e011(zewm_rf_msg).
+        MESSAGE e011(zewm_msg_rf).
       ENDIF.
 
       ls_quan-quan = lv_diff.
@@ -62,7 +62,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
           OTHERS        = 2.
       IF sy-subrc <> 0.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e006(zewm_rf_msg).
+        MESSAGE e006(zewm_msg_rf).
       ENDIF.
 
 *     4. 落库：save 不带 commit，外层显式 COMMIT
@@ -76,7 +76,7 @@ FUNCTION z_rf_zdifhu_9002_pai.
         ROLLBACK WORK.
         /scwm/cl_tm=>cleanup( ).
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
-        MESSAGE e007(zewm_rf_msg).
+        MESSAGE e007(zewm_msg_rf).
       ENDIF.
       COMMIT WORK AND WAIT.
       /scwm/cl_tm=>cleanup( ).

@@ -31,8 +31,8 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
 
 1. abapGit → New Offline (or New Online to push to an internal Git) → import the zip of this repository
 2. Package: `ZEWM` (the Package you enter when creating the abapGit repo)
-3. Pull → activate all objects (DDIC first: `ZSDIFHU_SCR` → `ZSDIFHU_ITEM` → `ZSDIFHU_ITEM_TT`
-   → `ZSDIFHU_PROD`, then activate the function group `ZFG_RF_ZDIFHU` as a whole)
+3. Pull → activate all objects (DDIC first: `ZEWM_ZDIFHU_SCR_1S` → `ZEWM_ZDIFHU_ITEM_1S` → `ZEWM_ZDIFHU_ITEM_1TT`
+   → `ZEWM_ZDIFHU_PROD_1S`, then activate the function group `ZEWM_RF_ZDIFHU` as a whole)
 4. After activation, verify in SE11 that `/SCWM/DE_HUIDENT`, `/SCWM/DE_RF_SEQNO`, `/SCWM/DE_QUANTITY`,
    `/SCWM/DE_BASE_UOM`, `/SCWM/GUID_HU`, `/LIME/GUID_STOCK` exist. If one of them is missing and
    `ZSDIFHU*` fails to activate, change the affected field in SE11 from the data element reference to a
@@ -44,15 +44,15 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    in the repository's `.abapgit.xml` (`<I18N_LANGUAGES>` + `<USE_LXE>`); if the translated texts do not
    show up, check the abapGit repo settings → *Serialize Translations (experimental LXE approach)* and
    enter `DE,CS,FR,ZH`
-6. All error messages come from the message class `ZEWM_RF_MSG` (`src/zewm_rf_msg.msag.xml`, imported by the
+6. All error messages come from the message class `ZEWM_MSG_RF` (`src/zewm_msg_rf.msag.xml`, imported by the
    Pull; nothing to activate)
 
 ## 2. Customizing (SPRO → EWM → Mobile Data Entry → RF Framework, in this order)
 
 1. **Define Application Parameters** (`/SCWM/TPARAM_CAT`, view `/SCWM/RF_CUSTOM`, SM30):
-   - APPLIC=`01` (WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZSDIFHU_SCR`
-   - APPLIC=`01` (WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZSDIFHU_PROD`
-   - APPLIC=`01` (WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZSDIFHU_ITEM_TT`
+   - APPLIC=`01` (WME) / `CS_ZDIFHU_S_SCR` / Parameter Type=`ZEWM_ZDIFHU_SCR_1S`
+   - APPLIC=`01` (WME) / `CS_ZDIFHU_PROD` / Parameter Type=`ZEWM_ZDIFHU_PROD_1S`
+   - APPLIC=`01` (WME) / `CT_ZDIFHU_T_ITEMS` / Parameter Type=`ZEWM_ZDIFHU_ITEM_1TT`
    - APPLIC=`01` (WME) / `CS_ZDIFHU_HU` / Parameter Type=`/SCWM/S_RF_INQ_HU`
      (HU-detail screen 9004 — the **standard** structure is reused, no Z object needed)
 
@@ -63,18 +63,18 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
 
    | LTRANS | STEP | FCODE | FMODUL | SSTEP | PRMOD | FCODE_BCKG |
    |---|---|---|---|---|---|---|
-   | ZDIFHU | ZDIF1 | INIT | Z_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 | |
-   | ZDIFHU | ZDIF1 | ENTER | Z_RF_ZDIFHU_9000_PAI | ZDIF2 | 1 | INIT |
-   | ZDIFHU | ZDIF1 | BACK | Z_RF_ZDIFHU_9000_PAI | ZDIF1 | 2 | |
-   | ZDIFHU | ZDIF2 | INIT | Z_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
-   | ZDIFHU | ZDIF2 | ENTER | Z_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
-   | ZDIFHU | ZDIF2 | BACK | Z_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
-   | ZDIFHU | ZDIF2 | HUINFO | Z_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
-   | ZDIFHU | ZDIF3 | INIT | Z_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
-   | ZDIFHU | ZDIF3 | ENTER | Z_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
-   | ZDIFHU | ZDIF3 | BACK | Z_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
-   | ZDIFHU | ZDIF4 | INIT | Z_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
-   | ZDIFHU | ZDIF4 | BACK | Z_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF1 | INIT | ZEWM_RF_ZDIFHU_9000_PBO | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF1 | ENTER | ZEWM_RF_ZDIFHU_9000_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF1 | BACK | ZEWM_RF_ZDIFHU_9000_PAI | ZDIF1 | 2 | |
+   | ZDIFHU | ZDIF2 | INIT | ZEWM_RF_ZDIFHU_9001_PBO | ZDIF2 | 2 | |
+   | ZDIFHU | ZDIF2 | ENTER | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF3 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | BACK | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF1 | 1 | INIT |
+   | ZDIFHU | ZDIF2 | HUINFO | ZEWM_RF_ZDIFHU_9001_PAI | ZDIF4 | 1 | INIT |
+   | ZDIFHU | ZDIF3 | INIT | ZEWM_RF_ZDIFHU_9002_PBO | ZDIF3 | 2 | |
+   | ZDIFHU | ZDIF3 | ENTER | ZEWM_RF_ZDIFHU_9002_PAI | ZDIF3 | 0 | |
+   | ZDIFHU | ZDIF3 | BACK | ZEWM_RF_ZDIFHU_9002_PAI | ZDIF2 | 1 | INIT |
+   | ZDIFHU | ZDIF4 | INIT | ZEWM_RF_ZDIFHU_9004_PBO | ZDIF4 | 2 | |
+   | ZDIFHU | ZDIF4 | BACK | ZEWM_RF_ZDIFHU_9004_PAI | ZDIF2 | 1 | INIT |
 
    > **Rule A — step changes (a pit we fell into)**: every row that jumps from step A to step B must use
    > `PRMOD=1` with `FCODE_BCKG` set to the PBO trigger code of the target step (`INIT` here). `PRMOD=2`
@@ -104,16 +104,16 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
    `/SCWM/TFCOD_CAT` for `APPLIC=01`
    (PGUP/PGDN are framework-predefined fcodes, available automatically through the template pushbuttons)
 5. **Map Logical Transaction Step to Subscreen**:
-   - `ZDIFHU`/`ZDIF1` → `SAPLZFG_RF_ZDIFHU` `9000`
-   - `ZDIFHU`/`ZDIF2` → `SAPLZFG_RF_ZDIFHU` `9001`
-   - `ZDIFHU`/`ZDIF3` → `SAPLZFG_RF_ZDIFHU` `9002`
-   - `ZDIFHU`/`ZDIF4` → `SAPLZFG_RF_ZDIFHU` `9004`
+   - `ZDIFHU`/`ZDIF1` → `SAPLZEWM_RF_ZDIFHU` `9000`
+   - `ZDIFHU`/`ZDIF2` → `SAPLZEWM_RF_ZDIFHU` `9001`
+   - `ZDIFHU`/`ZDIF3` → `SAPLZEWM_RF_ZDIFHU` `9002`
+   - `ZDIFHU`/`ZDIF4` → `SAPLZEWM_RF_ZDIFHU` `9004`
 6. **Presentation / Personalization Profile**: reuse the existing `**` or create new ones as needed
 7. **RF Menu Manager**: attach the transaction to a menu (while testing you can call it directly from the
    RF Test Environment)
 8. **Exception Codes** (SPRO → EWM → Cross-Process Settings → Exception Codes): confirm that `DIFD` +
    business context `PPT` + execution step `16` exist; if not, maintain them or change the code (the three
-   constants `iv_exccode` / `iv_buscon` / `iv_exec_step` in `z_rf_zdifhu_9002_pai.abap`)
+   constants `iv_exccode` / `iv_buscon` / `iv_exec_step` in `zewm_rf_zdifhu_9002_pai.abap`)
 
 ## 3. Plan B: rebuilding screens 9001 / 9002 manually (only if the screen import fails)
 
@@ -122,15 +122,15 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 
 **Screen 9001 (list)**: subscreen, 7 lines × 40 columns
 
-- Line 1: text `No.` (col 1, length 3) + `ZSDIFHU_SCR-SELNO` (col 5, **input**, NUMC, length 3 —
+- Line 1: text `No.` (col 1, length 3) + `ZEWM_ZDIFHU_SCR_1S-SELNO` (col 5, **input**, NUMC, length 3 —
   the sequence box is deliberately only 3 wide, it does not fill the line)
-- Line 2: text `HU:` (col 1, length 3) + `ZSDIFHU_SCR-HUIDENT` (col 5, display only, length 22)
+- Line 2: text `HU:` (col 1, length 3) + `ZEWM_ZDIFHU_SCR_1S-HUIDENT` (col 5, display only, length 22)
 - From line 3: select the 5 DDIC fields as a Step Loop, **3 lines per block** (`LOOP_BLOCK=3`,
   `LOOP_DISP=1`, `HEIGHT=3`; one material takes 3 lines, so one complete material fits on the screen):
-  - block line 1: `ZSDIFHU_ITEM-SEQNO` (col 1, display only, length 3), `ZSDIFHU_ITEM-MATNR`
+  - block line 1: `ZEWM_ZDIFHU_ITEM_1S-SEQNO` (col 1, display only, length 3), `ZEWM_ZDIFHU_ITEM_1S-MATNR`
     (col 5, display only, length 22)
-  - block line 2: `ZSDIFHU_ITEM-MAKTX` (col 1, display only, length 26)
-  - block line 3: `ZSDIFHU_ITEM-QUAN` (col 5, display only, length 18), `ZSDIFHU_ITEM-MEINS`
+  - block line 2: `ZEWM_ZDIFHU_ITEM_1S-MAKTX` (col 1, display only, length 26)
+  - block line 3: `ZEWM_ZDIFHU_ITEM_1S-QUAN` (col 5, display only, length 18), `ZEWM_ZDIFHU_ITEM_1S-MEINS`
     (col 24, display only, length 3)
 - Read-only fields use **`OUTPUT_FLD=X` only** — do **not** add `OUTPUTONLY`, which renders the value as
   flat text instead of the standard read-only box (SAP's own RF screens use `OUTPUTONLY` 0 times);
@@ -139,7 +139,7 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
   unit use two DDIC fields (`MEINS` + `MEINS_DSP`)
 - A multi-line block must satisfy **`HEIGHT = LOOP_BLOCK × LOOP_DISP`** (all standard screens do, e.g.
   `/SCWM/RF_INQUIRY_PM` screen 0204: `LOOP_BLOCK=4 × LOOP_DISP=2 = HEIGHT=8`)
-- Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9001.abap`):
+- Flow logic (identical to `src/zewm_rf_zdifhu.fugr.screen_9001.abap`):
 
   ```abap
   PROCESS BEFORE OUTPUT.
@@ -158,17 +158,17 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 
 **Screen 9002 (detail)**: subscreen, 7 lines × 40 columns
 
-- Line 1: `ZSDIFHU_PROD-MATNR` (col 1, display only, no label, length 26)
-- Line 2: `ZSDIFHU_PROD-MAKTX` (col 1, display only, no label, length 26)
-- Line 3: `ZSDIFHU_PROD-QUAN` (col 1, display only, length 22) + `ZSDIFHU_PROD-MEINS`
+- Line 1: `ZEWM_ZDIFHU_PROD_1S-MATNR` (col 1, display only, no label, length 26)
+- Line 2: `ZEWM_ZDIFHU_PROD_1S-MAKTX` (col 1, display only, no label, length 26)
+- Line 3: `ZEWM_ZDIFHU_PROD_1S-QUAN` (col 1, display only, length 22) + `ZEWM_ZDIFHU_PROD_1S-MEINS`
   (col 24, display only, length 3)
 - Line 4: text `Actual Qty` (col 1, length 26 — the only label kept on the screen)
-- Line 5: `ZSDIFHU_PROD-QUAN_COUNT` (col 1, **input**, length 22) + `ZSDIFHU_PROD-MEINS_DSP`
+- Line 5: `ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT` (col 1, **input**, length 22) + `ZEWM_ZDIFHU_PROD_1S-MEINS_DSP`
   (col 24, display only, length 3)
   (`MEINS_DSP` is a second unit field kept in the structure for display only — a dynpro screen may not
   contain two fields with the same name. The duplicate names you see in SAP's own RF screens are always
   "TEXT label + TEMPLATE field" pairs, never two TEMPLATE fields.)
-- Flow logic (identical to `src/zfg_rf_zdifhu.fugr.screen_9002.abap`):
+- Flow logic (identical to `src/zewm_rf_zdifhu.fugr.screen_9002.abap`):
 
   ```abap
   PROCESS BEFORE OUTPUT.
@@ -181,7 +181,7 @@ If the abapGit import reports an `RPY_DYNPRO_INSERT` error (step-loop XML compat
 **Screen 9004 (HU detail)**: copy the standard screen `/SCWM/SAPLRF_INQUIRY_PM` **0202** (13 lines × 27
 columns, 38 fields — one `TEXT` label + one `TEMPLATE` field per attribute; that duplicate-name pattern
 is exactly what SAP's own screens look like) and change only the program name / screen number
-(`SAPLZFG_RF_ZDIFHU` / `9004`). It reuses the **standard** structure `/SCWM/S_RF_INQ_HU`, so the TOP
+(`SAPLZEWM_RF_ZDIFHU` / `9004`). It reuses the **standard** structure `/SCWM/S_RF_INQ_HU`, so the TOP
 include needs `TABLES /scwm/s_rf_inq_hu.` and the container `CS_ZDIFHU_HU` is filled by the `HUINFO`
 branch of `9001_PAI`. Flow logic:
 
@@ -244,9 +244,9 @@ Activate.
 
 3. **Runtime dump** (short dump in the DYNPRO/RF call chain): the standard RF framework catches E-type
    messages and shows them at the bottom of the screen, so it should not dump. All error messages are
-   raised from the message class `ZEWM_RF_MSG` (`MESSAGE eNNN(zewm_rf_msg)`, e.g. `MESSAGE e001(zewm_rf_msg)`);
-   when you add a message, put it into `src/zewm_rf_msg.msag.xml` **and** into the four
-   `zewm_rf_msg.msag.i18n.<lang>.po` files.
+   raised from the message class `ZEWM_MSG_RF` (`MESSAGE eNNN(zewm_msg_rf)`, e.g. `MESSAGE e001(zewm_msg_rf)`);
+   when you add a message, put it into `src/zewm_msg_rf.msag.xml` **and** into the four
+   `zewm_msg_rf.msag.i18n.<lang>.po` files.
 
 4. **Import reports `RPY_DYNPRO_INSERT`**: follow §3 Plan B.
 
@@ -262,8 +262,8 @@ Activate.
    (compare `/SCWM/RF_INQUIRY_PM`: 36 fields with `INPUT_FLD=X`, 356 fields with `REQU_ENTRY=N`,
    **intersection = 0**). With `REQU_ENTRY=N` the field becomes non-enterable in RF.
    Fix: remove the `<REQU_ENTRY>` element and switch the input attribute on explicitly in that screen's PBO
-   (`/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' )`, see
-   `z_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`).
+   (`/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT' )`, see
+   `zewm_rf_zdifhu_9001_pbo.abap` / `_9002_pbo.abap`).
 
 9. **Pressing ENTER dumps immediately with `CALL_FUNCTION_PARM_MISSING` (`CX_SY_DYN_CALL_PARAM_MISSING`,
    complaining about a missing parameter such as `CS_ZDIFHU_PROD` or `CS_ZDIFHU_HU`)**: this is not a
@@ -289,7 +289,7 @@ Activate.
     (or `FNKEY=F1`), and `HUINFO` must exist in `/SCWM/TFCOD_CAT` for `APPLIC=01` (see §2 step 4).
 
 13. **HUINFO jumps to the standard HU screen (or dumps)**: `/SCWM/TSTEP_SCR` maps `ZDIF4` to the standard
-    program `/SCWM/SAPLRF_INQUIRY_PM` screen `202`. Change both `ZDIF4` rows to `SAPLZFG_RF_ZDIFHU` /
+    program `/SCWM/SAPLRF_INQUIRY_PM` screen `202`. Change both `ZDIF4` rows to `SAPLZEWM_RF_ZDIFHU` /
     `9004` (see §2 step 5).
 
 ## 6. Object list
@@ -297,11 +297,11 @@ Activate.
 | Object | Name | Description |
 |---|---|---|
 | Package | ZEWM | |
-| Function Group | ZFG_RF_ZDIFHU | Screens 9000/9001/9002/9004 + 8 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
-| Structure | ZSDIFHU_SCR | Screen single values (HUIDENT + SELNO sequence input) |
-| Structure | ZSDIFHU_ITEM | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |
-| Structure | ZSDIFHU_PROD | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
-| Table type | ZSDIFHU_ITEM_TT | List internal table |
+| Function Group | ZEWM_RF_ZDIFHU | Screens 9000/9001/9002/9004 + 8 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
+| Structure | ZEWM_ZDIFHU_SCR_1S | Screen single values (HUIDENT + SELNO sequence input) |
+| Structure | ZEWM_ZDIFHU_ITEM_1S | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |
+| Structure | ZEWM_ZDIFHU_PROD_1S | Detail screen (SEQNO + MATNR + MAKTX + QUAN current + MEINS + QUAN_COUNT counted + MEINS_DSP + GUID_*) |
+| Table type | ZEWM_ZDIFHU_ITEM_1TT | List internal table |
 | App. Parameter | CS_ZDIFHU_S_SCR / CS_ZDIFHU_PROD / CT_ZDIFHU_T_ITEMS / CS_ZDIFHU_HU | Global data containers (Customizing). `CS_ZDIFHU_HU` points to the **standard** structure `/SCWM/S_RF_INQ_HU`, reused by the HU-detail screen 9004 |
-| Message class | ZEWM_RF_MSG | All error messages of the FMs (`MESSAGE eNNN(zewm_rf_msg)`, 001–011) |
-| Translations | `zfg_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_rf_msg.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |
+| Message class | ZEWM_MSG_RF | All error messages of the FMs (`MESSAGE eNNN(zewm_msg_rf)`, 001–011) |
+| Translations | `zewm_rf_zdifhu.fugr.i18n.<lang>.po` + `zewm_msg_rf.msag.i18n.<lang>.po` | DE / CS / FR / ZH: 7 screen texts + 9 messages, written back by abapGit LXE |

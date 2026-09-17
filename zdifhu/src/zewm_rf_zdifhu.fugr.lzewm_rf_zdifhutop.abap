@@ -1,9 +1,9 @@
-FUNCTION-POOL zfg_rf_zdifhu.             "MESSAGE-ID ..
+FUNCTION-POOL zewm_rf_zdifhu.             "MESSAGE-ID ..
 
-* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZSDIFHU_SCR-* / ZSDIFHU_ITEM-* / ZSDIFHU_PROD-*）
-TABLES: zsdifhu_scr,
-        zsdifhu_item,
-        zsdifhu_prod.
+* 屏幕字段工作区（TABLES 使屏幕字段可绑 ZEWM_ZDIFHU_SCR_1S-* / ZEWM_ZDIFHU_ITEM_1S-* / ZEWM_ZDIFHU_PROD_1S-*）
+TABLES: zewm_zdifhu_scr_1s,
+        zewm_zdifhu_item_1s,
+        zewm_zdifhu_prod_1s.
 
 * HU 明细屏 9004 的屏幕字段工作区
 * （容器 CS_ZDIFHU_HU 的类型就是 /SCWM/S_RF_INQ_HU，框架按此名 ASSIGN，屏幕字段名 /SCWM/S_RF_INQ_HU-*）
@@ -15,7 +15,7 @@ TABLES /scwm/s_rf_inq_hu.
 FORM refresh_item USING    iv_lgnum      TYPE /scwm/lgnum
                            iv_huident    TYPE /scwm/de_huident
                            iv_guid_stock TYPE /lime/guid_stock
-                  CHANGING cs_item       TYPE zsdifhu_item.
+                  CHANGING cs_item       TYPE zewm_zdifhu_item_1s.
 
   DATA: lt_huident TYPE /scwm/tt_huident,
         ls_huident TYPE /scwm/s_huident,

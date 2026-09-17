@@ -1,13 +1,13 @@
-FUNCTION z_rf_zdifhu_9002_pbo.
+FUNCTION zewm_rf_zdifhu_9002_pbo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZSDIFHU_PROD
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CS_ZDIFHU_PROD) TYPE  ZEWM_ZDIFHU_PROD_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
-  DATA: ls_item  TYPE zsdifhu_item,
+  DATA: ls_item  TYPE zewm_zdifhu_item_1s,
         lv_lgnum TYPE /scwm/lgnum.
 
   lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
@@ -32,9 +32,9 @@ FUNCTION z_rf_zdifhu_9002_pbo.
   /scwm/cl_rf_bll_srvc=>set_screen_param( 'CS_ZDIFHU_PROD' ).
 
 * 实盘数量框：显式打开输入属性（框架默认可能关闭）
-  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_PROD-QUAN_COUNT' ).
+  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT' ).
 
 * 光标定位到实盘数量输入框
-  /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_PROD-QUAN_COUNT' ).
+  /scwm/cl_rf_bll_srvc=>set_field( 'ZEWM_ZDIFHU_PROD_1S-QUAN_COUNT' ).
 
 ENDFUNCTION.

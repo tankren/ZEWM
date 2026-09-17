@@ -32,24 +32,24 @@
 | 对象 | 名称 | 说明 |
 |---|---|---|
 | 开发包 | `ZEWM` | abapGit repo 的 Package |
-| Function Group | `ZFG_RF_ZDIFHU` | RF 屏幕函数组（主程序含 `INCLUDE /SCWM/IRF_SSCR`） |
+| Function Group | `ZEWM_RF_ZDIFHU` | RF 屏幕函数组（主程序含 `INCLUDE /SCWM/IRF_SSCR`） |
 | 屏幕 1 | `9000` | HU 号输入（子屏幕） |
 | 屏幕 2 | `9001` | 物料列表：序号 + 物料号/描述/数量/单位（每物料 3 行）+ 序号输入框 |
 | 屏幕 3 | `9002` | 明细 + 实盘数量输入 + 差异过账（子屏幕） |
 | 屏幕 4 | `9004` | HU 抬头明细（从屏幕 2 的 HUINFO 按钮进入；复用标准屏 0202 与标准结构 `/SCWM/S_RF_INQ_HU`） |
-| 全局结构（单值） | `ZSDIFHU_SCR` | 屏幕字段容器：huident、selno（序号输入） |
-| 全局结构（行） | `ZSDIFHU_ITEM` | 列表行：seqno, matnr, maktx, quan, meins, guid_stock, guid_hu |
-| 全局结构（明细） | `ZSDIFHU_PROD` | 明细屏：seqno, matnr, maktx, quan(当前), meins, quan_count(实盘), guid_* |
-| 表类型 | `ZSDIFHU_ITEM_TT` | 列表内表 |
-| App. Parameter 1 | `CS_ZDIFHU_S_SCR` | PARAM_TYPE=`ZSDIFHU_SCR`（视图 `/SCWM/RF_CUSTOM`，表 `/SCWM/TPARAM_CAT`，APPLIC=`01`） |
-| App. Parameter 2 | `CT_ZDIFHU_T_ITEMS` | PARAM_TYPE=`ZSDIFHU_ITEM_TT`（同上） |
-| App. Parameter 3 | `CS_ZDIFHU_PROD` | PARAM_TYPE=`ZSDIFHU_PROD`（同上） |
+| 全局结构（单值） | `ZEWM_ZDIFHU_SCR_1S` | 屏幕字段容器：huident、selno（序号输入） |
+| 全局结构（行） | `ZEWM_ZDIFHU_ITEM_1S` | 列表行：seqno, matnr, maktx, quan, meins, guid_stock, guid_hu |
+| 全局结构（明细） | `ZEWM_ZDIFHU_PROD_1S` | 明细屏：seqno, matnr, maktx, quan(当前), meins, quan_count(实盘), guid_* |
+| 表类型 | `ZEWM_ZDIFHU_ITEM_1TT` | 列表内表 |
+| App. Parameter 1 | `CS_ZDIFHU_S_SCR` | PARAM_TYPE=`ZEWM_ZDIFHU_SCR_1S`（视图 `/SCWM/RF_CUSTOM`，表 `/SCWM/TPARAM_CAT`，APPLIC=`01`） |
+| App. Parameter 2 | `CT_ZDIFHU_T_ITEMS` | PARAM_TYPE=`ZEWM_ZDIFHU_ITEM_1TT`（同上） |
+| App. Parameter 3 | `CS_ZDIFHU_PROD` | PARAM_TYPE=`ZEWM_ZDIFHU_PROD_1S`（同上） |
 | App. Parameter 4 | `CS_ZDIFHU_HU` | PARAM_TYPE=`/SCWM/S_RF_INQ_HU`（**标准结构**，HU 明细屏 9004 用） |
-| FM PBO/PAI | `Z_RF_ZDIFHU_9000_PBO` / `_PAI` | 屏幕 1：读 HU、填列表 |
-| FM PBO/PAI | `Z_RF_ZDIFHU_9001_PBO` / `_PAI` | 屏幕 2：列表 + 序号选择 |
-| FM PBO/PAI | `Z_RF_ZDIFHU_9002_PBO` / `_PAI` | 屏幕 3：明细 + 差异过账 |
-| FM PBO/PAI | `Z_RF_ZDIFHU_9004_PBO` / `_PAI` | 屏幕 4：HU 明细（PBO 只注册容器 `CS_ZDIFHU_HU`；PAI 只有 BACK） |
-| 消息类 | `ZEWM_RF_MSG` | 8 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_rf_msg)`，001–011） |
+| FM PBO/PAI | `ZEWM_RF_ZDIFHU_9000_PBO` / `_PAI` | 屏幕 1：读 HU、填列表 |
+| FM PBO/PAI | `ZEWM_RF_ZDIFHU_9001_PBO` / `_PAI` | 屏幕 2：列表 + 序号选择 |
+| FM PBO/PAI | `ZEWM_RF_ZDIFHU_9002_PBO` / `_PAI` | 屏幕 3：明细 + 差异过账 |
+| FM PBO/PAI | `ZEWM_RF_ZDIFHU_9004_PBO` / `_PAI` | 屏幕 4：HU 明细（PBO 只注册容器 `CS_ZDIFHU_HU`；PAI 只有 BACK） |
+| 消息类 | `ZEWM_MSG_RF` | 8 个 FM 的全部报错消息（`MESSAGE eNNN(zewm_msg_rf)`，001–011） |
 | 翻译 | `*.i18n.<语言>.po`（abapGit LXE） | DE / CS / FR / ZH：7 条屏幕文本 + 9 条消息；Pull 时自动写回系统 |
 
 ### Step Flow（/SCWM/TSTEP_FLOW）
@@ -71,27 +71,27 @@
 >   FCODE_BCKG=INIT`；`HUINFO` 分支只填容器 `CS_ZDIFHU_HU`，不自己 `set_fcode` 跳屏。
 
 ```
-ZDIFHU / ZDIF1 / INIT  → Z_RF_ZDIFHU_9000_PBO  → ZDIF1  (PRMOD 2, 同步骤重显示)
-ZDIFHU / ZDIF1 / ENTER → Z_RF_ZDIFHU_9000_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
-ZDIFHU / ZDIF1 / BACK  → Z_RF_ZDIFHU_9000_PAI  → ZDIF1  (PRMOD 2, 同步骤重显示)
-ZDIFHU / ZDIF2 / INIT  → Z_RF_ZDIFHU_9001_PBO  → ZDIF2  (PRMOD 2, 同步骤重显示)
-ZDIFHU / ZDIF2 / ENTER → Z_RF_ZDIFHU_9001_PAI  → ZDIF3  (PRMOD 1, FCODE_BCKG=INIT)
-ZDIFHU / ZDIF2 / BACK  → Z_RF_ZDIFHU_9001_PAI  → ZDIF1  (PRMOD 1, FCODE_BCKG=INIT)
-ZDIFHU / ZDIF3 / INIT  → Z_RF_ZDIFHU_9002_PBO  → ZDIF3  (PRMOD 2, 同步骤重显示)
-ZDIFHU / ZDIF3 / ENTER → Z_RF_ZDIFHU_9002_PAI  → ZDIF3  (PRMOD 0, 不换步；返回靠 PAI 的 UPDBCK)
-ZDIFHU / ZDIF3 / BACK  → Z_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
-ZDIFHU / ZDIF2 / HUINFO → Z_RF_ZDIFHU_9001_PAI → ZDIF4  (PRMOD 1, FCODE_BCKG=INIT)
-ZDIFHU / ZDIF4 / INIT  → Z_RF_ZDIFHU_9004_PBO  → ZDIF4  (PRMOD 2, 同步骤重显示)
-ZDIFHU / ZDIF4 / BACK  → Z_RF_ZDIFHU_9004_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF1 / INIT  → ZEWM_RF_ZDIFHU_9000_PBO  → ZDIF1  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF1 / ENTER → ZEWM_RF_ZDIFHU_9000_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF1 / BACK  → ZEWM_RF_ZDIFHU_9000_PAI  → ZDIF1  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF2 / INIT  → ZEWM_RF_ZDIFHU_9001_PBO  → ZDIF2  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF2 / ENTER → ZEWM_RF_ZDIFHU_9001_PAI  → ZDIF3  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF2 / BACK  → ZEWM_RF_ZDIFHU_9001_PAI  → ZDIF1  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF3 / INIT  → ZEWM_RF_ZDIFHU_9002_PBO  → ZDIF3  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF3 / ENTER → ZEWM_RF_ZDIFHU_9002_PAI  → ZDIF3  (PRMOD 0, 不换步；返回靠 PAI 的 UPDBCK)
+ZDIFHU / ZDIF3 / BACK  → ZEWM_RF_ZDIFHU_9002_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF2 / HUINFO → ZEWM_RF_ZDIFHU_9001_PAI → ZDIF4  (PRMOD 1, FCODE_BCKG=INIT)
+ZDIFHU / ZDIF4 / INIT  → ZEWM_RF_ZDIFHU_9004_PBO  → ZDIF4  (PRMOD 2, 同步骤重显示)
+ZDIFHU / ZDIF4 / BACK  → ZEWM_RF_ZDIFHU_9004_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG=INIT)
 ```
 
 ### Customizing（SPRO → EWM → Mobile Data Entry → RF Framework）
 
 1. **Define Application Parameters**（SM30 视图 `/SCWM/RF_CUSTOM`，底层表 `/SCWM/TPARAM_CAT`；
    IMG 位于 "Define Steps in Logical Transactions" 活动下的子结构）：
-   - APPLIC=`01`（WME），`CS_ZDIFHU_S_SCR` → Parameter Type `ZSDIFHU_SCR`
-   - APPLIC=`01`（WME），`CT_ZDIFHU_T_ITEMS` → Parameter Type `ZSDIFHU_ITEM_TT`
-   - APPLIC=`01`（WME），`CS_ZDIFHU_PROD` → Parameter Type `ZSDIFHU_PROD`
+   - APPLIC=`01`（WME），`CS_ZDIFHU_S_SCR` → Parameter Type `ZEWM_ZDIFHU_SCR_1S`
+   - APPLIC=`01`（WME），`CT_ZDIFHU_T_ITEMS` → Parameter Type `ZEWM_ZDIFHU_ITEM_1TT`
+   - APPLIC=`01`（WME），`CS_ZDIFHU_PROD` → Parameter Type `ZEWM_ZDIFHU_PROD_1S`
    - APPLIC=`01`（WME），`CS_ZDIFHU_HU` → Parameter Type `/SCWM/S_RF_INQ_HU`（标准结构，HU 明细屏 9004）
    - 这些参数是跨步骤/跨 PBO-PAI 的全局数据容器，**必须同时作为 CHANGING 参数写进
      8 个 FM 的接口**（框架按参数名匹配传入），且先于 step/flow 配置；漏配任何一行，
@@ -102,10 +102,10 @@ ZDIFHU / ZDIF4 / BACK  → Z_RF_ZDIFHU_9004_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG
    **`ZDIF2` 加 `HUINFO`（`PUSHB=PB1`，或 `FNKEY=F1` + `SHORTCUT=01`）** 列表屏才有按钮；`ZDIF4` 加 BACK。
    `HUINFO` 必须在 `/SCWM/TFCOD_CAT`（APPLIC=`01`）里存在（翻页 PGUP/PGDN 为框架预定义）
 5. Map Logical Transaction Step to Subscreen：
-   - `ZDIFHU/ZDIF1` → `SAPLZFG_RF_ZDIFHU 9000`
-   - `ZDIFHU/ZDIF2` → `SAPLZFG_RF_ZDIFHU 9001`
-   - `ZDIFHU/ZDIF3` → `SAPLZFG_RF_ZDIFHU 9002`
-   - `ZDIFHU/ZDIF4` → `SAPLZFG_RF_ZDIFHU 9004`
+   - `ZDIFHU/ZDIF1` → `SAPLZEWM_RF_ZDIFHU 9000`
+   - `ZDIFHU/ZDIF2` → `SAPLZEWM_RF_ZDIFHU 9001`
+   - `ZDIFHU/ZDIF3` → `SAPLZEWM_RF_ZDIFHU 9002`
+   - `ZDIFHU/ZDIF4` → `SAPLZEWM_RF_ZDIFHU 9004`
 6. Presentation / Personalization Profile 分配（复用现有 `**`，或按需要新建）
 7. RF Menu Manager：菜单挂载（可选，测试期可直接用 RF Test Environment 调用）
 8. Define Exception Codes（SPRO → EWM → Cross-Process Settings → Exception Codes）：
@@ -116,11 +116,11 @@ ZDIFHU / ZDIF4 / BACK  → Z_RF_ZDIFHU_9004_PAI  → ZDIF2  (PRMOD 1, FCODE_BCKG
 ### 3.0 FM 接口约定（8 个 FM 统一）
 
 ```abap
-FUNCTION z_rf_zdifhu_9000_pbo.   " 其余 7 个 FM 同构（只声明本步用到的容器）
+FUNCTION zewm_rf_zdifhu_9000_pbo.   " 其余 7 个 FM 同构（只声明本步用到的容器）
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR)   TYPE ZSDIFHU_SCR      " = App.Param CS_ZDIFHU_S_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE ZSDIFHU_ITEM_TT  " = App.Param CT_ZDIFHU_T_ITEMS
-*"     REFERENCE(CS_ZDIFHU_PROD)    TYPE ZSDIFHU_PROD     " = App.Param CS_ZDIFHU_PROD
+*"     REFERENCE(CS_ZDIFHU_S_SCR)   TYPE ZEWM_ZDIFHU_SCR_1S      " = App.Param CS_ZDIFHU_S_SCR
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE ZEWM_ZDIFHU_ITEM_1TT  " = App.Param CT_ZDIFHU_T_ITEMS
+*"     REFERENCE(CS_ZDIFHU_PROD)    TYPE ZEWM_ZDIFHU_PROD_1S     " = App.Param CS_ZDIFHU_PROD
 *"     REFERENCE(CS_ZDIFHU_HU)      TYPE /SCWM/S_RF_INQ_HU " = App.Param CS_ZDIFHU_HU（屏幕 4，标准结构）
 ```
 - **不能有 `IMPORTING` 字段参数**（框架只传 CHANGING 参数表，见 §3.4）。
@@ -145,7 +145,7 @@ CALL FUNCTION '/SCWM/HU_READ_MULT'
   EXPORTING it_huident = lt_huident  iv_lgnum = lv_lgnum
   IMPORTING et_huhdr   = lt_huhdr    et_huitm = lt_huitm
   EXCEPTIONS wrong_input = 1 not_possible = 2 OTHERS = 3.
-" HU 不存在 / 读失败 → set_fcode('INIT') + MESSAGE e002(zewm_rf_msg)（停留本屏）
+" HU 不存在 / 读失败 → set_fcode('INIT') + MESSAGE e002(zewm_msg_rf)（停留本屏）
 
 " 2. 只取直接项目（不支持嵌套包装）
 CLEAR ct_zdifhu_t_items.
@@ -161,10 +161,10 @@ LOOP AT lt_huitm INTO ls_huitm WHERE guid_parent = lt_huhdr[ 1 ]-guid_hu.
   " 描述
   SELECT SINGLE maktx FROM makt INTO ls_item-maktx
     WHERE matnr = ls_mat_global-matnr AND spras = sy-langu.
-  " 组装 ZSDIFHU_ITEM 行：seqno（序号，自增）/ matnr / maktx / quan(当前) / meins / guid_stock / guid_hu
+  " 组装 ZEWM_ZDIFHU_ITEM_1S 行：seqno（序号，自增）/ matnr / maktx / quan(当前) / meins / guid_stock / guid_hu
   APPEND ls_item TO ct_zdifhu_t_items.
 ENDLOOP.
-" 列表为空 → MESSAGE e003(zewm_rf_msg)（该 HU 无物料）
+" 列表为空 → MESSAGE e003(zewm_msg_rf)（该 HU 无物料）
 ```
 
 ### 3.2 屏幕 2 PBO（列表三件套 + 输入属性，必需）
@@ -175,14 +175,14 @@ ENDLOOP.
 /scwm/cl_rf_bll_srvc=>set_screen_param( 'CT_ZDIFHU_T_ITEMS' ).  " 表容器（FM CHANGING 参数名）
 /scwm/cl_rf_bll_srvc=>set_scr_tabname( 'CT_ZDIFHU_T_ITEMS' ).   " ← 传【参数名】
 /scwm/cl_rf_bll_srvc=>set_line( '1' ).
-/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_SCR-SELNO' ).  " 序号框可输入
-/scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_SCR-SELNO' ).
+/scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZEWM_ZDIFHU_SCR_1S-SELNO' ).  " 序号框可输入
+/scwm/cl_rf_bll_srvc=>set_field( 'ZEWM_ZDIFHU_SCR_1S-SELNO' ).
 ```
 - `set_scr_tabname` 传**参数名**：与系统内标准 `/SCWM/RF_XDIFHU_DISP_HU_PBO` 一致
   （它传 `'CT_XDIFHU_LOOP'`）。cookbook 文字写的是「传表类型名」，与本系统标准程序不一致，
   **以标准程序为准**。
-- 屏幕字段名 = 容器结构名-字段名（`ZSDIFHU_ITEM-MATNR` / `ZSDIFHU_SCR-SELNO` …），
-  且 TOP include 必须有 `TABLES: zsdifhu_scr, zsdifhu_item, zsdifhu_prod.`
+- 屏幕字段名 = 容器结构名-字段名（`ZEWM_ZDIFHU_ITEM_1S-MATNR` / `ZEWM_ZDIFHU_SCR_1S-SELNO` …），
+  且 TOP include 必须有 `TABLES: zewm_zdifhu_scr_1s, zewm_zdifhu_item_1s, zewm_zdifhu_prod_1s.`
 - 可输入字段的 dynpro 属性只用 `INPUT_FLD + OUTPUT_FLD`，**不能带 `REQU_ENTRY`**，
   并在 PBO 里用 `set_screlm_input_on` 显式打开（见 README §5 第 8 条）。
 - 只读字段**只用 `OUTPUT_FLD`**（不加 `OUTPUTONLY`，否则是平面文字而非标准只读框；标准程序
@@ -199,25 +199,25 @@ CASE /scwm/cl_rf_bll_srvc=>get_fcode( ).
     CLEAR cs_zdifhu_s_scr-selno.          " 回屏 1 由框架弹调用栈处理
   WHEN OTHERS.                            " ENTER
     IF cs_zdifhu_s_scr-selno IS INITIAL.  " 防呆 1：必须输序号
-      set_fcode('INIT') + MESSAGE e008(zewm_rf_msg).
+      set_fcode('INIT') + MESSAGE e008(zewm_msg_rf).
     ENDIF.
     READ TABLE ct_zdifhu_t_items INTO ls_item WITH KEY seqno = cs_zdifhu_s_scr-selno.
     IF sy-subrc <> 0.                     " 防呆 2：序号必须存在
-      set_fcode('INIT') + MESSAGE e009(zewm_rf_msg).
+      set_fcode('INIT') + MESSAGE e009(zewm_msg_rf).
     ENDIF.
     CLEAR cs_zdifhu_prod.                 " 明细由 9002_PBO 按 selno 填
   WHEN 'HUINFO'.                            " 抄标准 /SCWM/RF_INQ_INHULT_PAI 的 HUINFO 分支
     CLEAR cs_zdifhu_s_scr-selno.  CLEAR cs_zdifhu_hu.
     lv_huident = cs_zdifhu_s_scr-huident.
     IF lv_huident IS INITIAL.               " HU 号为空
-      set_fcode('INIT') + MESSAGE e001(zewm_rf_msg).
+      set_fcode('INIT') + MESSAGE e001(zewm_msg_rf).
     ENDIF.
     CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT' ... " 前导零补齐
     CALL FUNCTION '/SCWM/HU_READ'            " 标准 FM（无 EXCEPTIONS 子句）
       EXPORTING iv_lgnum = lv_lgnum  iv_huident = lv_huident
       IMPORTING es_huhdr = ls_huhdr.
     IF ls_huhdr-huident IS INITIAL.          " 查不到
-      set_fcode('INIT') + MESSAGE e002(zewm_rf_msg).
+      set_fcode('INIT') + MESSAGE e002(zewm_msg_rf).
     ENDIF.
     MOVE-CORRESPONDING ls_huhdr TO cs_zdifhu_hu.
     " 库位回退链 lgpla → rsrc → tu_num → wsbin；包装物料 PMAT = pmat_guid（RAW16，
@@ -239,11 +239,11 @@ WHEN 'BACK'.                              " 取消：清实盘数量，导航交
 WHEN OTHERS.                              " ENTER
   " 1. 实盘必须 > 0（空 / 0 / 负数都拒绝）；2. 差异 = 当前 − 实盘（⚠️ 符号见下）
   IF cs_zdifhu_prod-quan_count <= 0.
-    MESSAGE e010(zewm_rf_msg).
+    MESSAGE e010(zewm_msg_rf).
   ENDIF.
   lv_diff = cs_zdifhu_prod-quan - cs_zdifhu_prod-quan_count.
   IF lv_diff = 0.
-    MESSAGE e011(zewm_rf_msg).
+    MESSAGE e011(zewm_msg_rf).
   ENDIF.
 
   " 3. 过账（实例方法，必须先 CREATE OBJECT）
@@ -289,12 +289,12 @@ WHEN OTHERS.                              " ENTER
 
 ### 3.6 消息类与多语言（abapGit LXE）
 
-- **消息类 `ZEWM_RF_MSG`**（`src/zewm_rf_msg.msag.xml`）集中管理全部报错消息，FM 里一律用
-  `MESSAGE eNNN(zewm_rf_msg)`（如 `MESSAGE e001(zewm_rf_msg)`），不再用文本符号写法
+- **消息类 `ZEWM_MSG_RF`**（`src/zewm_msg_rf.msag.xml`）集中管理全部报错消息，FM 里一律用
+  `MESSAGE eNNN(zewm_msg_rf)`（如 `MESSAGE e001(zewm_msg_rf)`），不再用文本符号写法
   `MESSAGE e001(00) WITH '...'(nnn)`。消息号：001 HU 未输入 / 002 HU 查不到 / 003 HU 无物料 /
   006 过账失败 / 007 保存失败 / 008 序号未输入 / 009 序号不存在 / 010 实盘 ≤ 0 / 011 实盘 = 当前。
 - **翻译（DE / CS / FR / ZH）走 abapGit 的 LXE 机制**：每个语言一个 gettext PO 文件
-  （`zfg_rf_zdifhu.fugr.i18n.<语言>.po` 放屏幕文本、`zewm_rf_msg.msag.i18n.<语言>.po` 放消息文本），
+  （`zewm_rf_zdifhu.fugr.i18n.<语言>.po` 放屏幕文本、`zewm_msg_rf.msag.i18n.<语言>.po` 放消息文本），
   仓库根 `.abapgit.xml` 里声明 `<I18N_LANGUAGES>`（CS/DE/FR/ZH）+ `<USE_LXE>X</USE_LXE>`。
   Pull 时 abapGit 按 **英文源文本** 匹配 PO 的 `msgid`，把 `msgstr` 通过
   `LXE_OBJ_TEXT_PAIR_WRITE` 写回系统 —— **不需要任何 SE63 操作**（已实测中文生效）。

@@ -1,9 +1,9 @@
-FUNCTION z_rf_zdifhu_9001_pbo.
+FUNCTION zewm_rf_zdifhu_9001_pbo.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  CHANGING
-*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZSDIFHU_SCR
-*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZSDIFHU_ITEM_TT
+*"     REFERENCE(CS_ZDIFHU_S_SCR) TYPE  ZEWM_ZDIFHU_SCR_1S
+*"     REFERENCE(CT_ZDIFHU_T_ITEMS) TYPE  ZEWM_ZDIFHU_ITEM_1TT
 *"----------------------------------------------------------------------
 
   DATA(lv_lgnum) = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
@@ -17,9 +17,9 @@ FUNCTION z_rf_zdifhu_9001_pbo.
   /scwm/cl_rf_bll_srvc=>set_line( '1' ).
 
 * 序号输入框：显式打开输入属性
-  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZSDIFHU_SCR-SELNO' ).
+  /scwm/cl_rf_bll_srvc=>set_screlm_input_on( 'ZEWM_ZDIFHU_SCR_1S-SELNO' ).
 
 * 光标定位到序号输入框
-  /scwm/cl_rf_bll_srvc=>set_field( 'ZSDIFHU_SCR-SELNO' ).
+  /scwm/cl_rf_bll_srvc=>set_field( 'ZEWM_ZDIFHU_SCR_1S-SELNO' ).
 
 ENDFUNCTION.
