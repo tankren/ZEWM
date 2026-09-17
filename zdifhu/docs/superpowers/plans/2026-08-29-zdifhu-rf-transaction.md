@@ -1370,7 +1370,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 
 | 对象 | 名称 | 说明 |
 |---|---|---|
-| 包 | ZEWM | |
+| 包 | ZEWM_RFUI | |
 | Function Group | ZEWM_RF_ZDIFHU | 屏幕 9000/9001/9002 + 6 FM（含 INCLUDE /SCWM/IRF_SSCR） |
 | 结构 | ZEWM_ZDIFHU_SCR_1S | 屏幕单值（HUIDENT + SELNO 序号输入） |
 | 结构 | ZEWM_ZDIFHU_ITEM_1S | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |

@@ -30,7 +30,7 @@ Posting API: `/SCWM/CL_WM_PACKING->POST_DIFFERENCE` (instance method).
 ## 1. Installation (abapGit)
 
 1. abapGit → New Offline (or New Online to push to an internal Git) → import the zip of this repository
-2. Package: `ZEWM` (the Package you enter when creating the abapGit repo)
+2. Package: `ZEWM_RFUI` (the Package you enter when creating the abapGit repo)
 3. Pull → activate all objects (DDIC first: `ZEWM_ZDIFHU_SCR_1S` → `ZEWM_ZDIFHU_ITEM_1S` → `ZEWM_ZDIFHU_ITEM_1TT`
    → `ZEWM_ZDIFHU_PROD_1S`, then activate the function group `ZEWM_RF_ZDIFHU` as a whole)
 4. After activation, verify in SE11 that `/SCWM/DE_HUIDENT`, `/SCWM/DE_RF_SEQNO`, `/SCWM/DE_QUANTITY`,
@@ -296,7 +296,7 @@ Activate.
 
 | Object | Name | Description |
 |---|---|---|
-| Package | ZEWM | |
+| Package | ZEWM_RFUI | |
 | Function Group | ZEWM_RF_ZDIFHU | Screens 9000/9001/9002/9004 + 8 function modules (includes INCLUDE /SCWM/IRF_SSCR) |
 | Structure | ZEWM_ZDIFHU_SCR_1S | Screen single values (HUIDENT + SELNO sequence input) |
 | Structure | ZEWM_ZDIFHU_ITEM_1S | List row (SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*) |

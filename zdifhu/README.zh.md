@@ -24,7 +24,7 @@ RF 逻辑事务 `ZDIFHU`，三步四屏（屏幕 9004 是 HU 明细，从屏幕 
 ## 1. 安装（abapGit）
 
 1. abapGit → New Offline（或 New Online 推送到内部 Git）→ 导入本仓库 zip
-2. 包：`ZEWM`（abapGit 创建 repo 时填的 Package）
+2. 包：`ZEWM_RFUI`（abapGit 创建 repo 时填的 Package）
 3. Pull → 激活全部对象（先 DDIC：`ZEWM_ZDIFHU_SCR_1S` → `ZEWM_ZDIFHU_ITEM_1S` → `ZEWM_ZDIFHU_ITEM_1TT`
    → `ZEWM_ZDIFHU_PROD_1S`，再函数组 `ZEWM_RF_ZDIFHU` 整体激活）
 4. 激活后核对（SE11）：`/SCWM/DE_HUIDENT`、`/SCWM/DE_RF_SEQNO`、`/SCWM/DE_QUANTITY`、
@@ -253,7 +253,7 @@ abapGit import 若报 `RPY_DYNPRO_INSERT` 错误（step-loop XML 兼容性），
 
 | 对象 | 名称 | 说明 |
 |---|---|---|
-| 包 | ZEWM | |
+| 包 | ZEWM_RFUI | |
 | Function Group | ZEWM_RF_ZDIFHU | 屏幕 9000/9001/9002/9004 + 8 FM（含 INCLUDE /SCWM/IRF_SSCR） |
 | 结构 | ZEWM_ZDIFHU_SCR_1S | 屏幕单值（HUIDENT + SELNO 序号输入） |
 | 结构 | ZEWM_ZDIFHU_ITEM_1S | 列表行（SEQNO + MATNR + MAKTX + QUAN + MEINS + GUID_*） |

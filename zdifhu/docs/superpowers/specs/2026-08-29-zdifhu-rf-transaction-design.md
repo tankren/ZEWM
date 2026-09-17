@@ -31,7 +31,7 @@
 
 | 对象 | 名称 | 说明 |
 |---|---|---|
-| 开发包 | `ZEWM` | abapGit repo 的 Package |
+| 开发包 | `ZEWM_RFUI` | abapGit repo 的 Package |
 | Function Group | `ZEWM_RF_ZDIFHU` | RF 屏幕函数组（主程序含 `INCLUDE /SCWM/IRF_SSCR`） |
 | 屏幕 1 | `9000` | HU 号输入（子屏幕） |
 | 屏幕 2 | `9001` | 物料列表：序号 + 物料号/描述/数量/单位（每物料 3 行）+ 序号输入框 |
