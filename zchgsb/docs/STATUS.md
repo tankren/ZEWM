@@ -91,7 +91,7 @@
 
 | LANGU | APPLIC | PRES_PRF | PRSN_PRF | OBJ_TYPE | OBJ_ID | OBJ_SIZE | TEXT |
 |---|---|---|---|---|---|---|---|
-| `E` | `01` | `****` | `**` | `01` | `CHGSB` | `8` | `ChgBin` |
+| `E` | `01` | `****` | `**` | `01` | `CHGSB` | `8` | `ChgSBin` |
 | `1` | `01` | `****` | `**` | `01` | `CHGSB` | `8` | `换源货位` |
 
 E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
@@ -303,7 +303,7 @@ E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
 5. ~~换源货位方式待定~~ **已确定（2026-11-03）**：继续用"确认差异 + `TO_CREATE`"（标准 BIDF 会自动新建 WT 且货位由系统定，不能指定扫码货位；"`TO_CHANGE` 可改源货位"的说法已撤回，未验证）
 6. **OP4 已完成（2026-11-03 晚，TR S4HK902806）**：TOP include 加 `matnr`/`charg`；屏幕 9100 加 L006 Product / L008 Batch（共 16 元素）；PBO 用 `/SCWM/MATID_TO_MATNR_MULTIPLE` + `/SCWM/BATCH_SEARCH2`（按 `batchid` 匹配）转换，空值有保护、TRY/CATCH 包裹。PBO 现 95 行
 7. **按钮/步骤描述**：`/SCWM/TSTEP_CATT` 原先**没有 CHGSB 行** → 已补 LANGU `E`/`1`、TEXT `Change Source Bin`，键已记入定制任务 `S4HK902809`
-   - **按钮文本已补（2026-11-03）**：RF 按钮标签来自 `/SCWM/TOBJ_TXT`（维护视图 `/SCWM/V_FCOD_TXT`），已写 LANGU `E`=`ChgBin`、`1`=`换源货位`（OBJ_TYPE `01` / OBJ_ID `CHGSB` / OBJ_SIZE `8`），E071+E071K 已记入 `S4HK902809`
+   - **按钮文本已补（2026-11-03）**：RF 按钮标签来自 `/SCWM/TOBJ_TXT`（维护视图 `/SCWM/V_FCOD_TXT`），已写 LANGU `E`=`ChgSBin`、`1`=`换源货位`（OBJ_TYPE `01` / OBJ_ID `CHGSB` / OBJ_SIZE `8`），E071+E071K 已记入 `S4HK902809`
 8. **`zchgsb/` abapGit 序列化**：除两个 FM 外，TOP include 和 dynpro 目前只存在系统里，需一并序列化（另建仓库，起始目录 `/zchgsb/src/`）
 9. 定制数据是否并入项目请求 `S4HK902782`（REC3WX 的 "RF ZDIFHU"）——主人明确**不需要**（沙盒，能用就行）
 
