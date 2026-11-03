@@ -48,19 +48,26 @@
 
 程序 `SAPLZFG_RF_CHGSB`，屏幕 `9100`，80×24，流程逻辑仅 `PROCESS BEFORE OUTPUT.` / `PROCESS AFTER INPUT.`（PBO/PAI 由 RF 框架按 TSTEP_FLOW 调用，不走 dynpro MODULE）。
 
-| 行 | 列 | 类型 | 字段 |
-|---|---|---|---|
-| 1 | 1 | 文本 | `Source bin` |
-| 1 | 20 | 输出 | `GS_CHGSB_SCR-VLPLA` |
-| 2 | 1 | 文本 | `Storage type` |
-| 2 | 20 | 输出 | `GS_CHGSB_SCR-VLTYP` |
-| 3 | 1 | 文本 | `Quantity` |
-| 3 | 20 | 输出 | `GS_CHGSB_SCR-VSOLA` |
-| 4 | 1 | 文本 | `HU` |
-| 4 | 20 | 输出 | `GS_CHGSB_SCR-HUIDENT` |
-| 6 | 1 | 文本 | `New source bin` |
-| 6 | 20 | **输入（必填）** | `GS_CHGSB_SCR-NEWLGPLA` |
-| 8 | 1 | 输出 | `GS_CHGSB_SCR-TXT` |
+> 2026-11-03 修正：原先只插入了流程逻辑，屏幕元素其实没有生成（SE51 打开是空的）。
+> 已用 `RPY_DYNPRO_INSERT`（CONTAINERS + FIELDS_TO_CONTAINERS，克隆标准屏 SAPLRF_PICKING 0501 的 TEXT/TEMPLATE 行作模板）重建，
+> 读回结果：1 个容器 `SCREEN`、**12 个元素**、流程逻辑 2 行；记录在 TR `S4HK902806` / 任务 `S4HK902807`。
+
+| 行 | 列 | 类型 | 长度 | 字段 / 文本 |
+|---|---|---|---|---|
+| 002 | 001 | TEXT | 010 | `Source bin` |
+| 002 | 016 | TEMPLATE（输出） | 020 | `GS_CHGSB_SCR-VLPLA` |
+| 003 | 001 | TEXT | 008 | `Bin type` |
+| 003 | 016 | TEMPLATE（输出） | 004 | `GS_CHGSB_SCR-VLTYP` |
+| 004 | 001 | TEXT | 008 | `Quantity` |
+| 004 | 016 | TEMPLATE（输出） | 018 | `GS_CHGSB_SCR-VSOLA` |
+| 005 | 001 | TEXT | 002 | `HU` |
+| 005 | 016 | TEMPLATE（输出） | 020 | `GS_CHGSB_SCR-HUIDENT` |
+| 007 | 001 | TEXT | 007 | `New bin` |
+| 007 | 016 | TEMPLATE（输入） | 020 | `GS_CHGSB_SCR-NEWLGPLA` |
+| 009 | 001 | TEMPLATE（输出） | 080 | `GS_CHGSB_SCR-TXT` |
+| 000 | 000 | TEMPLATE（输入） | 020 | `OKCODE` |
+
+注：`NEWLGPLA` 在屏幕上**没有**设 REQU_ENTRY —— RF 里带必输属性的字段会变成不可输入，输入由 PBO 调 `set_screlm_input_on( 'GS_CHGSB_SCR-NEWLGPLA' )` 打开。
 
 ---
 
@@ -147,9 +154,14 @@
             t_rf_pick_hus    TYPE /scwm/tt_rf_pick_hus
             who              TYPE /scwm/s_who_int.
    ```
-3. **货位主数据校验**：用标准 FM `/SCWM/RF_PICK_BIN_CHECK`（校验 **VLPLA**＝源货位）。
-   - 它从 `ordim_confirm-vlpla` 取"用户输入的货位" → 必须先暂存原值，校验完**必须还原**，否则第 3 步会拿错行
-   - `is_valid_prf` 用 `/scwm/cl_rf_bll_srvc=>get_valid_prf( iv_step, iv_state )` 取，取不到退化空结构
+3. **货位主数据校验**（2026-11-03 已重写，不再用 `/SCWM/RF_PICK_BIN_CHECK`）：
+   - 错在哪：`is_valid_prf` 键写错（真实行是 `PARAM_NAME='TT_ORDIM_CONFIRM'`），而且标准 FM 只对硬编码标准步骤（PIMTTO 等）比对 VERIF → 自定义步骤 CHGSB 永远校验不过，空 `is_valid_prf` 还会在 `ASSIGN COMPONENT` 处 dump
+   - 现在的校验链（任一失败 → `set_fcode('INIT')` + `e017`）：
+     1. `/SCWM/BIN_EXIST_CHECK`（`it_lgpla` 单行 `newlgpla`，`iv_lgnum`）→ `e_rc_severity` 必须 = `S`（已含子货位/动态货位处理）
+     2. `SELECT SINGLE * FROM /scwm/lagp`（`lgnum` + `lgpla`）→ 找不到，或 `lgtyp <> ordim_confirm-vltyp`（必须同库存类型）
+     3. `lagp-skzua = 'X'`（拣货冻结 / 禁止出库）
+     4. `guid_loc` 非空且 `/scwm/binstobj` 有行时调 `/SCWM/BIN_ACT_CHECK`（`iv_activity = wmegc_binact_pick`，`TYPE-POOLS: wmegc`）→ `ev_allowed` 必须 = `X`；先查 BINSTOBJ 是为了避开 FM 内部 `MESSAGE e132`
+     5. 通过后 `gs_chgsb_scr-newlgtyp = lagp-lgtyp`
    - ⚠️ 不要误用 `/SCWM/RF_PICK_BIN_CHANGE_CHECK` —— 那个校验的是 **NLPLA**（目标货位），且会 `MESSAGE e045`
 4. **确认原 WT 为全量差异**：`ndifa = vsola`、`nista = 0`
    - **绝不设 `bind = 'X'`**，否则标准 `CREATE_BIN_DENIAL` 会自动再建一个 WT → 重复
@@ -169,11 +181,16 @@
 
 ```abap
 " 货位校验（源货位 VLPLA）
-/SCWM/RF_PICK_BIN_CHECK
-  IMPORTING is_valid_prf TYPE /scwm/s_valid_prf_ext
-            iv_flg_verified TYPE xfeld
-  EXPORTING ev_flg_verified TYPE xfeld
-  CHANGING  tt_ordim_confirm / ordim_confirm
+" 货位校验（CHGSB 实际使用，2026-11-03 起；RF_PICK_BIN_CHECK 已废弃不用）
+/SCWM/BIN_EXIST_CHECK
+  IMPORTING it_lgpla TYPE /scwm/tt_lgpla   " 行类型 = /scwm/lgpla（char18），单值也用它
+            iv_lgnum TYPE /scwm/lgnum
+  EXPORTING et_bapiret TYPE bapirettab
+            e_rc_severity TYPE bapi_mtype   " S=都存在 / E=有无效货位 / A=入参错
+/SCWM/BIN_ACT_CHECK
+  IMPORTING iv_activity TYPE j_vorgang      " wmegc_binact_pick（TYPE-POOLS: wmegc）
+            is_lagp TYPE /scwm/s_lagp_int   " 只需要 lgnum/lgpla/guid_loc
+  EXPORTING ev_allowed TYPE xfeld
 
 " 确认拣货差异
 /SCWM/RF_PICK_ORDIM_CONFIRM
@@ -208,6 +225,11 @@
 3. **`ev_x = DATA(lv)` 内联声明在 CALL FUNCTION 参数位置非法** → 必须提前 `DATA`
 4. **FM 源码必须以 `ENDFUNCTION.` 结尾**（我漏了两次，报 "Incorrect nesting"）
 5. **`/SCWM/DE_VSOLA` 不存在**，正确是 `/SCWM/LTAP_VSOLA`
+
+### 写系统源码 / 屏幕（2026-11-03 新增）
+
+- **不要用行号区间改系统源码**：系统版 PAI 比本地多 3 个空行（237 vs 234），按行号替换会整体偏移 1 行，曾把 `MESSAGE e014` 分支删掉。必须重读系统源码、用唯一文本锚点（`editObjectSource` 的 replacements 模式）。
+- **`RPY_DYNPRO_INSERT` 没有 fields_list 参数**：屏幕字段只能靠 `CONTAINERS` + `FIELDS_TO_CONTAINERS` 传入；只传 flow_logic 就得到只有两个 PROCESS 行的空屏幕（SE51 看着是空的）。克隆标准屏幕（`/SCWM/SAPLRF_PICKING` 0501）的 TEXT/TEMPLATE 行最稳。
 
 ### 屏幕生成（RPY 系列）
 
@@ -252,7 +274,7 @@
 1. **SE51 目视确认屏幕 9100** 的 11 个字段（读回校验不可信，必须人看）
 2. RF 实测：PIMTTO 屏幕 → `F11` / 第二屏 `PB2` 按钮 → 能否跳 9100 → 扫码换货位
 3. 补 `zchgsb/` 的 abapGit 序列化（`fugr.xml` + `.screen_9100.abap`），另建独立 abapGit 仓库
-4. **PAI 校验必须重写**：`get_valid_prf` 用 `param_name = 'ORDIM_CONFIRM'` 取不到（`/SCWM/TVALID_PRF` 里真实行是 `TT_ORDIM_CONFIRM`），而且 `/SCWM/RF_PICK_BIN_CHECK` 只认标准步骤（PIMTTO 等）→ 自定义步骤 CHGSB 永远返回未校验。改为自建：`/SCWM/BIN_EXIST_CHECK`（存在性/子货位/动态货位）+ `LAGP_READ_SINGLE` 查 `SKZUA`/`SKZUE` + `/SCWM/BIN_ACT_CHECK`（`wmegc_binact_pick`，需 `TYPE-POOLS: wmegc`）
+4. ~~PAI 校验重写~~ **已完成（2026-11-03，已激活）**：旧的 `get_valid_prf` + `/SCWM/RF_PICK_BIN_CHECK` 调用已删除（取数 key 错：`ORDIM_CONFIRM` ≠ 真实 `TT_ORDIM_CONFIRM`；且该 FM 只认标准步骤）。现行校验链（任一失败 → `set_fcode('INIT')` + 消息 017）：`/SCWM/BIN_EXIST_CHECK`（单行 `it_lgpla`，`e_rc_severity` 必须为 `S`）→ `SELECT SINGLE * FROM /scwm/lagp`（必须存在，且 `lgtyp = ordim_confirm-vltyp`）→ `lagp-skzua = 'X'` 判拣货冻结 → `guid_loc` 非空且 `/scwm/binstobj` 有行时调 `/SCWM/BIN_ACT_CHECK`（`iv_activity = wmegc_binact_pick`，需 `TYPE-POOLS: wmegc`，`ev_allowed` 必须为 `X`）→ 通过后 `gs_chgsb_scr-newlgtyp = lagp-lgtyp`。FM 现 260 行，TR S4HK902806，激活无错误、无 inactive。
 5. **换源货位方式待定**：现方案"确认差异 + `TO_CREATE`"机械上可跑，但会把 ODO 行按短拣确认（交货可能短发）；备选 `/SCWM/TO_CHANGE`（`it_change`，`VLPLA`=新货位、`S_NEW='X'`）直接改未完成 WT，不动 ODO/WO
 6. 定制数据是否并入项目请求 `S4HK902782`（REC3WX 的 "RF ZDIFHU"）——待主人确认
 
