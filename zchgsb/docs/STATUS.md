@@ -1,7 +1,7 @@
 # 状态（交接文件）
 
 > 用法：每完成一个阶段就更新本文件；新会话开工第一句"先读 zchgsb/docs/STATUS.md"。
-> 最后更新：2026-11-03 23:50
+> 最后更新：2026-11-04 00:05
 
 ## 当前目标
 
@@ -68,7 +68,9 @@
 | 007 | 016 | TEMPLATE（输出） | 010 | `GS_CHGSB_SCR-CHARG` |
 | 009 | 001 | TEXT | 007 | `New bin` |
 | 009 | 016 | TEMPLATE（输入） | 018 | `GS_CHGSB_SCR-NEWLGPLA` |
-| 011 | 001 | TEMPLATE（输出） | 080 | `GS_CHGSB_SCR-TXT` |
+| 011 | 001 | TEMPLATE（输出） | 040 | `GS_CHGSB_SCR-TXT` |
+
+> 2026-11-03：信息栏 `TXT` 由 080 缩到 040（`D020S-BZBR` 随之变 40，屏幕使用宽度 40 列）；屏幕 `TYPE=I`。
 | 000 | 000 | （自动） | 020 | `OKCODE` —— 由 `OK_FIELD` 自动生成，**不要手传** |
 
 注：`NEWLGPLA` 在屏幕上**没有**设 REQU_ENTRY —— RF 里带必输属性的字段会变成不可输入，输入由 PBO 调 `set_screlm_input_on( 'GS_CHGSB_SCR-NEWLGPLA' )` 打开。
