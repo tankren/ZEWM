@@ -225,6 +225,11 @@
 
 ## 八、踩过的坑（重要，别重复）
 
+### 子屏幕类型（2026-11-03，F11 dump 根因）
+- RF 框架把步骤屏幕当**子屏幕**调用（`/SCWM/LRF_TMPLO01` 里 `CALL SUBSCREEN`），dynpro 必须 `D020S-TYPE = 'S'`；建成普通屏幕会在按 F11 时直接 dump `DYNP_WRONG_SCREEN_TYPE`
+- `RPY_DYNPRO_INSERT` 时设 `header-type = 'S'`；`RPY_DYFLOW`/`RPY_DYPARA` 是**结构**，TABLES 参数要传 `STANDARD TABLE OF rpy_dyflow/rpy_dypara`
+- FUGR include 写源码必须用 `/includes/<inc>/source/main`（不带 `/source/main` 的 URL 替换 0 匹配）
+
 ### SAP / ABAP
 
 1. **`/ZEWM/` 命名空间不存在** → 任何 `/ZEWM/xxx` 对象都建不出来，必须用 `ZFG_RF_*` / `Z_RF_*`
@@ -278,12 +283,15 @@
 
 ## 十、下一步
 
-1. **SE51 目视确认屏幕 9100** 的 11 个字段（读回校验不可信，必须人看）
+1. **SE51 目视确认屏幕 9100**（2026-11-03 晚重建：`D020S-TYPE='S'` 子屏幕、1 容器 / 16 个元素 / 2 行 flow；OP4 新增 L006 Product、L008 Batch）
 2. RF 实测：PIMTTO 屏幕 → `F11` / 第二屏 `PB2` 按钮 → 能否跳 9100 → 扫码换货位
 3. 补 `zchgsb/` 的 abapGit 序列化（`fugr.xml` + `.screen_9100.abap`），另建独立 abapGit 仓库
 4. ~~PAI 校验重写~~ **已完成（2026-11-03，已激活）**：旧的 `get_valid_prf` + `/SCWM/RF_PICK_BIN_CHECK` 调用已删除（取数 key 错：`ORDIM_CONFIRM` ≠ 真实 `TT_ORDIM_CONFIRM`；且该 FM 只认标准步骤）。现行校验链（任一失败 → `set_fcode('INIT')` + 消息 017）：`/SCWM/BIN_EXIST_CHECK`（单行 `it_lgpla`，`e_rc_severity` 必须为 `S`）→ `SELECT SINGLE * FROM /scwm/lagp`（必须存在，且 `lgtyp = ordim_confirm-vltyp`）→ `lagp-skzua = 'X'` 判拣货冻结 → `guid_loc` 非空且 `/scwm/binstobj` 有行时调 `/SCWM/BIN_ACT_CHECK`（`iv_activity = wmegc_binact_pick`，需 `TYPE-POOLS: wmegc`，`ev_allowed` 必须为 `X`）→ 通过后 `gs_chgsb_scr-newlgtyp = lagp-lgtyp`。FM 现 260 行，TR S4HK902806，激活无错误、无 inactive。
-5. **换源货位方式待定**：现方案"确认差异 + `TO_CREATE`"机械上可跑，但会把 ODO 行按短拣确认（交货可能短发）；备选 `/SCWM/TO_CHANGE`（`it_change`，`VLPLA`=新货位、`S_NEW='X'`）直接改未完成 WT，不动 ODO/WO
-6. 定制数据是否并入项目请求 `S4HK902782`（REC3WX 的 "RF ZDIFHU"）——待主人确认
+5. ~~换源货位方式待定~~ **已确定（2026-11-03）**：继续用"确认差异 + `TO_CREATE`"（标准 BIDF 会自动新建 WT 且货位由系统定，不能指定扫码货位；"`TO_CHANGE` 可改源货位"的说法已撤回，未验证）
+6. **OP4 已完成（2026-11-03 晚，TR S4HK902806）**：TOP include 加 `matnr`/`charg`；屏幕 9100 加 L006 Product / L008 Batch（共 16 元素）；PBO 用 `/SCWM/MATID_TO_MATNR_MULTIPLE` + `/SCWM/BATCH_SEARCH2`（按 `batchid` 匹配）转换，空值有保护、TRY/CATCH 包裹。PBO 现 95 行
+7. **按钮/步骤描述**：`/SCWM/TSTEP_CATT` 原先**没有 CHGSB 行** → 已补 LANGU `E`/`1`、TEXT `Change Source Bin`，键已记入定制任务 `S4HK902809`
+8. **`zchgsb/` abapGit 序列化**：除两个 FM 外，TOP include 和 dynpro 目前只存在系统里，需一并序列化（另建仓库，起始目录 `/zchgsb/src/`）
+9. 定制数据是否并入项目请求 `S4HK902782`（REC3WX 的 "RF ZDIFHU"）——主人明确**不需要**（沙盒，能用就行）
 
 ---
 
