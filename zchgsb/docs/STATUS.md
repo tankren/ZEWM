@@ -1,7 +1,7 @@
 # 状态（交接文件）
 
 > 用法：每完成一个阶段就更新本文件；新会话开工第一句"先读 zchgsb/docs/STATUS.md"。
-> 最后更新：2026-11-04 00:30
+> 最后更新：2026-11-04 00:40
 
 ## 当前目标
 
@@ -306,6 +306,17 @@ E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
 ---
 
 ## 十、下一步
+
+> **2026-11-04 收工状态**：`get_lgnum` 空仓库号问题已解决（改取 `ordim_confirm-lgnum`），现在流程走到最后一步报
+> **E: WT creation failed after confirmation - manual correction needed（ZEWM_RF_MSG 015）**，说明
+> `/SCWM/BIN_EXIST_CHECK` / 货位校验 / 确认原 WT 都已通过，挂在 `/SCWM/TO_CREATE`。
+> 注意：第 4 步确认原 WT 已经 COMMIT，此时失败**原 WT 已被确认**，现场需人工补偿（这正是 015 文案的含义）。
+
+**明天第一件事（排 015）**：
+1. 先把 `TO_CREATE` 的 `et_bapiret` 暴露出来（现在只报 015，看不见内部原因）：临时把前 3 条 bapiret 的 MESSAGE 拼进 `gs_chgsb_scr-txt`，或写日志表；跑一次拿到真实错误码。
+2. 重点核对 `lt_create` 里这几项：`anfme`（应传正数 `vsola`，不是差异负数）、`sguid_hu`（HU 是否必须）、`matid`/`batchid`（可能为空）、`stock_doccat`/`stock_docno`、`rdoccat='PDO'`+`rdocid`/`ritmid`（ritmid 是否真读到）、`nlttyp`/`nlpla`（目标货位是否留空，让系统按 `vltyp/nlpla` 规则定）。
+3. 若 `ev_severity` 为空但 `ev_tanum` 也空 → 看 `/SCWM/TO_POST` 的 `et_ltap_err`；必要时改成分步 `TO_CREA_INT` + `TO_POST` 以便定位。
+4. 顺带确认 info 行：`TXT` 缩到 40 列后 015 文本被截断（"…need[e]"），若嫌难看改回 80 宽（`TXT` 80 → `D020S-BZBR` 80）。
 
 1. **SE51 目视确认屏幕 9100**（2026-11-03 晚重建：`D020S-TYPE='S'` 子屏幕、1 容器 / 16 个元素 / 2 行 flow；OP4 新增 L006 Product、L008 Batch）
 2. RF 实测：PIMTTO 屏幕 → `F11` / 第二屏 `PB2` 按钮 → 能否跳 9100 → 扫码换货位
