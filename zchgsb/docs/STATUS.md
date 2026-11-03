@@ -1,7 +1,7 @@
 # 状态（交接文件）
 
 > 用法：每完成一个阶段就更新本文件；新会话开工第一句"先读 zchgsb/docs/STATUS.md"。
-> 最后更新：2026-11-03 23:30
+> 最后更新：2026-11-03 23:50
 
 ## 当前目标
 
@@ -48,24 +48,28 @@
 
 程序 `SAPLZFG_RF_CHGSB`，屏幕 `9100`，80×24，流程逻辑仅 `PROCESS BEFORE OUTPUT.` / `PROCESS AFTER INPUT.`（PBO/PAI 由 RF 框架按 TSTEP_FLOW 调用，不走 dynpro MODULE）。
 
-> 2026-11-03 修正：原先只插入了流程逻辑，屏幕元素其实没有生成（SE51 打开是空的）。
-> 已用 `RPY_DYNPRO_INSERT`（CONTAINERS + FIELDS_TO_CONTAINERS，克隆标准屏 SAPLRF_PICKING 0501 的 TEXT/TEMPLATE 行作模板）重建，
-> 读回结果：1 个容器 `SCREEN`、**12 个元素**、流程逻辑 2 行；记录在 TR `S4HK902806` / 任务 `S4HK902807`。
+> ⚠️ 2026-11-03 23:45 **重建（第二次）**：此前屏幕在系统里**丢失**——`D020S` 无 9100 行，RF 先 dump `DYNP_WRONG_SCREEN_TYPE`（建成普通屏），之后 dump `DYNPRO_NOT_FOUND`（屏没了）。
+> 已用 `RPY_DYNPRO_INSERT` 重插：`header-type='S'`、80×24、1 容器 `SCREEN`、15 个元素（TEXT/TEMPLATE）+ 自动补的 OKCODE、流程逻辑 2 行；`COMMIT WORK` 后核对 `D020S`：`TYPE=S`、`BZMX=11`、`BZBR=80`，`inactiveObjects` 为空。记录在任务 `S4HK902807`。
+> 判据：`D020S` 有行才算真的建上；`RPY_DYNPRO_READ_INTO_EXTFORMAT` 读回 `fields=0` **不可信**（标准屏也返回 0）。
 
 | 行 | 列 | 类型 | 长度 | 字段 / 文本 |
 |---|---|---|---|---|
 | 002 | 001 | TEXT | 010 | `Source bin` |
-| 002 | 016 | TEMPLATE（输出） | 020 | `GS_CHGSB_SCR-VLPLA` |
+| 002 | 016 | TEMPLATE（输出） | 018 | `GS_CHGSB_SCR-VLPLA` |
 | 003 | 001 | TEXT | 008 | `Bin type` |
 | 003 | 016 | TEMPLATE（输出） | 004 | `GS_CHGSB_SCR-VLTYP` |
 | 004 | 001 | TEXT | 008 | `Quantity` |
 | 004 | 016 | TEMPLATE（输出） | 018 | `GS_CHGSB_SCR-VSOLA` |
 | 005 | 001 | TEXT | 002 | `HU` |
 | 005 | 016 | TEMPLATE（输出） | 020 | `GS_CHGSB_SCR-HUIDENT` |
-| 007 | 001 | TEXT | 007 | `New bin` |
-| 007 | 016 | TEMPLATE（输入） | 020 | `GS_CHGSB_SCR-NEWLGPLA` |
-| 009 | 001 | TEMPLATE（输出） | 080 | `GS_CHGSB_SCR-TXT` |
-| 000 | 000 | TEMPLATE（输入） | 020 | `OKCODE` |
+| 006 | 001 | TEXT | 007 | `Product` |
+| 006 | 016 | TEMPLATE（输出） | 018 | `GS_CHGSB_SCR-MATNR` |
+| 007 | 001 | TEXT | 005 | `Batch` |
+| 007 | 016 | TEMPLATE（输出） | 010 | `GS_CHGSB_SCR-CHARG` |
+| 009 | 001 | TEXT | 007 | `New bin` |
+| 009 | 016 | TEMPLATE（输入） | 018 | `GS_CHGSB_SCR-NEWLGPLA` |
+| 011 | 001 | TEMPLATE（输出） | 080 | `GS_CHGSB_SCR-TXT` |
+| 000 | 000 | （自动） | 020 | `OKCODE` —— 由 `OK_FIELD` 自动生成，**不要手传** |
 
 注：`NEWLGPLA` 在屏幕上**没有**设 REQU_ENTRY —— RF 里带必输属性的字段会变成不可输入，输入由 PBO 调 `set_screlm_input_on( 'GS_CHGSB_SCR-NEWLGPLA' )` 打开。
 
@@ -255,6 +259,10 @@ E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
 
 - **不要用行号区间改系统源码**：系统版 PAI 比本地多 3 个空行（237 vs 234），按行号替换会整体偏移 1 行，曾把 `MESSAGE e014` 分支删掉。必须重读系统源码、用唯一文本锚点（`editObjectSource` 的 replacements 模式）。
 - **`RPY_DYNPRO_INSERT` 没有 fields_list 参数**：屏幕字段只能靠 `CONTAINERS` + `FIELDS_TO_CONTAINERS` 传入；只传 flow_logic 就得到只有两个 PROCESS 行的空屏幕（SE51 看着是空的）。克隆标准屏幕（`/SCWM/SAPLRF_PICKING` 0501）的 TEXT/TEMPLATE 行最稳。
+- **不要手传 `OKCODE` 字段**：`RPY_DYNPRO_CVT_FROM_EXTFORMAT` 的 `OK_FIELD` 会自动补；显式传会抛 `MISSING_REQUIRED_FIELD`（=5）。逐个字段单独跑 CVT 可精确定位是哪一个报错。
+- **`RPY_DYNPRO_READ_INTO_EXTFORMAT` 的入参是 `HEADER_INT TYPE d020s` + `DESCRIPT`**，**没有 DYNNR/DYNP 参数**（传 DYNNR 报 `CALL_FUNCTION_PARM_UNKNOWN`）。
+- **行类型 `DYCATT`/`DYFATT`/`RPY_DYPA` 在 DDIC 里不存在**：表要么用 `TYPE dycatt_tab` / `dyfatc_tab`，行要么用 `TYPE LINE OF dycatt_tab` / `LINE OF dyfatc_tab`；`params` 用 `STANDARD TABLE OF rpy_dypara`，`flow_logic` 用 `STANDARD TABLE OF rpy_dyflow`（该行类型只有一个字段 `LINE`，直接写 `PROCESS BEFORE OUTPUT.`）。
+- **屏幕"丢失"的判据**：`D020S` 查不到行 → 屏真没了（RF 报 `DYNPRO_NOT_FOUND`）。`D020S-BZMX/BZBR` 是已用行/列，`MILI/MACO` 是十六进制编码（192 = C0），别拿它们判断宽高。
 
 ### 屏幕生成（RPY 系列）
 
