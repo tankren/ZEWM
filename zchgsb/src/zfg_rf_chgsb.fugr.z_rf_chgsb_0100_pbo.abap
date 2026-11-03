@@ -19,8 +19,18 @@ FUNCTION z_rf_chgsb_0100_pbo
         lt_matnr    TYPE /scwm/tt_matid_matnr,
         lt_batch_sr TYPE /scwm/t_batch_sr.
 
-  lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  lv_lgnum = ordim_confirm-lgnum.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = resource-lgnum.
+  ENDIF.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = who-lgnum.
+  ENDIF.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  ENDIF.
   /scwm/cl_tm=>set_lgnum( lv_lgnum ).
+  /scwm/cl_rf_bll_srvc=>set_lgnum( lv_lgnum ).
 
 *----------------------------------------------------------------------*
 * 1. 原拣货行 → 屏幕展示

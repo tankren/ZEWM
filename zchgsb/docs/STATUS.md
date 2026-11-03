@@ -1,7 +1,7 @@
 # 状态（交接文件）
 
 > 用法：每完成一个阶段就更新本文件；新会话开工第一句"先读 zchgsb/docs/STATUS.md"。
-> 最后更新：2026-11-04 00:05
+> 最后更新：2026-11-04 00:30
 
 ## 当前目标
 
@@ -255,6 +255,7 @@ E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
 3. **`ev_x = DATA(lv)` 内联声明在 CALL FUNCTION 参数位置非法** → 必须提前 `DATA`
 4. **FM 源码必须以 `ENDFUNCTION.` 结尾**（我漏了两次，报 "Incorrect nesting"）
 5. **`/SCWM/DE_VSOLA` 不存在**，正确是 `/SCWM/LTAP_VSOLA`
+5c. **`/SCWM/CL_RF_BLL_SRVC=>GET_LGNUM( )` 可能是空的**（它只返回 public static `SV_LGNUM`，未 set 时为空）→ 取仓库号按 `ordim_confirm-lgnum` → `resource-lgnum` → `who-lgnum` → 静态属性兜底，然后 `set_lgnum` 写回；PBO/PAI 都这么做。
 5b. **RF 按钮文本不在 `TFCOD_CATT`**，而在 `/SCWM/TOBJ_TXT`（SM34 视图 `/SCWM/V_FCOD_TXT`；`OBJ_TYPE='01'`、`OBJ_SIZE` = 显示宽度）。只配 TFCOD_CATT 时按钮仍无文字。
 
 ### 写系统源码 / 屏幕（2026-11-03 新增）

@@ -40,8 +40,18 @@ TYPE-POOLS: wmegc.
         lv_objnr    TYPE /lime/guid_loc.
 
   lv_fcode = /scwm/cl_rf_bll_srvc=>get_fcode( ).
-  lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  lv_lgnum = ordim_confirm-lgnum.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = resource-lgnum.
+  ENDIF.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = who-lgnum.
+  ENDIF.
+  IF lv_lgnum IS INITIAL.
+    lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
+  ENDIF.
   /scwm/cl_tm=>set_lgnum( lv_lgnum ).
+  /scwm/cl_rf_bll_srvc=>set_lgnum( lv_lgnum ).
 
   CASE lv_fcode.
     WHEN 'BACK'.
