@@ -14,7 +14,10 @@ FUNCTION z_rf_chgsb_0100_pbo
 * 签名与 /SCWM/RF_PICK_PIMTTO_PBO 一致，框架按同名 CHANGING 传参。
 *----------------------------------------------------------------------*
 
-  DATA: lv_lgnum TYPE /scwm/lgnum.
+  DATA: lv_lgnum    TYPE /scwm/lgnum,
+        lt_matid    TYPE /scwm/tt_matid,
+        lt_matnr    TYPE /scwm/tt_matid_matnr,
+        lt_batch_sr TYPE /scwm/t_batch_sr.
 
   lv_lgnum = /scwm/cl_rf_bll_srvc=>get_lgnum( ).
   /scwm/cl_tm=>set_lgnum( lv_lgnum ).
@@ -31,13 +34,43 @@ FUNCTION z_rf_chgsb_0100_pbo
   gs_chgsb_scr-tanum   = ordim_confirm-tanum.     " WT 号
   gs_chgsb_scr-vlenr   = ordim_confirm-vlenr.     " WT 行号
 
-* TODO 物料号 / 批号转换（GUID → 可读值）待接：
-*   MATID   → /SCWM/MATID_TO_MATNR_MULTIPLE
-*   BATCHID → /SCWM/GET_BATCHID_MULTIPLE
-* 这两个函数已核实存在，参数结构待读源码后补。
-* 屏幕字段先用 GUID，等结构确认后替换。
-  gs_chgsb_scr-matid   = ordim_confirm-matid.
-  gs_chgsb_scr-batchid = ordim_confirm-batchid.
+* 物料 GUID → 物料号（可读）
+  IF ordim_confirm-matid IS NOT INITIAL.
+    APPEND ordim_confirm-matid TO lt_matid.
+    TRY.
+        CALL FUNCTION '/SCWM/MATID_TO_MATNR_MULTIPLE'
+          EXPORTING
+            it_matid       = lt_matid
+          IMPORTING
+            et_matid_matnr = lt_matnr.
+        READ TABLE lt_matnr INTO DATA(ls_matnr_line) INDEX 1.
+        IF sy-subrc = 0.
+          gs_chgsb_scr-matnr = ls_matnr_line-matnr.
+        ENDIF.
+      CATCH cx_root.
+        CLEAR gs_chgsb_scr-matnr.
+    ENDTRY.
+  ENDIF.
+
+* 批次 GUID → 批号（可读）：先取该物料全部批次，再按 BATCHID 匹配
+  IF ordim_confirm-matid IS NOT INITIAL
+     AND ordim_confirm-batchid IS NOT INITIAL.
+    TRY.
+        CALL FUNCTION '/SCWM/BATCH_SEARCH2'
+          EXPORTING
+            iv_matid    = ordim_confirm-matid
+            iv_lgnum    = lv_lgnum
+          IMPORTING
+            et_batch_sr = lt_batch_sr.
+        READ TABLE lt_batch_sr INTO DATA(ls_batch_line)
+             WITH KEY batchid = ordim_confirm-batchid.
+        IF sy-subrc = 0.
+          gs_chgsb_scr-charg = ls_batch_line-charg.
+        ENDIF.
+      CATCH cx_root.
+        CLEAR gs_chgsb_scr-charg.
+    ENDTRY.
+  ENDIF.
 
 * 每次进屏清空输入字段，避免上一轮残留
   CLEAR: gs_chgsb_scr-newlgpla,
