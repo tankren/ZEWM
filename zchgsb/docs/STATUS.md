@@ -1,7 +1,7 @@
 # 状态（交接文件）
 
 > 用法：每完成一个阶段就更新本文件；新会话开工第一句"先读 zchgsb/docs/STATUS.md"。
-> 最后更新：2026-11-03 13:32
+> 最后更新：2026-11-03 23:30
 
 ## 当前目标
 
@@ -83,6 +83,18 @@
 |---|---|---|---|
 | `01` | `CHGSB` | `E` | Change Source Bin |
 | `01` | `CHGSB` | `1` | Change Source Bin |
+
+> ⚠️ `TFCOD_CATT` **不是** RF 按钮文本的来源（写了也没用）。按钮文本在下面的 `TOBJ_TXT`。
+
+### TOBJ_TXT —— 按钮文本（2026-11-03 补，TR 任务 `S4HK902809`）
+维护视图 `/SCWM/V_FCOD_TXT`（SM34 `/SCWM/RF_CUSTOM`）的底表是 **`/SCWM/TOBJ_TXT`**，不是 TFCOD_CATT。`OBJ_TYPE='01'` = 功能码文本，`OBJ_SIZE=8` = 最多 8 字符。
+
+| LANGU | APPLIC | PRES_PRF | PRSN_PRF | OBJ_TYPE | OBJ_ID | OBJ_SIZE | TEXT |
+|---|---|---|---|---|---|---|---|
+| `E` | `01` | `****` | `**` | `01` | `CHGSB` | `8` | `ChgBin` |
+| `1` | `01` | `****` | `**` | `01` | `CHGSB` | `8` | `换源货位` |
+
+E071K 键（22 位）：`100E01CHGSB0801******`、`100101CHGSB0801******`
 
 ### TFCOD_PRF（3 条）
 | STEP | FCODE | PUSHB | FNKEY | SHORTCUT | SQNCE |
@@ -237,6 +249,7 @@
 3. **`ev_x = DATA(lv)` 内联声明在 CALL FUNCTION 参数位置非法** → 必须提前 `DATA`
 4. **FM 源码必须以 `ENDFUNCTION.` 结尾**（我漏了两次，报 "Incorrect nesting"）
 5. **`/SCWM/DE_VSOLA` 不存在**，正确是 `/SCWM/LTAP_VSOLA`
+5b. **RF 按钮文本不在 `TFCOD_CATT`**，而在 `/SCWM/TOBJ_TXT`（SM34 视图 `/SCWM/V_FCOD_TXT`；`OBJ_TYPE='01'`、`OBJ_SIZE` = 显示宽度）。只配 TFCOD_CATT 时按钮仍无文字。
 
 ### 写系统源码 / 屏幕（2026-11-03 新增）
 
@@ -290,6 +303,7 @@
 5. ~~换源货位方式待定~~ **已确定（2026-11-03）**：继续用"确认差异 + `TO_CREATE`"（标准 BIDF 会自动新建 WT 且货位由系统定，不能指定扫码货位；"`TO_CHANGE` 可改源货位"的说法已撤回，未验证）
 6. **OP4 已完成（2026-11-03 晚，TR S4HK902806）**：TOP include 加 `matnr`/`charg`；屏幕 9100 加 L006 Product / L008 Batch（共 16 元素）；PBO 用 `/SCWM/MATID_TO_MATNR_MULTIPLE` + `/SCWM/BATCH_SEARCH2`（按 `batchid` 匹配）转换，空值有保护、TRY/CATCH 包裹。PBO 现 95 行
 7. **按钮/步骤描述**：`/SCWM/TSTEP_CATT` 原先**没有 CHGSB 行** → 已补 LANGU `E`/`1`、TEXT `Change Source Bin`，键已记入定制任务 `S4HK902809`
+   - **按钮文本已补（2026-11-03）**：RF 按钮标签来自 `/SCWM/TOBJ_TXT`（维护视图 `/SCWM/V_FCOD_TXT`），已写 LANGU `E`=`ChgBin`、`1`=`换源货位`（OBJ_TYPE `01` / OBJ_ID `CHGSB` / OBJ_SIZE `8`），E071+E071K 已记入 `S4HK902809`
 8. **`zchgsb/` abapGit 序列化**：除两个 FM 外，TOP include 和 dynpro 目前只存在系统里，需一并序列化（另建仓库，起始目录 `/zchgsb/src/`）
 9. 定制数据是否并入项目请求 `S4HK902782`（REC3WX 的 "RF ZDIFHU"）——主人明确**不需要**（沙盒，能用就行）
 
@@ -300,9 +314,9 @@
 **根因**：RF_CUSTOM 定制当初是**直接写数据库**（report / MCP runSnippet / SE16N &SAP_EDIT），没走 SM34 维护界面。传输记录是维护界面（`TR_OBJECT_ADD`）产生的，直写 DB 完全不经过它 → 不是"TR 里没有"，而是**根本没进传输系统**。
 
 **已补录**：
-- 新建 **Customizing 请求 `S4HK902808`**（W，MCP_USER，TARSYSTEM 空，与本系统其他客户 W 请求一致），其下任务 **`S4HK902809`**（Q）已记录 **6 表 / 12 键**：
-  E071 6 行（R3TR / TABU / OBJFUNC='K'）+ E071K 12 行
-  `/SCWM/TFCOD_CAT` 1、`/SCWM/TFCOD_CATT` 2（LANGU E/1）、`/SCWM/TFCOD_PRF` 3、`/SCWM/TSTEP_CAT` 1、`/SCWM/TSTEP_SCR` 1、`/SCWM/TSTEP_FLOW` 4
+- 新建 **Customizing 请求 `S4HK902808`**（W，MCP_USER，TARSYSTEM 空，与本系统其他客户 W 请求一致），其下任务 **`S4HK902809`**（Q）已记录 **7 表 / 14 键**：
+  E071 7 行（R3TR / TABU / OBJFUNC='K'）+ E071K 14 行
+  `/SCWM/TFCOD_CAT` 1、`/SCWM/TFCOD_CATT` 2（LANGU E/1）、`/SCWM/TFCOD_PRF` 3、`/SCWM/TSTEP_CAT` 1、`/SCWM/TSTEP_SCR` 1、`/SCWM/TSTEP_FLOW` 4、**`/SCWM/TOBJ_TXT` 2（按钮文本 E/1）**
 - 消息类 `ZEWM_RF_MSG`（R3TR MSAG）原本已被 REC3WX 记在请求 **`S4HK902782`"RF ZDIFHU"** 的任务 `S4HK902783` 里（对象被锁）；主人新加任务 **`S4HK902810`**（MCP_USER，同挂在 S4HK902782 下）后，MSAG 已追加到 `S4HK902810`（同一请求的两个任务允许重复，释放时合并）
 - 代码 FUGR `ZFG_RF_CHGSB` 仍在 Workbench 请求 **`S4HK902806` / 任务 `S4HK902807`**
 
