@@ -1,23 +1,37 @@
-FUNCTION z_rf_chgsb_0100_pbo
+FUNCTION zewm_rf_zchgsb_9100_pbo
   CHANGING
-    ordim_confirm    TYPE /scwm/s_rf_ordim_confirm
+    ordim_confirm TYPE /scwm/s_rf_ordim_confirm
     tt_ordim_confirm TYPE /scwm/tt_rf_ordim_confirm
-    tt_nested_hu     TYPE /scwm/tt_rf_nested_hu
-    wme_verif        TYPE /scwm/s_wme_verif
-    resource         TYPE /scwm/s_rsrc
-    t_rf_pick_hus    TYPE /scwm/tt_rf_pick_hus
-    who              TYPE /scwm/s_who_int.
+    tt_nested_hu TYPE /scwm/tt_rf_nested_hu
+    wme_verif TYPE /scwm/s_wme_verif
+    resource TYPE /scwm/s_rsrc
+    t_rf_pick_hus TYPE /scwm/tt_rf_pick_hus
+    who TYPE /scwm/s_who_int.
+
+
+
 *----------------------------------------------------------------------*
 * PIMTTO 屏幕按 CHGSB → 本屏（换源货位）
-* PBO 职责：把框架已装入 ORDIM_CONFIRM 的当前拣货行显示到屏幕，
+* PBO 职责：把框架已装入 TT_ORDIM_CONFIRM 的当前拣货行显示到屏幕，
 *           并清空「新货位」输入字段，等用户扫码。只读，不写库。
 * 签名与 /SCWM/RF_PICK_PIMTTO_PBO 一致，框架按同名 CHANGING 传参。
 *----------------------------------------------------------------------*
 
-  DATA: lv_lgnum    TYPE /scwm/lgnum,
-        lt_matid    TYPE /scwm/tt_matid,
-        lt_matnr    TYPE /scwm/tt_matid_matnr,
-        lt_batch_sr TYPE /scwm/t_batch_sr.
+  DATA: lv_line  TYPE i,
+        lv_lgnum TYPE /scwm/lgnum.
+
+*----------------------------------------------------------------------*
+* 0. 取当前拣货行装入 ORDIM_CONFIRM（与标准 PIMTTO_PBO 同做法）
+*----------------------------------------------------------------------*
+  lv_line = /scwm/cl_rf_bll_srvc=>get_line( ).
+  IF lv_line = 0.
+    lv_line = 1.
+    /scwm/cl_rf_bll_srvc=>set_line( 1 ).
+  ENDIF.
+  READ TABLE tt_ordim_confirm INDEX lv_line INTO ordim_confirm.
+  IF sy-subrc <> 0.
+    READ TABLE tt_ordim_confirm INDEX 1 INTO ordim_confirm.
+  ENDIF.
 
   lv_lgnum = ordim_confirm-lgnum.
   IF lv_lgnum IS INITIAL.
@@ -39,48 +53,31 @@ FUNCTION z_rf_chgsb_0100_pbo
 
   gs_chgsb_scr-vltyp   = ordim_confirm-vltyp.     " 源库存类型
   gs_chgsb_scr-vlpla   = ordim_confirm-vlpla.     " 原货位
-  gs_chgsb_scr-vsola   = ordim_confirm-vsola.     " 应拣数量
+  CALL FUNCTION 'CONVERSION_EXIT_QTYCH_OUTPUT'
+    EXPORTING
+      input  = ordim_confirm-vsola
+    IMPORTING
+      output = gs_chgsb_scr-vsola_chr.       " 应拣数量
+  CALL FUNCTION 'CONVERSION_EXIT_CUNIT_OUTPUT'
+    EXPORTING
+      input  = ordim_confirm-altme
+    IMPORTING
+      output = gs_chgsb_scr-altme.        " 数量单位（外部显示，KAR -> CAR）
   gs_chgsb_scr-huident = ordim_confirm-huident.   " 处理单元
+  gs_chgsb_scr-matnr   = ordim_confirm-matnr.     " 产品
   gs_chgsb_scr-tanum   = ordim_confirm-tanum.     " WT 号
   gs_chgsb_scr-vlenr   = ordim_confirm-vlenr.     " WT 行号
 
-* 物料 GUID → 物料号（可读）
-  IF ordim_confirm-matid IS NOT INITIAL.
-    APPEND ordim_confirm-matid TO lt_matid.
-    TRY.
-        CALL FUNCTION '/SCWM/MATID_TO_MATNR_MULTIPLE'
-          EXPORTING
-            it_matid       = lt_matid
-          IMPORTING
-            et_matid_matnr = lt_matnr.
-        READ TABLE lt_matnr INTO DATA(ls_matnr_line) INDEX 1.
-        IF sy-subrc = 0.
-          gs_chgsb_scr-matnr = ls_matnr_line-matnr.
-        ENDIF.
-      CATCH cx_root.
-        CLEAR gs_chgsb_scr-matnr.
-    ENDTRY.
+* 产品描述：优先取框架已装入的文本，否则按产品号读 MAKT
+  gs_chgsb_scr-maktx = ordim_confirm-maktx.
+  IF gs_chgsb_scr-maktx IS INITIAL
+     AND gs_chgsb_scr-matnr IS NOT INITIAL.
+    SELECT SINGLE maktx FROM makt INTO gs_chgsb_scr-maktx
+      WHERE matnr = gs_chgsb_scr-matnr
+        AND spras = sy-langu.
   ENDIF.
 
-* 批次 GUID → 批号（可读）：先取该物料全部批次，再按 BATCHID 匹配
-  IF ordim_confirm-matid IS NOT INITIAL
-     AND ordim_confirm-batchid IS NOT INITIAL.
-    TRY.
-        CALL FUNCTION '/SCWM/BATCH_SEARCH2'
-          EXPORTING
-            iv_matid    = ordim_confirm-matid
-            iv_lgnum    = lv_lgnum
-          IMPORTING
-            et_batch_sr = lt_batch_sr.
-        READ TABLE lt_batch_sr INTO DATA(ls_batch_line)
-             WITH KEY batchid = ordim_confirm-batchid.
-        IF sy-subrc = 0.
-          gs_chgsb_scr-charg = ls_batch_line-charg.
-        ENDIF.
-      CATCH cx_root.
-        CLEAR gs_chgsb_scr-charg.
-    ENDTRY.
-  ENDIF.
+  gs_chgsb_scr-charg = ordim_confirm-batch.      " 批次（可直接读）
 
 * 每次进屏清空输入字段，避免上一轮残留
   CLEAR: gs_chgsb_scr-newlgpla,
