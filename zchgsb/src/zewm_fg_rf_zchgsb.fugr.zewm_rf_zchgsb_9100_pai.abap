@@ -65,6 +65,7 @@ TYPE-POOLS: wmegc.
     WHEN 'BACK'.
 *     框架按 step flow 弹栈回 PIMTTO
       FREE MEMORY ID 'ZCHGSB_CTX'.
+      CLEAR zcl_zewm_rms_det_chgsb=>gv_ctx_set.
       /scwm/cl_rf_bll_srvc=>clear_shortcut( ).
       RETURN.
 
@@ -75,11 +76,13 @@ TYPE-POOLS: wmegc.
       IF ordim_confirm-tanum IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e012(zewm_rf_msg).        " 诊断：tanum 为空
+        RETURN.
       ENDIF.
 
       IF gs_chgsb_scr-newlgpla IS INITIAL.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e013(zewm_rf_msg).        " 请输入/扫描新货位
+        RETURN.
       ENDIF.
 
 *--------------------------------------------------------------------*
@@ -92,6 +95,7 @@ TYPE-POOLS: wmegc.
       IF gs_chgsb_scr-newlgpla = ordim_confirm-vlpla.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e014(zewm_rf_msg).        " 新旧货位相同
+        RETURN.
       ENDIF.
 
 * 2.1 货位存在性：标准 FM，能处理子货位/动态货位
@@ -109,6 +113,7 @@ TYPE-POOLS: wmegc.
       IF lv_severity <> 'S'.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e017(zewm_rf_msg).        " 货位不存在或无效
+        RETURN.
       ENDIF.
 
 * 2.2 货位主数据：必须存在，且与源行同一库存类型
@@ -121,12 +126,14 @@ TYPE-POOLS: wmegc.
       IF sy-subrc <> 0 OR ls_lagp-lgtyp <> ordim_confirm-vltyp.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e017(zewm_rf_msg).
+        RETURN.
       ENDIF.
 
 * 2.3 冻结标识：SKZUA = 出库冻结（不允许 removal）
       IF ls_lagp-skzua = 'X'.
         /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
         MESSAGE e017(zewm_rf_msg).
+        RETURN.
       ENDIF.
 
 * 2.4 货位用户状态：检查“拣货/出库”活动是否允许
@@ -147,6 +154,7 @@ TYPE-POOLS: wmegc.
           IF lv_allowed IS INITIAL.
             /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
             MESSAGE e017(zewm_rf_msg).
+            RETURN.
           ENDIF.
         ENDIF.
       ENDIF.
@@ -225,6 +233,7 @@ TYPE-POOLS: wmegc.
         IF sy-subrc <> 0 OR lv_avail_alt < ordim_confirm-vsola.
           /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
           MESSAGE e036(/scwm/ui_adma).
+          RETURN.
         ENDIF.
       ENDIF.
 
@@ -243,10 +252,14 @@ TYPE-POOLS: wmegc.
       ls_ctx-vlpla   = ordim_confirm-vlpla.
       ls_ctx-matid   = ordim_confirm-matid.
       ls_ctx-batchid = ordim_confirm-batchid.
+      ls_ctx-matnr   = ordim_confirm-matnr.
+      ls_ctx-charg   = ordim_confirm-batch.
       ls_ctx-vsola   = ordim_confirm-vsola.
       ls_ctx-altme   = ordim_confirm-altme.
       ls_ctx-nlpla   = gs_chgsb_scr-newlgpla.
       EXPORT ctx = ls_ctx TO MEMORY ID 'ZCHGSB_CTX'.
+      zcl_zewm_rms_det_chgsb=>gs_ctx = ls_ctx.
+      zcl_zewm_rms_det_chgsb=>gv_ctx_set = abap_true.
 
 *--------------------------------------------------------------------*
 * 4. 跳标准 exception 链路

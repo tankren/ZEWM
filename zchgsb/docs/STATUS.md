@@ -1,18 +1,18 @@
 # 状态（交接文件）
 
 > 用法：开工第一句"先读 zchgsb/docs/STATUS.md"。阶段性工作结束必须回来更新。
-> 最后更新：2026-11-05（新会话从这里开始）
+> 最后更新：2026-11-05（README 完成；BAdI 已落地）
 
 ## 当前目标
 
 EWM RF 拣货 **PIMTTO** 屏幕新增 **CHGSB / Change Source Bin** 功能键：
-拣货时发现源货位货不对/不够 → 按 F11 进入自定义屏 9100 → 扫新源货位 → 原 WT 以 0 数量确认 + bin denial + 自动建新 WT（新 WT 的货位目前由系统策略定，下一步用 BAdI 限定到扫描货位）。
+拣货时发现源货位货不对/不够 → 按 F11 进入自定义屏 9100 → 扫新源货位 → 原 WT 以 0 数量确认 + bin denial + 自动建新 WT；新 WT 的货位由 BAdI 限定为扫描货位。
 
 ---
 
 ## 一、当前进度（2026-11-05）
 
-**主链路已跑通**：F11 → 屏 9100 → 扫货位 → 0 数量确认 + 生成新 WT ✅
+**主链路已跑通**：F11 → 屏 9100 → 扫货位 → 0 数量确认 + 生成新 WT，且新 WT 货位 = 扫描货位 ✅
 
 关键突破：`/SCWM/TEXCEXEH` 里自定义异常码 **ZCSB 的 IPRCODE 用 `BIDU` 才能跑通**。
 用 `BIDF` 时 `RF_PICK_EXCEPTION` 只改内存（`ndifa/nista/bind`）+ `set_fcode(ENTER)` 后静默回 PIMTTO，
@@ -31,46 +31,45 @@ EWM RF 拣货 **PIMTTO** 屏幕新增 **CHGSB / Change Source Bin** 功能键：
 | SM34 功能键 | `ZCHGSB`（PB2 / F11 / shortcut 11），旧 `CHGSB` 全部清除 | ✅ |
 | SM34 异常码 | `ZCSB` → iprcode **BIDU**（1710 用户手工改；0001 需核对） | ✅ 生效 |
 | 消息 | `ZEWM_RF_MSG` 012–017 × 5 语言 | ✅ |
-| BAdI 限定货位 | `/SCWM/EX_CORE_RMS_DETERMINE`（spot `/SCWM/ES_CORE_RMS`） | 🟡 类/PAI 已完成；ENHO 待建 |
+| BAdI 实现类 | `ZCL_ZEWM_RMS_DET_CHGSB`（TR `S4HK902806`） | ✅ 已激活 |
+| BAdI ENHO | `ZEWM_ZCHGSB_RMS_DET`（spot `/SCWM/ES_CORE_RMS`，TR `S4HK902812`） | ✅ 已激活，新 WT 货位=扫描货位 |
 
-### BAdI 实施进展（2026-11-05）
+### BAdI 实施现状（2026-11-05）
 
-- **EX4 是死对象**：`/SCWM/EX4_CORE_RMS_DETERMINE` 在 `WBCROSSGT` 中零引用，不能挂 bin denial；实际调用点是
+- **EX4 是死对象**：`/SCWM/EX4_CORE_RMS_DETERMINE` 在 `WBCROSSGT` 中零引用；实际调用点是
   `CL_BADI_CORE_RMS~FILTER_SORT_STOCK` → `/SCWM/EX_CORE_RMS_DETERMINE`（Single-use，spot `/SCWM/ES_CORE_RMS`，
   接口 `/SCWM/IF_EX_CORE_RMS_DETERMINE`）。
-- **TANUM 不可用**：`/SCWM/TO_CREATE_BIN_DENIAL` 在调 `REM_BIN_DET` 前清空 `VLPLA/VLENR/TANUM`（`/SCWM/S_REMREQ`
-  本身没有 TANUM），`IS_LTAP` 里没有这些键。改为 `IV_CALL = 'C'`（`wmegc_call_bin_denial`）+
-  `LGNUM + MATID (+ BATCHID)` 匹配。
-- PAI 已改为导出 `/SCWM/LTAP` 上下文到 `ZCHGSB_CTX`（lgnum/tanum/vlpla/matid/batchid/matnr/charg/vsola/altme/nlpla），
-  并保留 `set_prmod('1')`。
-- 首轮测试 BAdI 已触发但未生效：`/SCWM/S_RF_ORDIM_CONFIRM-MATID` 常为空，原代码在 MATID 比较处提前 RETURN。
-  已改为 **MATNR 优先**（MATID 仅回退），空值不再阻断，并补充 CHARG 比较（仅两边都有值时比较）。
-- 新类 `ZCL_ZEWM_RMS_DET_CHGSB` 已建并激活（TR `S4HK902806` / task `S4HK902807`），实现 `DETERMINE`：
-  仅接管 bin denial，过滤 `IT_QMAT` 中 `LGPLA = 扫描货位` 且 `QUAN > 0`，置 `EV_SET='X'` 并
-  `FREE MEMORY ID 'ZCHGSB_CTX'`。
-- **卡点**：MCP/ADT 不支持创建 `ENHO/XHB`；`CL_ENH_FACTORY=>CREATE_ENHANCEMENT` 的 SAVE 被 transport dynpro 拦住，
-  已清理产生的坏 TADIR/E071 条目。需在 SE19 手工创建 BAdI 实现：
-  - Spot `/SCWM/ES_CORE_RMS`
-  - BAdI `/SCWM/EX_CORE_RMS_DETERMINE`
-  - Impl `ZEWM_CHGSB_RMS_DET`（或 `..._2`）
-  - Class `ZCL_ZEWM_RMS_DET_CHGSB`
-  - Package `ZEWM`，TR `S4HK902806`
-  - Filter 可不设（代码内限定 LGNUM=1710 且只在 `IV_CALL='C'` 接管）
-- 建好后：激活 ENHO → 用 1710 在 RF 测试 F11/扫描 → 验证新 WT 的源货位 = 扫描货位。
+- **TANUM/旧货位不可用**：`/SCWM/TO_CREATE_BIN_DENIAL` 在调 `REM_BIN_DET` 前清空 `VLPLA/VLENR/TANUM`
+  （`/SCWM/S_REMREQ` 本身没有 TANUM），`IS_LTAP` 里没有这些键。PAI 改为把上下文导出到内存 ID
+  `ZCHGSB_CTX`（lgnum/tanum/vlpla/matid/batchid/matnr/charg/vsola/altme/nlpla），BAdI 用
+  `IV_CALL='C'` + `LGNUM` + `LGPLA=扫描货位` 接管。
+- 实现类 `ZCL_ZEWM_RMS_DET_CHGSB`（包 `ZEWM`，TR `S4HK902806` / task `S4HK902807`）：
+  - 只处理 `IV_CALL='C'`（`wmegc_call_bin_denial`）；其他调用 `ev_set` 保持空，走标准。
+  - `IMPORT ctx = ls_ctx FROM MEMORY ID 'ZCHGSB_CTX'`；读不到时用静态兜底 `gs_ctx/gv_ctx_set`；
+    `ls_ctx-nlpla` 为空直接 RETURN。
+  - `ls_ctx-lgnum` 非空且 `is_ltap-lgnum` 不同则 RETURN。
+  - `LOOP AT it_qmat WHERE lgpla = ls_ctx-nlpla`，全部 APPEND 到 `et_qmat_cus`；有数据才
+    `ev_set='X'`，并 `FREE MEMORY ID 'ZCHGSB_CTX'` + 清 `gv_ctx_set`。
+  - **不比较 MATID/MATNR/BATCHID，也不过滤 `QUAN > 0`**：bin denial 的 REMREQ 派生 LTAP 经常没有这些字段；
+    `IT_QMAT` 已是当前需求的候选 quant，按扫描货位过滤即可。
+- ENHO `ZEWM_ZCHGSB_RMS_DET`（TR `S4HK902812`，owner `REC3WX`）已在 SE19 创建并激活，指向 spot
+  `/SCWM/ES_CORE_RMS`、BAdI `/SCWM/EX_CORE_RMS_DETERMINE`、类 `ZCL_ZEWM_RMS_DET_CHGSB`；未设 filter
+  （代码内按 `IV_CALL` + `LGNUM` 限定）。
+- 已用 1710 验证：F11 → 扫货位 → 新 WT 源货位 = 扫描货位。
 
 ### 9100 ENTER 可用库存 precheck（2026-11-05）
 
 - PAI 2.5 新增：调用 `/SCWM/SELECT_STOCK`（lgnum + 扫描货位 + matnr + charg；
-  cat/stock_usage/owner/entitled 仅当 RF 行有值时过滤），汇总 `ET_HUITM-QUANA`
-  （已按 `ALTME` 换算），与 `VSOLA` 比较；不再手工调 `MATERIAL_QUAN_CONVERT`。
+  cat/stock_usage/owner/entitled 仅当 RF 行有值时过滤），按目标 UoM 汇总：
+  `ALTME` 用 `QUANA`，`MEINS` 用 `QUAN`；与 `VSOLA` 比较；不再手工调 `MATERIAL_QUAN_CONVERT`。
 - 不足或无可用库存：`set_fcode('INIT')` + `MESSAGE e036(/scwm/ui_adma)`。
-- 9100 PBO 的 `ALTME` 已改为 `CONVERSION_EXIT_CUNIT_OUTPUT`（内部 KAR/ST → 外部 CAR），
+- 9100 PBO 的 `ALTME` 已改为 `CONVERSION_EXIT_CUNIT_OUTPUT`（内部 KAR/ST → 外部 CAR/PC），
   与标准 SAP 的 `MEINS` conversion exit 一致。
 - **库存校验修正**：`QUANA` 只适用于 `ET_HUITM-ALTME = 目标 UoM`；若
   `lv_target_uom = ls_huitm-meins`（目标就是库存 BUoM），改为汇总 `ls_huitm-quan`
   （BUoM），不再用 `QUANA`。已实现并激活。
-- 剩余：若目标 UoM 既不是 `ALTME` 也不是 `MEINS`（订单 UoM 与库存单位都不同），
-  当前仍会判不足；明天再决定是否用 `MATERIAL_QUAN_CONVERT` 做通用换算。
+- 目标 UoM 只会是 `ALTME` 或 `MEINS`；“既不是 ALTME 也不是 MEINS”的情况不会出现，不再做通用换算。
+- 所有错误分支 `MESSAGE` 后都加了 `RETURN`；库存校验放在最后，假货位会先报 e017，不会被 e036 覆盖。
 - 暂未新增 `ZEWM_RF_MSG` 018：该消息类已在 zdifhu 的 `S4HK902810` 里，避免跨 TR；
   需要自定义文案时再单独加。
 
@@ -105,7 +104,7 @@ charg, tanum, vlenr, newlgpla, newlgtyp, txt TYPE char80
    （FG `/SCWM/SAPLRF_GENERAL_EN`，EWM RF 专用，去尾零）
 5. `CLEAR newlgpla/newlgtyp`；`set_screlm_input_on( 'GS_CHGSB_SCR-NEWLGPLA' )`；`txt` 状态文本。
 
-**PAI `ZEWM_RF_ZCHGSB_9100_PAI`**（165 行）
+**PAI `ZEWM_RF_ZCHGSB_9100_PAI`**（约 275 行）
 - 前置检查顺序：`tanum` 空 → e012；`newlgpla` 空 → e013；`TRANSLATE/CONDENSE`；同货位 → e014；
   货位校验链 → e017。
 - 货位校验链：`/SCWM/BIN_EXIST_CHECK`（`e_rc_severity` 必须 `S`）
@@ -113,16 +112,23 @@ charg, tanum, vlenr, newlgpla, newlgtyp, txt TYPE char80
   → `skzua = 'X'` 冻结 → `guid_loc` 非空且 `/scwm/binstobj` 有行时 `/SCWM/BIN_ACT_CHECK`
   （`iv_activity = wmegc_binact_pick`，需 `TYPE-POOLS wmegc`，`ev_allowed` 必须 `X`）。
   不要用 `/SCWM/RF_PICK_BIN_CHANGE_CHECK`（那是校验 NLPLA）。
+- 2.5 库存 precheck（最后做）：`ordim_confirm-vsola > 0` 时调 `/SCWM/SELECT_STOCK`
+  （lgnum + 扫描货位 + matnr + charg；cat/usage/owner/entitled 仅当 RF 行有值时过滤）；
+  按目标 UoM 汇总 `QUANA`（ALTME）或 `QUAN`（MEINS），不足/无库存报 `e036(/scwm/ui_adma)`。
+  每个错误 `MESSAGE` 后都有 `RETURN`。
 - 成功尾部（**顺序不能变**）：
   ```abap
-  ls_ctx-tanum = ordim_confirm-tanum.
-  ls_ctx-bin   = gs_chgsb_scr-newlgpla.
-  EXPORT ls_ctx TO MEMORY ID 'ZCHGSB_BIN'.          " 给 BAdI 用
+  " ls_ctx TYPE /SCWM/LTAP，填：
+  " lgnum/tanum/vlpla/matid/batchid/matnr/charg/vsola/altme/nlpla
+  FREE MEMORY ID 'ZCHGSB_CTX'.
+  EXPORT ctx = ls_ctx TO MEMORY ID 'ZCHGSB_CTX'.    " 给 BAdI 用
+  zcl_zewm_rms_det_chgsb=>gs_ctx = ls_ctx.
+  zcl_zewm_rms_det_chgsb=>gv_ctx_set = abap_true.
   /scwm/cl_rf_bll_srvc=>set_shortcut( 'ZCSB' ).
   /scwm/cl_rf_bll_srvc=>set_prmod( '1' ).           " 1 = background，必须有
   /scwm/cl_rf_bll_srvc=>set_fcode( 'EXCEPT' ).
   ```
-- BACK 分支：`FREE MEMORY ID 'ZCHGSB_BIN'` + `clear_shortcut( )`。
+- BACK 分支：`FREE MEMORY ID 'ZCHGSB_CTX'` + `CLEAR zcl_zewm_rms_det_chgsb=>gv_ctx_set` + `clear_shortcut( )`。
 
 ### 屏幕 9100（15 行 × 26 列，`D020S TYPE='I'`，`BZBR=26`）
 
@@ -152,8 +158,8 @@ OKCODE 由 OK_FIELD 自动生成（L0 C0 N20），不要手传。
 | `/SCWM/TFCOD_CAT` + `TFCOD_CATT` | 只剩 `ZCHGSB`（E=ChgSBin, 1=换源货位） |
 | `/SCWM/TSTEP_CAT` + `TSTEP_CATT` | 只剩 `ZCHGSB` |
 | `/SCWM/TOBJ_TXT` | `APPLIC=01, OBJ_TYPE=01, OBJ_ID=ZCHGSB, OBJ_SIZE=8` |
-| `/SCWM/TEXCEXEH` | `LGNUM=1710, EXCCODE=ZCSB, BUSCON=TPI, PRMODE=05, IPRCODE=BIDU, DIFTY=1` |
-| `/SCWM/TEXCEPT` | `ZCSB`：E=Change Source Bin，1=换源货位（1710 由用户补配，待核对） |
+| `/SCWM/TEXCEXEH` | `LGNUM=1710, EXCCODE=ZCSB, BUSCON=TPI, PRMODE=05, IPRCODE=BIDU, DIFTY=1`；0001 和 1710/TIM 的 BIDF 行是历史残留，不要用 |
+| `/SCWM/TEXCEPT` | `ZCSB`：E=Change Source Bin，1=换源货位；⚠️ 当前 1710/1 文本是“拒绝全部提货”（标准残留），需改成“换源货位” |
 | `/SCWM/TEXCOIE` | 不参与（PAI 直接 `set_shortcut`，不走 fcode→shortcut 映射） |
 
 **TSTEP_FLOW 现状**（`APPLIC=01, LTRANS=PI****`）
@@ -173,42 +179,35 @@ OKCODE 由 OK_FIELD 自动生成（L0 C0 N20），不要手传。
 
 012 无有效拣货行 / 013 请扫描或输入新的源货位 / 014 新旧货位相同 /
 015 建 WT 失败-原任务已确认需人工补偿 / 016 源货位已更改 / 017 货位无效或被冻结。
+运行时还会用标准 `e036(/scwm/ui_adma)` 报“无法确定可用库存”。
 
 ---
 
 ## 三、下一步（按顺序）
 
-### 1. BAdI `/SCWM/EX4_CORE_RMS_DETERMINE`（当前主线）
+### 1. BAdI（已完成，2026-11-05）
 
-目的：标准异常链建新 WT 时，`/SCWM/REM_BIN_DET` 会用系统策略挑货位；用 BAdI 把候选 quant 限定到**扫描货位**。
+- 实际 BAdI 是 `/SCWM/EX_CORE_RMS_DETERMINE`（`/SCWM/EX4_...` 是死对象）。
+- 类 `ZCL_ZEWM_RMS_DET_CHGSB` + ENHO `ZEWM_ZCHGSB_RMS_DET`（TR `S4HK902812`）已激活。
+- 1710 已验证：F11 → 扫货位 → 新 WT 源货位 = 扫描货位。
+- 系统级默认分支必须保持 `ev_set = space` + `RETURN`，只接管 `IV_CALL='C'`。
 
-- 定义：`/SCWM/EX4_CORE_RMS_DETERMINE`，接口 `/SCWM/IF_EX_CORE_RMS_DETERMINE`，包 `ZEWM`，TR `S4HK902806`
-- 入参：`IV_CALL / IV_ANFML / IV_VORGA / IS_LTAP / IS_MAT_GLOBAL / IS_MAT_LGNUM / IS_MAT_HAZARD / IT_MAT_UOM / IS_T331 / IS_T333 / IT_QMAT / IT_QMAT_STD / IV_REM_RULE / IO_LOG / IV_ROW`
-- 出参：`ET_QMAT_CUS TYPE /SCWM/TT_AQUA_INT`、`EV_SET TYPE XFELD`
-- `IT_QMAT` = 系统候选 quant（含 `lgnum/lgtyp/lgpla`）；`ET_QMAT_CUS` = 我的候选；`EV_SET='X'` 表示用我的
-- 代码骨架：
-  ```abap
-  ev_set = space.
-  IMPORT ls_ctx FROM MEMORY ID 'ZCHGSB_BIN'.
-  IF sy-subrc <> 0 OR ls_ctx-bin IS INITIAL. RETURN. ENDIF.
-  IF is_ltap-tanum <> ls_ctx-tanum. RETURN. ENDIF.       " 只管本单本行
-  et_qmat_cus = VALUE #( FOR q IN it_qmat WHERE ( lgpla = ls_ctx-bin ) ( q ) ).
-  IF et_qmat_cus IS NOT INITIAL. ev_set = 'X'. ENDIF.
-  ```
-- ⚠️ 系统级 BAdI 默认分支**绝不能少** `ev_set = space` + `RETURN`，否则影响所有拣货。
-- 已验证：`/SCWM/REM_BIN_DET` 只有 `it_lagp_excl/it_hu_excl`（排除），无法限定单一货位；`objectEnhancements` 对它返回 0 增强点，所以只能走 RMS BAdI。
+### 2. 本地同步与 abapGit
 
-### 2. 本地 git 与 abapGit
-
-- `zchgsb/src/` 里的文件名还是旧的 `zfg_rf_chgsb.fugr.*`，需改成 abapGit 形式：
-  `zewm_fg_rf_zchgsb.fugr.zewm_rf_zchgsb_9100_pbo.abap` / `..._pai.abap`（+ TOP / 屏幕序列化）
-- 新需求：zchgsb 独立 abapGit 仓库，起始目录 `/zchgsb/src/`
-  （现有仓库 `EWM Custom Object Repo` 起始目录是 `/zdifhu/src/`，管不到 zchgsb）
-- 导入前先 `git commit`。
+- 系统 PAI 已在每个 `MESSAGE` 后加 `RETURN`；本地 PAI 已按系统导出同步（274 行，含 `RETURN` / static fallback）。
+- `zchgsb/src/` 文件名已改为：
+  `zewm_fg_rf_zchgsb.fugr.zewm_rf_zchgsb_9100_pbo.abap` / `..._pai.abap`；已补 TOP / UXx include，类文件已同步。
+- 屏幕 9100 的布局在 FUGR XML 的 `<DYNPROS>` 里；当前 MCP 导出不含 FUGR XML，需在 SAP 里跑一次 abapGit 全量导出才能补 `zewm_fg_rf_zchgsb.fugr.xml`。
+- zchgsb 需要独立 abapGit 仓库，起始目录 `/zchgsb/src/`（现有仓库起始目录是 `/zdifhu/src/`）；导入前先 `git commit`。
 
 ### 3. 文档
 
-- 本文件已重写。`docs/HANDOVER.md`、`docs/TASK_exception_badi.md` 里 2026-11-04 之前的方案描述已部分过期（旧 TO_CREATE 方案已废弃），看的时候以本文件为准。
+- 已新增中英 README：`README.md` / `README.zh.md`（设计 / 流程 / 实现 / 配置 / 消息 / 验收 / 排障 / 对象清单）。
+- 本文件已同步；`docs/HANDOVER.md`、`docs/TASK_exception_badi.md` 的旧方案已过期，以本文件为准。
+
+### 4. 部署
+
+- 收集/释放 TR：代码 `S4HK902806`、BAdI `S4HK902812`、消息 `S4HK902782`；配置 `S4HK902808` 手工。
 
 ---
 
@@ -265,6 +264,8 @@ OKCODE 由 OK_FIELD 自动生成（L0 C0 N20），不要手传。
 
 ```
 zchgsb/
+├── README.md                # 英文说明（2026-11-05 新增）
+├── README.zh.md             # 中文说明
 ├── src/                     # abapGit 序列化（文件名待改成 zewm_fg_rf_zchgsb.*）
 ├── docs/
 │   ├── STATUS.md            # ← 本文件，唯一权威
