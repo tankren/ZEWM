@@ -1,15 +1,15 @@
-FUNCTION zewm_rf_zchgsb_9100_pbo
-  CHANGING
-    ordim_confirm TYPE /scwm/s_rf_ordim_confirm
-    tt_ordim_confirm TYPE /scwm/tt_rf_ordim_confirm
-    tt_nested_hu TYPE /scwm/tt_rf_nested_hu
-    wme_verif TYPE /scwm/s_wme_verif
-    resource TYPE /scwm/s_rsrc
-    t_rf_pick_hus TYPE /scwm/tt_rf_pick_hus
-    who TYPE /scwm/s_who_int.
-
-
-
+FUNCTION zewm_rf_zchgsb_9100_pbo.
+*"----------------------------------------------------------------------
+*"*"Local Interface:
+*"  CHANGING
+*"     REFERENCE(ORDIM_CONFIRM) TYPE  /SCWM/S_RF_ORDIM_CONFIRM
+*"     REFERENCE(TT_ORDIM_CONFIRM) TYPE  /SCWM/TT_RF_ORDIM_CONFIRM
+*"     REFERENCE(TT_NESTED_HU) TYPE  /SCWM/TT_RF_NESTED_HU
+*"     REFERENCE(WME_VERIF) TYPE  /SCWM/S_WME_VERIF
+*"     REFERENCE(RESOURCE) TYPE  /SCWM/S_RSRC
+*"     REFERENCE(T_RF_PICK_HUS) TYPE  /SCWM/TT_RF_PICK_HUS
+*"     REFERENCE(WHO) TYPE  /SCWM/S_WHO_INT
+*"----------------------------------------------------------------------
 *----------------------------------------------------------------------*
 * PIMTTO 屏幕按 CHGSB → 本屏（换源货位）
 * PBO 职责：把框架已装入 TT_ORDIM_CONFIRM 的当前拣货行显示到屏幕，
