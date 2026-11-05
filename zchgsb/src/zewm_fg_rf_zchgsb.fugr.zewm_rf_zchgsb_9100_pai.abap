@@ -230,9 +230,13 @@ TYPE-POOLS: wmegc.
           ENDLOOP.
         ENDIF.
 
-        IF sy-subrc <> 0 OR lv_avail_alt < ordim_confirm-vsola.
+        IF sy-subrc <> 0.
           /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
           MESSAGE e036(/scwm/ui_adma).
+          RETURN.
+        ELSEIF lv_avail_alt < ordim_confirm-vsola.
+          /scwm/cl_rf_bll_srvc=>set_fcode( 'INIT' ).
+          MESSAGE e018(zewm_rf_msg).
           RETURN.
         ENDIF.
       ENDIF.
