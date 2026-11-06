@@ -8,7 +8,6 @@ All objects live under `src/`, one folder per package.
 | `ZEWM_ZCHGSB` | [`src/zewm_zchgsb/`](src/zewm_zchgsb/) | [English](src/zewm_zchgsb/README.md) · [中文](src/zewm_zchgsb/README.zh.md) |
 | `ZEWM_ZDIFHU` | [`src/zewm_zdifhu/`](src/zewm_zdifhu/) | [English](src/zewm_zdifhu/README.md) · [中文](src/zewm_zdifhu/README.zh.md) |
 | `ZEWM_MSG` | [`src/zewm_msg/`](src/zewm_msg/) | message class `ZEWM_RF_MSG` (5 languages) |
-| `ZEWM_ITPLUS` | [`src/zewm_itplus/`](src/zewm_itplus/) | RF screens (SCP1) |
 
 ## Import
 
