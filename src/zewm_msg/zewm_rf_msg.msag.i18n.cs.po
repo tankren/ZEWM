@@ -1,0 +1,74 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: MESS/ZEWM_RF_MSG 018/TEXT, maxlen=73
+msgid "Available quantity is not sufficient"
+msgstr ""
+
+#: MESS/ZEWM_RF_MSG 011/TEXT, maxlen=73
+msgid "Counted quantity equals current quantity"
+msgstr "Počítané množství se rovná aktuálnímu množství"
+
+#: MESS/ZEWM_RF_MSG 010/TEXT, maxlen=73
+msgid "Counted quantity must be greater than zero"
+msgstr "Počítané množství musí být větší než nula"
+
+#: MESS/ZEWM_RF_MSG 006/TEXT, maxlen=73
+msgid "Difference posting failed"
+msgstr "Zaúčtování rozdílu selhalo"
+
+#: MESS/ZEWM_RF_MSG 002/TEXT, maxlen=73
+msgid "HU not found"
+msgstr "HU nenalezena"
+
+#: MESS/ZEWM_RF_MSG 009/TEXT, maxlen=73
+msgid "Item does not exist"
+msgstr "Položka neexistuje"
+
+#: MESS/ZEWM_RF_MSG 014/TEXT, maxlen=73
+msgid "New bin is the same as the current bin"
+msgstr "Nove misto je shodne s aktualnim mistem"
+
+#: MESS/ZEWM_RF_MSG 003/TEXT, maxlen=73
+msgid "No material items in HU"
+msgstr "V HU nejsou žádné materiálové položky"
+
+#: MESS/ZEWM_RF_MSG 012/TEXT, maxlen=73
+msgid "No valid picking line"
+msgstr "Zadna platna radka komisionovani"
+
+#: MESS/ZEWM_RF_MSG 001/TEXT, maxlen=73
+msgid "Please enter HU number"
+msgstr "Zadejte prosím číslo HU"
+
+#: MESS/ZEWM_RF_MSG 008/TEXT, maxlen=73
+msgid "Please enter item number"
+msgstr "Zadejte prosím číslo položky"
+
+#: MESS/ZEWM_RF_MSG 013/TEXT, maxlen=73
+msgid "Please scan or enter the new source bin"
+msgstr "Naskenujte nebo zadejte nove zdrojove misto"
+
+#: MESS/ZEWM_RF_MSG 007/TEXT, maxlen=73
+msgid "Save failed, rolled back"
+msgstr "Uložení selhalo, vráceno zpět"
+
+#: MESS/ZEWM_RF_MSG 016/TEXT, maxlen=73
+msgid "Source bin changed"
+msgstr "Zdrojove misto zmeneno"
+
+#: MESS/ZEWM_RF_MSG 017/TEXT, maxlen=73
+msgid "Storage bin is invalid or blocked"
+msgstr "Misto je neplatne nebo zablokovane"
+
+#: MESS/ZEWM_RF_MSG 015/TEXT, maxlen=73
+msgid "WT creation failed after confirmation - manual correction needed"
+msgstr "Vytvoreni WT selhalo - nutna rucni oprava"
+
+#: MSAG/ZEWM_RF_MSG/STEXT, maxlen=60
+msgid "ZDIFHU RF messages"
+msgstr ""

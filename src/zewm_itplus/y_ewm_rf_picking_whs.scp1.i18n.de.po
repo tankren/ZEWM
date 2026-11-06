@@ -1,0 +1,14 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: SCP1/Y_EWM_RF_PICKING_WHS/SCPRVALL000000000000000000000001, maxlen=40
+msgid "Pick Denial - Staging - Empty Bin"
+msgstr ""
+
+#: SCP1/Y_EWM_RF_PICKING_WHS/SCPRTEXT, maxlen=60
+msgid "Warehouse Specific Entries for CS RF Picking"
+msgstr ""

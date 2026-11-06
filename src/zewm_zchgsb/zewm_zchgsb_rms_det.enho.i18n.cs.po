@@ -1,0 +1,14 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: SOTR/ZEWM_ZCHGSB 000C292248D01FD1B68DC85B5D3A5963/000C292248D01FD1B68DC85B5D3A5963, maxlen=255
+msgid "Implementation: BAdI: Filtering and/or Sorting of Quants"
+msgstr ""
+
+#: SOTR/ZEWM_ZCHGSB 000C292248D01FD1B68DC61831A93963/000C292248D01FD1B68DC61831A93963, maxlen=255
+msgid "ZCHGSB Button call ZCSB Exception code - Bin Denial Infuluence"
+msgstr ""

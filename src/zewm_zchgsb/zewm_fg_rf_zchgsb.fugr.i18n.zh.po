@@ -1,0 +1,54 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00001, maxlen=5
+msgid "Batch"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00004, maxlen=3
+msgid "Bin"
+msgstr ""
+
+#: SRH1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00001, maxlen=60
+msgid "CHGSB Change Source Bin"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00002, maxlen=2
+msgid "HU"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00003, maxlen=7
+msgid "Product"
+msgstr ""
+
+#: LBT1/ZEWM_FG_RF_ZCHGSB/AREAT 00001, maxlen=40
+msgid "RF Change Source Bin (PIMTTO)"
+msgstr ""
+
+#: FNC1/ZEWM_RF_ZCHGSB_9100_PAI ZEWM_FG_RF_ZCHGSB/TFTIT 00001, maxlen=74
+msgid "RF ZCHGSB screen 9100 PAI"
+msgstr ""
+
+#: FNC1/ZEWM_RF_ZCHGSB_9100_PBO ZEWM_FG_RF_ZCHGSB/TFTIT 00001, maxlen=74
+msgid "RF ZCHGSB screen 9100 PBO"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00005, maxlen=21
+msgid "Scan New Storage Bin"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00006, maxlen=7
+msgid "Src Bin"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00007, maxlen=9
+msgid "Srce Type"
+msgstr ""
+
+#: SRT1/ZEWM_FG_RF_ZCHGSB 9100/DTXT 00008, maxlen=7
+msgid "TgtQtyA"
+msgstr ""

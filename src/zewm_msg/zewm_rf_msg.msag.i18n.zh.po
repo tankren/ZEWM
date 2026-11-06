@@ -1,0 +1,74 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: MESS/ZEWM_RF_MSG 018/TEXT, maxlen=73
+msgid "Available quantity is not sufficient"
+msgstr ""
+
+#: MESS/ZEWM_RF_MSG 011/TEXT, maxlen=73
+msgid "Counted quantity equals current quantity"
+msgstr "实盘数量等于当前数量"
+
+#: MESS/ZEWM_RF_MSG 010/TEXT, maxlen=73
+msgid "Counted quantity must be greater than zero"
+msgstr "实盘数量必须大于 0"
+
+#: MESS/ZEWM_RF_MSG 006/TEXT, maxlen=73
+msgid "Difference posting failed"
+msgstr "差异过账失败"
+
+#: MESS/ZEWM_RF_MSG 002/TEXT, maxlen=73
+msgid "HU not found"
+msgstr "未找到 HU"
+
+#: MESS/ZEWM_RF_MSG 009/TEXT, maxlen=73
+msgid "Item does not exist"
+msgstr "序号不存在"
+
+#: MESS/ZEWM_RF_MSG 014/TEXT, maxlen=73
+msgid "New bin is the same as the current bin"
+msgstr "新旧货位相同"
+
+#: MESS/ZEWM_RF_MSG 003/TEXT, maxlen=73
+msgid "No material items in HU"
+msgstr "HU 中没有物料行项目"
+
+#: MESS/ZEWM_RF_MSG 012/TEXT, maxlen=73
+msgid "No valid picking line"
+msgstr "无有效拣货行"
+
+#: MESS/ZEWM_RF_MSG 001/TEXT, maxlen=73
+msgid "Please enter HU number"
+msgstr "请输入 HU 号"
+
+#: MESS/ZEWM_RF_MSG 008/TEXT, maxlen=73
+msgid "Please enter item number"
+msgstr "请输入序号"
+
+#: MESS/ZEWM_RF_MSG 013/TEXT, maxlen=73
+msgid "Please scan or enter the new source bin"
+msgstr "请扫描或输入新的源货位"
+
+#: MESS/ZEWM_RF_MSG 007/TEXT, maxlen=73
+msgid "Save failed, rolled back"
+msgstr "保存失败，已回滚"
+
+#: MESS/ZEWM_RF_MSG 016/TEXT, maxlen=73
+msgid "Source bin changed"
+msgstr "源货位已更改"
+
+#: MESS/ZEWM_RF_MSG 017/TEXT, maxlen=73
+msgid "Storage bin is invalid or blocked"
+msgstr "货位无效或被冻结"
+
+#: MESS/ZEWM_RF_MSG 015/TEXT, maxlen=73
+msgid "WT creation failed after confirmation - manual correction needed"
+msgstr "建WT失败-原任务已确认需人工补偿"
+
+#: MSAG/ZEWM_RF_MSG/STEXT, maxlen=60
+msgid "ZDIFHU RF messages"
+msgstr ""

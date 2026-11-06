@@ -1,0 +1,83 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: SRT1/ZFG_RF_ZDIFHU 9004/DTXT 00002, maxlen=1
+#: SRT1/ZFG_RF_ZDIFHU 9004/DTXT 00003, maxlen=1
+msgid "/"
+msgstr ""
+
+#: SRT1/ZFG_RF_ZDIFHU 9002/DTXT 00001, maxlen=26
+msgid "Actual Qty"
+msgstr "Skut. mn."
+
+#: SRT1/ZFG_RF_ZDIFHU 9004/DTXT 00001, maxlen=3
+msgid "Bin"
+msgstr ""
+
+#: SRT1/ZFG_RF_ZDIFHU 9000/DTXT 00001, maxlen=2
+msgid "HU"
+msgstr "HU"
+
+#: SRT1/ZFG_RF_ZDIFHU 9001/DTXT 00001, maxlen=3
+msgid "HU:"
+msgstr "HU:"
+
+#: SRT1/ZFG_RF_ZDIFHU 9001/DTXT 00002, maxlen=3
+msgid "No."
+msgstr "Č."
+
+#: LBT1/ZFG_RF_ZDIFHU/AREAT 00001, maxlen=40
+msgid "RF ZDIFHU - HU difference posting"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9000_PAI ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9000 PAI"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9000_PBO ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9000 PBO"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9001_PAI ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9001 PAI"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9001_PBO ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9001 PBO"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9002_PAI ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9002 PAI"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9002_PBO ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9002 PBO"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9004_PAI ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9004 PAI"
+msgstr ""
+
+#: FNC1/Z_RF_ZDIFHU_9004_PBO ZFG_RF_ZDIFHU/TFTIT 00001, maxlen=74
+msgid "RF ZDIFHU screen 9004 PBO"
+msgstr ""
+
+#: SRH1/ZFG_RF_ZDIFHU 9004/DTXT 00001, maxlen=60
+msgid "ZDIFHU HU detail"
+msgstr ""
+
+#: SRH1/ZFG_RF_ZDIFHU 9000/DTXT 00001, maxlen=60
+msgid "ZDIFHU HU input"
+msgstr "ZDIFHU zadání HU"
+
+#: SRH1/ZFG_RF_ZDIFHU 9002/DTXT 00001, maxlen=60
+msgid "ZDIFHU counted quantity"
+msgstr "ZDIFHU počítané množství"
+
+#: SRH1/ZFG_RF_ZDIFHU 9001/DTXT 00001, maxlen=60
+msgid "ZDIFHU item list"
+msgstr "ZDIFHU seznam položek"
